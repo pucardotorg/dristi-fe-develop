@@ -8,11 +8,11 @@
 
 import { isApiError } from "@/lib/api";
 
-import type { CaseFilingApi } from "./data/cases-api";
+import type { CaseFilingRepository } from "./data/repository";
 import { representedIndices } from "./selectors";
 import type { Advocate, Complainant, SavedAdvocate } from "./types";
 
-export type AdvocateApi = Pick<CaseFilingApi, "addAdvocate" | "endRepresentation">;
+export type AdvocateApi = Pick<CaseFilingRepository, "addAdvocate" | "endRepresentation">;
 
 export type AdvocateSaveResult = Required<
   Pick<SavedAdvocate, "savedAdvocateId" | "representations">
@@ -118,4 +118,27 @@ export function withoutComplainant(advocates: Advocate[], index: number): void {
       .filter((k) => k !== index)
       .map((k) => (k > index ? k - 1 : k));
   }
+}
+
+/** Who an advocate is: the register's id once found, and the bar number. */
+export type AdvocateIdentity = Pick<Advocate, "advocateId" | "barNumber">;
+
+/** The same advocate: the register's id when both have one, else the bar number. */
+function sameAdvocate(a: AdvocateIdentity, b: AdvocateIdentity): boolean {
+  if (a.advocateId && b.advocateId) return a.advocateId === b.advocateId;
+  const bar = a.barNumber.trim().toUpperCase();
+  return !!bar && bar === b.barNumber.trim().toUpperCase();
+}
+
+/**
+ * Whether `candidate` is already an advocate on a row other than `rowId`. One row covers
+ * every complainant an advocate acts for, so a second row for them would only map a
+ * complainant to them twice; the search offers them as already added instead.
+ */
+export function advocateAddedElsewhere(
+  advocates: Advocate[],
+  rowId: string,
+  candidate: AdvocateIdentity,
+): boolean {
+  return advocates.some((row) => row.id !== rowId && sameAdvocate(row, candidate));
 }

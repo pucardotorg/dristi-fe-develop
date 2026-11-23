@@ -12,10 +12,14 @@ design docs behind it. It uses:
 - **Node's built-in test runner** (via `tsx`) for unit tests
 - **Docker** for a standalone production image
 - **Netlify** for preview and review deployments
-- **GitHub Actions** for publishing Docker images to GHCR
+- **GitHub Actions** for required PR checks and publishing Docker images to GHCR
 
-> **This is a prototype.** There is no real authentication or back end yet: screens run
-> on local fixtures, and demo accounts are listed below.
+Design and engineering both work in this repository. One setting,
+`NEXT_PUBLIC_DATA_SOURCE`, decides where screens get their data: the in-browser
+**sandbox** (fixtures, IndexedDB, demo accounts) or the DRISTI **backend**. Sign-in
+already talks to the backend; most other screens run on the sandbox until their backend
+is connected. See [docs/working-in-one-repo.md](docs/working-in-one-repo.md) for how this
+works day to day, and [AGENTS.md](AGENTS.md) ("Data") for the rules.
 
 ## Quick start
 
@@ -40,8 +44,12 @@ design docs behind it. It uses:
 3. **Start the dev server:**
 
    ```bash
-   npm run dev
+   npm run dev:sandbox   # everything in the browser, no backend needed (design work, demos)
+   npm run dev           # sandbox data with sign-in against a local backend (engineering)
    ```
+
+   Designers who check UI against the design system also run `npm run setup:ds` once
+   (and after a design-system bump) to fetch the pinned version into `vendor/`.
 
 4. **Open the app:**
 
@@ -54,7 +62,9 @@ design docs behind it. It uses:
 
 ## Demo accounts
 
-Nothing authenticates yet. These fixtures exist so each role's path can be reviewed.
+These fixtures exist so each role's path can be reviewed in the sandbox. Court-staff
+sign-in is always a demo; citizen demo numbers work only when sign-in uses the sandbox
+(`npm run dev:sandbox`, the Netlify review site).
 
 **Court staff:** sign in with a username. Any non-empty password works, and usernames are
 not case-sensitive. The sign-in screen also has a button to fill in each one. Source:
@@ -86,6 +96,7 @@ npm run dev               # Start the dev server on http://localhost:3000
 npm run build             # Production build of the Dristi App
 npm run start             # Serve the production build
 npm run lint              # ESLint
+npm run typecheck         # TypeScript, with Next's generated route types
 npm run format            # Format every file with Prettier
 npm run format:check      # Check formatting without changing files (CI runs this)
 npm run test:app          # Unit tests (node --test via tsx)
@@ -110,8 +121,12 @@ npx simple-git-hooks
 - [docs/README.md](docs/README.md): map of the product docs. Start here.
 - [docs/product/](docs/product/README.md): what DRISTI is: domain, journey, standards, open questions.
 - [docs/feedback-widget.md](docs/feedback-widget.md): how reviewers comment on a running deployment.
-- [CLAUDE.md](CLAUDE.md): coding standards for Next.js, React and TypeScript in this repo
-  (also read by Claude Code).
+- [docs/working-in-one-repo.md](docs/working-in-one-repo.md): how design and engineering
+  work in one repository: the data modes, adding data, the checks and what changes for
+  each team.
+- [AGENTS.md](AGENTS.md): coding standards and the data rules, shared by both teams and
+  read by coding agents ([CLAUDE.md](CLAUDE.md) includes it for Claude Code).
+- [.agents/](.agents/policies/project.md): the design team's agent roles, policies and skills.
 - [CONTRIBUTING.MD](CONTRIBUTING.MD): how to propose and land changes.
 - Domain source of truth: [DRISTI 2.0 — Domain Model](https://dristidomain.netlify.app/).
 
@@ -120,7 +135,8 @@ npx simple-git-hooks
 ```
 .
 ├── .github/
-│   ├── workflows/              # ci.yml, docker-publish.yml
+│   ├── workflows/              # ci.yml (PR checks), docker-publish.yml
+│   ├── CODEOWNERS              # Who reviews what
 │   ├── ISSUE_TEMPLATE/
 │   └── PULL_REQUEST_TEMPLATE.MD
 ├── apps/
@@ -142,9 +158,10 @@ npx simple-git-hooks
 ├── docker/
 │   └── Dockerfile              # Standalone production image
 ├── docs/                       # Product docs (see docs/README.md)
-├── netlify.toml                # Netlify build configuration
+├── netlify.toml                # Netlify build configuration (review site, sandbox mode)
 ├── package.json                # Workspace root and scripts
-├── CLAUDE.md                   # Coding standards (also read by Claude Code)
+├── AGENTS.md                   # Coding standards and data rules (shared by both teams)
+├── CLAUDE.md                   # Includes AGENTS.md and the design policy for Claude Code
 ├── CONTRIBUTING.MD
 └── README.md
 ```
@@ -154,13 +171,15 @@ npx simple-git-hooks
 Copy [apps/dristi-app/.env.example](apps/dristi-app/.env.example) to
 `apps/dristi-app/.env.local` (git-ignored) for local development. All variables are optional.
 
-| Variable                                      | Description                                                                                                                                                                      | Example                             |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `NEXT_PUBLIC_FASTERFIXES_PROJECT_ID`          | Public project ID for the FasterFixes feedback widget. It's inlined into the client bundle at build time, so it isn't a secret. Leave it unset to disable the widget completely. | `proj_...`                          |
-| `NEXT_PUBLIC_FASTERFIXES_CAPTURE_DIAGNOSTICS` | Set to `false` to stop attaching console logs and network requests to feedback items                                                                                             | `false`                             |
-| `NEXT_PUBLIC_FASTERFIXES_API_ORIGIN`          | Self-hosted FasterFixes origin. Unset uses the FasterFixes cloud.                                                                                                                | `https://feedback.internal.example` |
-| `NEXT_OUTPUT`                                 | Set to `standalone` to emit a self-contained server. The Dockerfile sets this.                                                                                                   | `standalone`                        |
-| `STATIC_EXPORT`                               | Set to `true` for a static export (`next export`)                                                                                                                                | `true`                              |
+| Variable                                      | Description                                                                                                                                                                              | Example                             |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `NEXT_PUBLIC_DATA_SOURCE`                     | Where screens get their data: `sandbox` (the browser: fixtures, IndexedDB, demo seeding) or `api` (the backend). Unset means `api`. `.env.development` sets `sandbox` for `npm run dev`. | `sandbox`                           |
+| `NEXT_PUBLIC_AUTH_SOURCE`                     | Who answers sign-in and registration: `sandbox` (any 6-digit code) or `api`. Unset, it follows `NEXT_PUBLIC_DATA_SOURCE`.                                                                | `api`                               |
+| `NEXT_PUBLIC_FASTERFIXES_PROJECT_ID`          | Public project ID for the FasterFixes feedback widget. It's inlined into the client bundle at build time, so it isn't a secret. Leave it unset to disable the widget completely.         | `proj_...`                          |
+| `NEXT_PUBLIC_FASTERFIXES_CAPTURE_DIAGNOSTICS` | Set to `false` to stop attaching console logs and network requests to feedback items                                                                                                     | `false`                             |
+| `NEXT_PUBLIC_FASTERFIXES_API_ORIGIN`          | Self-hosted FasterFixes origin. Unset uses the FasterFixes cloud.                                                                                                                        | `https://feedback.internal.example` |
+| `NEXT_OUTPUT`                                 | Set to `standalone` to emit a self-contained server. The Dockerfile sets this.                                                                                                           | `standalone`                        |
+| `STATIC_EXPORT`                               | Set to `true` for a static export (`next export`)                                                                                                                                        | `true`                              |
 
 ## Docker
 
@@ -177,11 +196,13 @@ docker run -p 3000:3000 dristi-fe-develop:latest
 
 Build arguments:
 
-| Arg                                  | Default         | Purpose                                                     |
-| ------------------------------------ | --------------- | ----------------------------------------------------------- |
-| `NODE_VERSION`                       | `22`            | Node base image version                                     |
-| `NEXT_PUBLIC_FASTERFIXES_PROJECT_ID` | project default | Feedback widget ID; pass an empty value to build without it |
-| `GIT_COMMIT_SHA`                     | `unknown`       | Recorded in the image for traceability                      |
+| Arg                                  | Default              | Purpose                                                     |
+| ------------------------------------ | -------------------- | ----------------------------------------------------------- |
+| `NODE_VERSION`                       | `22`                 | Node base image version                                     |
+| `NEXT_PUBLIC_FASTERFIXES_PROJECT_ID` | project default      | Feedback widget ID; pass an empty value to build without it |
+| `NEXT_PUBLIC_DATA_SOURCE`            | empty (`api`)        | `sandbox` or `api`: where screens get their data            |
+| `NEXT_PUBLIC_AUTH_SOURCE`            | empty (follows data) | `sandbox` or `api`: who answers sign-in                     |
+| `GIT_COMMIT_SHA`                     | `unknown`            | Recorded in the image for traceability                      |
 
 There's no Compose file. The app has no back-end services to run alongside it yet.
 
@@ -191,16 +212,19 @@ There's no Compose file. The app has no back-end services to run alongside it ye
 ## Deployment
 
 - **Netlify:** [netlify.toml](netlify.toml) builds from the repository root and publishes `apps/dristi-app/.next` with the Next.js
-  runtime plugin. Most routes are server-rendered on demand, so this isn't a static site.
+  runtime plugin, fully in the sandbox (no backend). Most routes are server-rendered on
+  demand, so this isn't a static site.
 - **Container image:** pushes to `main` publish `ghcr.io/pucardotorg/dristi-fe-develop`
-  (see CI/CD below).
+  (see CI/CD below). The data source is fixed at build time: the published image uses
+  sandbox data with backend sign-in until features are connected.
 
 ## CI/CD
 
 - [.github/workflows/ci.yml](.github/workflows/ci.yml) runs on every pull request and on
-  pushes to `main`: `npm run format:check`, `npm run lint`, `npm run test:app` and
-  `npm run build`. Run them locally before opening a PR (see
-  [CONTRIBUTING.MD](CONTRIBUTING.MD)).
+  `main`: format check, lint, type check, unit tests, agent rails and a production build.
+- [.github/workflows/data-rules.yml](.github/workflows/data-rules.yml) runs on every pull
+  request: the lint exception lists only shrink, and an older feature moves its data
+  before it gains any.
 - [.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml) builds
   `docker/Dockerfile` and pushes it to GitHub Container Registry on every push to `main`.
   Tags are `main-<sha>` and `latest`.

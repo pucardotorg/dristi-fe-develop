@@ -8,12 +8,13 @@ Orientation for this repo. Docs describe the product; they are
 
 ## Sections
 
-| Section          | What it holds                                                                                                                   | Start here                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| **Product**      | What DRISTI is — domain, journey, standards, open questions                                                                     | [product/README.md](product/README.md)   |
-| **Principles**   | Cross-cutting PUCAR design principles — convictions that resolve conflicts between good outcomes. Org-wide, not DRISTI-specific | [principles/](principles/)               |
-| **Feedback**     | How reviewers comment on the running app; feedback → GitHub issues                                                              | [feedback-widget.md](feedback-widget.md) |
-| **Localization** | Rules for adding and translating UI text                                                                                        | [localization.md](localization.md)       |
+| Section            | What it holds                                                                                                                   | Start here                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| **Product**        | What DRISTI is — domain, journey, standards, open questions                                                                     | [product/README.md](product/README.md)           |
+| **Principles**     | Cross-cutting PUCAR design principles — convictions that resolve conflicts between good outcomes. Org-wide, not DRISTI-specific | [principles/](principles/)                       |
+| **Feedback**       | How reviewers comment on the running app; feedback → GitHub issues                                                              | [feedback-widget.md](feedback-widget.md)         |
+| **Localization**   | Rules for adding and translating UI text                                                                                        | [localization.md](localization.md)               |
+| **One repository** | How design and engineering work together: data modes, adding data, the checks                                                   | [working-in-one-repo.md](working-in-one-repo.md) |
 
 ## Repo layers (outside `docs/`)
 
@@ -26,5 +27,5 @@ Orientation for this repo. Docs describe the product; they are
 ## Intentionally not here
 
 - Full statutory text and growing datasets — pull from the domain site / its `data/`.
-- Design work (design system, proposals, feature history) — lives in the separate design
-  repo.
+- The design system itself: it lives in `pucardotorg/dristi-design-system` and is fetched
+  with `npm run setup:ds`. The design team's agent instructions are in `.agents/`.

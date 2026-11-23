@@ -311,3 +311,4 @@ describe("demandNoticeHasContent", () => {
     assert.equal(demandNoticeHasContent(filledNotice()), true);
   });
 });
+

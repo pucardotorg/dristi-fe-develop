@@ -238,7 +238,7 @@ function complainantFrom(p: ParticipantRead, base: Complainant): Complainant {
       ...c,
       type: "institution",
       entType: formEntityType(inst.entity_type),
-      entName: inst.entity_name,
+      entName: inst.entity_name ?? "",
       // A number typed before skipping is kept, as the form keeps it; it is not sent.
       entCinPan: inst.pan ?? inst.cin ?? (skipped ? base.entCinPan : ""),
       entCinPanSkippedAt: skipped ? (base.entCinPanSkippedAt ?? p.updated_at) : null,
@@ -386,7 +386,7 @@ function accusedFrom(group: ParticipantRead[], base: Accused): Accused {
     institutionId: first.institution_id ?? undefined,
     syncError: undefined,
     type: inst ? "institution" : "individual",
-    name: inst ? inst.entity_name : (first.name_at_filing ?? ""),
+    name: inst ? (inst.entity_name ?? "") : (first.name_at_filing ?? ""),
     entType: inst ? formEntityType(inst.entity_type) : base.entType,
     contacts: contacts.length ? contacts : [blankContact()],
     addresses: addresses.length ? addresses : [blankAddressBlock()],

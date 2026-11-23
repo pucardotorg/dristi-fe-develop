@@ -3,75 +3,26 @@
 /**
  * The tasks store: one provider for the whole `/tasks` area.
  *
- * Loads people, cases and tasks from the repository (seeding the sandbox on first run),
- * knows who the current person is, and applies transitions through `dispatch`. Every
- * change is written through the repository and announced on a `BroadcastChannel`, so
- * a second tab — signed in as someone else — sees it at once. `online` mirrors the
- * browser; when it is false the screens disable every verb and nothing is optimistic.
+ * Loads people, cases and tasks from the repository (the sandbox seeds itself; see
+ * `data/indexeddb.ts`), knows who the current person is, and applies transitions through
+ * `dispatch`. Every change is written through the repository and announced on a
+ * `BroadcastChannel`, so a second tab — signed in as someone else — sees it at once.
+ * `online` mirrors the browser; when it is false the screens disable every verb and
+ * nothing is optimistic.
  */
 
 import * as React from "react";
 
 import { getRepository } from "./data";
 import { browserCourt } from "@/lib/court/browser";
-import { buildTasks, CASES, DEFAULT_USER_ID, PEOPLE, SEED_VERSION } from "./sandbox";
+import { DEFAULT_USER_ID, PEOPLE } from "./sandbox";
 import { tasksForCourt } from "./court-tasks";
+import { loadFailure } from "./load-failure";
 import { type Ctx, type Transition, TransitionError } from "./transitions";
 import type { Case, Person, PersonId, Task, TaskId } from "./types";
 import { useTranslations } from "next-intl";
 
 const CHANNEL = "dristi-tasks";
-/** Which seed this browser holds; an older one is wiped and re-seeded on load. */
-const SEED_KEY = "dristi-tasks:seed";
-
-/** The local calendar day, as YYYY-M-D. */
-function todayKey(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-}
-
-/**
- * The stamp a seeded browser carries: the seed version, the day it was seeded, and
- * a signature of the seed's size. The sandbox bakes each hearing's absolute time at
- * seed, so a browser seeded yesterday shows an empty "today"; folding the day in
- * makes a new day reseed on the next load, as a version bump does. Folding the
- * people/case counts in makes *adding or removing* fixture matters (say, more of
- * the court docket) reseed on its own — without waiting for a matching SEED_VERSION
- * bump, which is easy to forget or to land a moment after the data and leave a
- * browser stamped current on incomplete data.
- */
-function seedStamp(): string {
-  return `${SEED_VERSION}@${todayKey()}@${PEOPLE.length}x${CASES.length}`;
-}
-
-function seedIsCurrent(): boolean {
-  try {
-    return localStorage.getItem(SEED_KEY) === seedStamp();
-  } catch {
-    return true;
-  }
-}
-
-/**
- * **The demo starts fresh on every page load** (owner, 2026-10-14: "if I refresh the
- * page, all the pending tasks come back"). It is sample data for showing flows, so a
- * refresh puts every task back as seeded — whatever was paid, signed or filed in the
- * last run. Within a page's life the sandbox keeps what was done, so a flow can be
- * walked through screen to screen; only a full load starts it again.
- *
- * Set to false to keep a browser's sandbox across loads (it then reseeds only when the
- * seed stamp changes, as before).
- */
-const RESEED_ON_PAGE_LOAD = true;
-let reseededThisPage = false;
-
-function rememberSeed(): void {
-  try {
-    localStorage.setItem(SEED_KEY, seedStamp());
-  } catch {
-    /* private mode; nothing to do */
-  }
-}
 
 type LoadState = "loading" | "ready" | "error";
 
@@ -85,6 +36,8 @@ type Broadcast =
 export type TasksContextValue = {
   state: LoadState;
   error: string | null;
+  /** The load failed because the backend doesn't answer a read yet: no retry helps. */
+  notConnected: boolean;
   people: Person[];
   cases: Case[];
   tasks: Task[];
@@ -126,6 +79,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   const tr = useTranslations();
   const [state, setState] = React.useState<LoadState>("loading");
   const [error, setError] = React.useState<string | null>(null);
+  const [notConnected, setNotConnected] = React.useState(false);
   const [people, setPeople] = React.useState<Person[]>([]);
   const [cases, setCases] = React.useState<Case[]>([]);
   const [tasks, setTasks] = React.useState<Task[]>([]);
@@ -150,41 +104,25 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   const load = React.useCallback(async () => {
     try {
       const repo = getRepository();
-      let [ppl, cs, ts] = await Promise.all([
+      // The sandbox seeds itself before answering; the backend already has real data.
+      const [ppl, cs, ts, uid] = await Promise.all([
         repo.listPeople(),
         repo.listCases(),
         repo.listTasks(),
+        repo.getCurrentUserId(),
       ]);
-      const freshPage = RESEED_ON_PAGE_LOAD && !reseededThisPage;
-      reseededThisPage = true;
-      if (ppl.length && (freshPage || !seedIsCurrent())) {
-        // A fresh page load (the demo starts over), or the model changed under this
-        // browser's data: start again from the seed.
-        await repo.clear();
-        ppl = [];
-      }
-      if (ppl.length === 0) {
-        // First run in this browser: seed the sandbox.
-        ppl = PEOPLE;
-        cs = CASES;
-        ts = buildTasks();
-        await Promise.all([repo.putPeople(ppl), repo.putCases(cs), repo.putTasks(ts)]);
-        rememberSeed();
-      }
-      const uid = (await repo.getCurrentUserId()) ?? DEFAULT_USER_ID;
-      // IndexedDB returns rows by key; the team reads in its seeded order (you first).
-      const order = (p: Person) => {
-        const i = PEOPLE.findIndex((x) => x.id === p.id);
-        return i === -1 ? PEOPLE.length : i;
-      };
-      ppl = [...ppl].sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name));
       setPeople(ppl);
       setCases(cs);
       setTasks(ts);
-      setUserId(ppl.some((p) => p.id === uid) ? uid : DEFAULT_USER_ID);
+      setUserId(uid !== null && ppl.some((p) => p.id === uid) ? uid : DEFAULT_USER_ID);
       setState("ready");
     } catch (e) {
-      setError(e instanceof Error ? e.message : tr("tasksStore_couldNotLoadTasks"));
+      const failure = loadFailure(e, tr("tasksStore_couldNotLoadTasks"));
+      // The screen shows a translated notice; the missing method goes to the console for
+      // whoever connects it ("tasks.listPeople is not connected to the backend yet").
+      if (failure.notConnected) console.warn(failure.message);
+      setError(failure.message);
+      setNotConnected(failure.notConnected);
       setState("error");
     }
   }, [tr]);
@@ -199,6 +137,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   const reload = React.useCallback(async () => {
     setState("loading");
     setError(null);
+    setNotConnected(false);
     await load();
   }, [load]);
 
@@ -309,6 +248,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     () => ({
       state,
       error,
+      notConnected,
       people,
       cases,
       tasks: courtTasks,
@@ -326,6 +266,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     [
       state,
       error,
+      notConnected,
       people,
       cases,
       courtTasks,

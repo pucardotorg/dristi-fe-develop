@@ -24,11 +24,16 @@ import { joinDot } from "@/lib/filing/format";
 import { CASE_TYPE, COURT } from "@/lib/filing/options";
 import { useProfile } from "@/lib/filing/profile";
 import { sectionComplete, signatories } from "@/lib/filing/selectors";
-import { caseFilingApi, caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
+import { getCaseFilingRepository } from "@/lib/filing/data";
+import { caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
 import { getStep, neighbours, type StepId } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import type { FilingDraft } from "@/lib/filing/types";
-import { stepForValidationField, type ValidationError } from "@/lib/filing/validation";
+import {
+  participantSteps,
+  stepForValidationField,
+  type ValidationError,
+} from "@/lib/filing/validation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -435,6 +440,9 @@ export function PreviewSection() {
   const documents = documentSummary(draft);
 
   const panels = React.useMemo(() => buildPanels(draft), [draft]);
+  // A per-participant validate error names its case_participant_id; the saved ids say which
+  // step it belongs to (`participants.<uuid>` → complainant / accused / witness).
+  const participantStepById = React.useMemo(() => participantSteps(draft), [draft]);
   const panel = editKey ? panels[editKey] : null;
 
   /**
@@ -500,7 +508,7 @@ export function PreviewSection() {
     setValidating(true);
     setValidateError(null);
     try {
-      const { isValid, errors } = await caseFilingApi.validateCase(caseId);
+      const { isValid, errors } = await getCaseFilingRepository().validateCase(caseId);
       if (isValid) {
         if (continueHref) router.push(continueHref);
         return;
@@ -889,7 +897,7 @@ export function PreviewSection() {
 
           <ul className="flex flex-col divide-y divide-hairline">
             {problems?.map((p, i) => {
-              const step = stepForValidationField(p.field, p.message);
+              const step = stepForValidationField(p.field, p.message, participantStepById);
               return (
                 <li key={`${p.field}-${i}`} className="flex items-start justify-between gap-3 py-3">
                   <span className="flex min-w-0 items-start gap-2 text-body-compact">

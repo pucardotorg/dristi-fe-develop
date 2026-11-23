@@ -26,13 +26,8 @@ import {
   type SavedIds,
   type UnsavedDocument,
 } from "./case-documents";
-import {
-  caseFilingApi,
-  caseFilingErrorMessage,
-  documentPatch,
-  type CaseDocumentMeta,
-} from "./data/cases-api";
-import { storeUpload } from "./data";
+import { caseFilingErrorMessage, documentPatch, type CaseDocumentMeta } from "./data/cases-api";
+import { getCaseFilingRepository, storeUpload } from "./data";
 import { discardStoredFile, getFileBlob } from "./files";
 import { readability } from "./readability";
 import { findDocumentRow } from "./selectors";
@@ -124,7 +119,10 @@ async function linkDocument(latest: () => FilingDraft, update: DraftUpdate, link
     ? { caseParticipantId: link.participantId }
     : { caseEvidenceId: link.evidenceId };
   try {
-    await caseFilingApi.updateDocument(link.caseDocumentId, fullPatch(latest(), link.target, meta));
+    await getCaseFilingRepository().updateDocument(
+      link.caseDocumentId,
+      fullPatch(latest(), link.target, meta),
+    );
     patchSynced(update, link.target, (r) => {
       if (!sameCopy(r)) return;
       if (link.participantId) r.linkedParticipantId = link.participantId;
@@ -159,9 +157,11 @@ export async function linkSavedDocuments(
 function removeFromCase(records: Array<Pick<SyncedFile, "caseDocumentId">>) {
   for (const { caseDocumentId } of records) {
     if (!caseDocumentId) continue;
-    caseFilingApi.deleteDocument(caseDocumentId).catch((error) => {
-      console.warn("[filing] couldn't remove a document from the case", caseDocumentId, error);
-    });
+    getCaseFilingRepository()
+      .deleteDocument(caseDocumentId)
+      .catch((error) => {
+        console.warn("[filing] couldn't remove a document from the case", caseDocumentId, error);
+      });
   }
 }
 
@@ -195,9 +195,11 @@ function clearCaseDocument(record: SyncedFile) {
  * sends the scan again.
  */
 function linkScan(evidenceId: string, caseDocumentId: string) {
-  caseFilingApi.updateEvidence(evidenceId, { caseDocumentId }).catch((error) => {
-    console.warn("[filing] couldn't link a scan to its evidence", evidenceId, error);
-  });
+  getCaseFilingRepository()
+    .updateEvidence(evidenceId, { caseDocumentId })
+    .catch((error) => {
+      console.warn("[filing] couldn't link a scan to its evidence", evidenceId, error);
+    });
 }
 
 export function useCaseDocuments(): CaseDocuments {
@@ -224,7 +226,7 @@ export function useCaseDocuments(): CaseDocuments {
       });
       const sent = { ...plan.meta, ...meta };
       try {
-        const saved = await caseFilingApi.uploadDocument(
+        const saved = await getCaseFilingRepository().uploadDocument(
           caseId,
           blob,
           ref.name,
@@ -359,7 +361,7 @@ export function useCaseDocuments(): CaseDocuments {
       if (!caseDocumentId) return;
       const sent = fullPatch(latest(), target, meta);
       try {
-        await caseFilingApi.updateDocument(caseDocumentId, sent);
+        await getCaseFilingRepository().updateDocument(caseDocumentId, sent);
         patch(target, (r) => {
           if (r.caseDocumentId !== caseDocumentId) return;
           r.syncError = undefined;

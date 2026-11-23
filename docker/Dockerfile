@@ -19,7 +19,16 @@ COPY . .
 # Public FasterFixes project ID, inlined into the client bundle at build time
 # (same default as netlify.toml). Pass an empty value to build without the widget.
 ARG NEXT_PUBLIC_FASTERFIXES_PROJECT_ID=proj_34da4857dae6d8831cbd098f
+# Where screens get their data and who answers sign-in: `sandbox` (in the browser, demo
+# data) or `api` (the backend). Both are baked in at build time. Empty means unset: data
+# then defaults to api, and sign-in follows data. The published image
+# (.github/workflows/docker-publish.yml) passes sandbox data with api sign-in until the
+# features are connected, so that image shows demo data wherever it is deployed.
+ARG NEXT_PUBLIC_DATA_SOURCE=
+ARG NEXT_PUBLIC_AUTH_SOURCE=
 ENV NEXT_PUBLIC_FASTERFIXES_PROJECT_ID=${NEXT_PUBLIC_FASTERFIXES_PROJECT_ID} \
+    NEXT_PUBLIC_DATA_SOURCE=${NEXT_PUBLIC_DATA_SOURCE} \
+    NEXT_PUBLIC_AUTH_SOURCE=${NEXT_PUBLIC_AUTH_SOURCE} \
     NEXT_OUTPUT=standalone \
     NEXT_TELEMETRY_DISABLED=1
 
@@ -38,8 +47,8 @@ ENV NODE_ENV=production \
 # it at run:
 #   docker run -e API_BASE_URL=https://be.dristi-dev.in/api/v1 -p 3000:3000 <image>
 # Unset, /api/v1 answers 503 with a hint and the rest of the app works as before.
-# NEXT_PUBLIC_* settings (sign-in source, app address) are the exception: they are
-# fixed at build time; see apps/dristi-app/.env.example.
+# NEXT_PUBLIC_* settings (data and sign-in source, app address) are the exception: they
+# are fixed at build time; see apps/dristi-app/.env.example.
 
 WORKDIR /app
 

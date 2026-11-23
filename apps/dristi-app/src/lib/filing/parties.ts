@@ -24,7 +24,6 @@ import { isIndianMobile, toBackendMobile, toNationalMobile } from "@/lib/auth/mo
 
 import type {
   AddressInput,
-  CaseFilingApi,
   ContactLists,
   InstitutionInput,
   ParticipantPatch,
@@ -34,7 +33,7 @@ import type {
   PoaHolderInput,
   WitnessInput,
 } from "./data/cases-api";
-import { mobileFieldCopy } from "./content";
+import type { CaseFilingRepository } from "./data/repository";
 import { ENTITY_TYPE_CODES, GENDER_CODES } from "./options";
 import { accusedContactUnknownDeclared, isCinOrPan, normaliseCinPan } from "./selectors";
 import type {
@@ -62,11 +61,15 @@ function compact<T extends object>(value: T): T {
   ) as T;
 }
 
-/** An Indian mobile in the backend's E.164, however it was typed; anything else as typed. */
+/**
+ * A person's mobile in the backend's E.164, however it was typed. Anything the backend would
+ * reject as a mobile is left out rather than sent as typed: the backend validates a person's
+ * number on save, so sending a malformed one would fail the whole party; a partly filled
+ * party saves without it, and the field's own error still shows it needs fixing.
+ */
 function phone(value: string): string | undefined {
   const national = toNationalMobile(value);
-  if (isIndianMobile(national)) return toBackendMobile(national);
-  return value.trim() || undefined;
+  return isIndianMobile(national) ? toBackendMobile(national) : undefined;
 }
 
 function age(value: string): number | undefined {
@@ -103,7 +106,7 @@ function addressBlock(block: AddressBlock): Partial<AddressInput> {
 
 /**
  * A complainant institution's PAN or CIN, or the declaration skipping it (`LIT-18a`). A
- * half-typed number is not sent: `missingFields` holds the party back until it is whole.
+ * half-typed number is not sent; the `validate` check before signing asks for a whole one.
  */
 function cinPan(
   c: Pick<Complainant, "entCinPan" | "entCinPanSkippedAt">,
@@ -200,7 +203,11 @@ export function complainantBodies(c: Complainant, isSelf = false): PartyInput[] 
           entity_name: c.entName.trim(),
           ...cinPan(c),
           // A company's number may be a landline, so it is sent as typed.
-          ...contactLists([c.entPhone.trim()], [c.entEmail.trim()], [address(c.entAddr)]),
+          ...contactLists(
+            [c.entPhone.trim()],
+            [c.entEmail.trim()],
+            hasAddress(c.entAddr) ? [address(c.entAddr)] : [],
+          ),
         }),
         person,
         designation: person ? c.rep.designation.trim() : undefined,
@@ -228,8 +235,12 @@ export function complainantBodies(c: Complainant, isSelf = false): PartyInput[] 
         gender: gender(c.gender),
         disability_status: disability(c.differentlyAbled),
       }),
-      ...contactLists([phone(c.mobile)], [c.email.trim()], [address(c.res)]),
-      ...(c.permSame === "no" ? { permanent_address: address(c.perm) } : {}),
+      ...contactLists(
+        [phone(c.mobile)],
+        [c.email.trim()],
+        hasAddress(c.res) ? [address(c.res)] : [],
+      ),
+      ...(c.permSame === "no" && hasAddress(c.perm) ? { permanent_address: address(c.perm) } : {}),
       is_party_in_person,
       ...affidavit(c),
       additional_details: {},
@@ -327,84 +338,35 @@ export function witnessBodies(w: Witness): WitnessInput[] {
   ];
 }
 
-/* ─────────────────────────── What the backend requires ──────────────────────────── */
+/* ─────────────────────────── Whether a party has content ─────────────────────────── */
 
-/** A mobile number as the backend accepts a person's: `+91` and ten digits starting 6–9. */
-const BACKEND_MOBILE = /^\+91[6-9]\d{9}$/;
-
-const ADDRESS_FIELDS: Array<[keyof AddressInput, string]> = [
-  ["line1", "address"],
-  ["city", "city"],
-  ["pincode", "pincode"],
-  ["district", "district"],
-  ["state", "state"],
-];
-
-/**
- * What a body still lacks that the backend requires (dristi-be `cases/serializers.py`),
- * as the form names it. Checked before sending, so the person is told what to add
- * rather than shown the backend's bare "This field is required".
- */
-export function missingFields(body: AnyPartyInput, role: PartyRole): string[] {
-  const missing = new Set<string>();
-  const institution = "institution" in body ? body.institution : undefined;
-  /** Every address sent must be whole; an accused's or a witness's needs a police station. */
-  const checkAddresses = (list: Partial<AddressInput>[] | undefined, whose = "") => {
-    if (!list?.length) {
-      missing.add(`${whose}address`);
-      return;
-    }
-    for (const a of list) {
-      for (const [field, label] of ADDRESS_FIELDS) if (!a[field]) missing.add(whose + label);
-      if (role !== "complainants" && !a.police_station) missing.add(`${whose}police station`);
-    }
-  };
-  // Whoever is served needs an address: the individual their own, an institution its own.
-  if (institution) {
-    checkAddresses(institution.addresses);
-    // The representative's own is optional, but one sent must be whole.
-    if (body.addresses?.length) checkAddresses(body.addresses, "representative's ");
-  } else {
-    checkAddresses(body.addresses);
-  }
-  // A person's number that `phone` could not read as an Indian mobile went as typed, and
-  // the backend would refuse it. An institution's may be a landline, so it is not checked.
-  if (body.mobile_numbers?.some((m) => !BACKEND_MOBILE.test(m))) {
-    missing.add(mobileFieldCopy.missingLabel);
-  }
-
-  if (role === "witnesses") {
-    // A witness is identified by a name or a designation (the body carries whichever the
-    // filer gave as `person.name`). Their mobile number is optional.
-    if (!body.person?.name) missing.add("name or designation");
-    return [...missing];
-  }
-
-  if (!body.person?.name && !institution?.entity_name) {
-    missing.add("name");
-  }
-  if (institution) {
-    if (!institution.entity_type) missing.add("type of entity");
-    if (
-      role === "complainants" &&
-      !institution.pan &&
-      !institution.cin &&
-      !institution.pan_cin_skip_declared
-    ) {
-      missing.add("CIN or PAN");
-    }
-    if (role === "accused" && body.person && !body.designation) missing.add("designation");
-  }
-  return [...missing];
+/** Whether a body carries any of the backend's contact lists (mobiles, emails, addresses). */
+function hasContactLists(x: Partial<ContactLists>): boolean {
+  return !!(x.mobile_numbers?.length || x.email_addresses?.length || x.addresses?.length);
 }
 
-/** "Add the city and police station to save this to your case." */
-export function missingFieldsMessage(missing: string[], whose?: string): string {
-  const list =
-    missing.length > 1
-      ? `${missing.slice(0, -1).join(", ")} and ${missing[missing.length - 1]}`
-      : missing[0];
-  return `Add the ${whose ? `${whose} ` : ""}${list} to save this to your case.`;
+/**
+ * Whether a body is worth saving. A party the filer has not begun — no name, no institution,
+ * no contacts — makes no participant on the case, so an untouched row is left out and the
+ * first real field creates it. Anything filled in still saves (the builders above send only
+ * well-formed values); the `validate` check before signing asks for whatever is still missing.
+ */
+export function partyBodyHasContent(body: AnyPartyInput): boolean {
+  if (isWitness(body)) {
+    return !!body.person?.name || !!body.what_will_witness_prove || hasContactLists(body);
+  }
+  if (body.self) return true;
+  const institution = body.institution;
+  if (institution) {
+    return (
+      !!institution.entity_name ||
+      !!institution.entity_type ||
+      hasContactLists(institution) ||
+      !!body.person?.name ||
+      hasContactLists(body)
+    );
+  }
+  return !!body.person?.name || hasContactLists(body);
 }
 
 /* ─────────────────────────────────── Saving ─────────────────────────────────────── */
@@ -489,7 +451,8 @@ export function patchFor(body: AnyPartyInput, before?: AnyPartyInput): Participa
   // Only an individual complainant has a permanent address.
   const hasPermanentAddress = !body.institution && body.resides_within_jurisdiction === undefined;
   return {
-    name_at_filing: body.person?.name ?? body.institution?.entity_name ?? "",
+    // `null` clears a name cleared in the form; the backend takes null as "not given".
+    name_at_filing: body.person?.name ?? body.institution?.entity_name ?? null,
     gender_at_filing: body.person?.gender ?? null,
     age_at_filing: body.person?.age ?? null,
     ...(body.person && body.institution ? { designation_at_filing: body.designation ?? null } : {}),
@@ -553,7 +516,10 @@ function withoutCompany(patch: ParticipantPatch): ParticipantPatch {
   return { ...patch, institution: undefined, institution_contacts: undefined };
 }
 
-export type PartyApi = Pick<CaseFilingApi, "addParty" | "updateParticipant" | "removeParticipant">;
+export type PartyApi = Pick<
+  CaseFilingRepository,
+  "addParty" | "updateParticipant" | "removeParticipant"
+>;
 
 /**
  * A saved body for a participant added as `self` whose follow-up PATCH has not gone
@@ -692,22 +658,17 @@ export function poaHolderBody(c: Complainant, isSelf = false): PoaHolderBody | n
   return {
     ...(isSelf ? { self: true as const } : {}),
     person: compact({ name: h.name.trim(), age: age(h.age) }),
-    ...contactLists([phone(h.mobile)], [], [address(h.res)]),
-    ...(h.permSame === "no" ? { permanent_address: address(h.perm) } : {}),
+    ...contactLists([phone(h.mobile)], [], hasAddress(h.res) ? [address(h.res)] : []),
+    ...(h.permSame === "no" && hasAddress(h.perm) ? { permanent_address: address(h.perm) } : {}),
     additional_details: {},
   };
-}
-
-/** What the backend still needs before it takes this holder: a full address. */
-export function poaHolderMissing(body: PoaHolderBody): string[] {
-  const first = body.addresses?.[0] ?? {};
-  return ADDRESS_FIELDS.filter(([field]) => !first[field]).map(([, label]) => label);
 }
 
 /** The case's copy of the holder: everything PATCH may change for them. */
 function poaHolderPatch(body: PoaHolderBody, before?: PoaHolderBody): ParticipantPatch {
   return {
-    name_at_filing: body.person?.name ?? "",
+    // `null` clears a name cleared in the form; the backend takes null as "not given".
+    name_at_filing: body.person?.name ?? null,
     // The form does not ask a holder's gender.
     gender_at_filing: null,
     age_at_filing: body.person?.age ?? null,
@@ -717,7 +678,10 @@ function poaHolderPatch(body: PoaHolderBody, before?: PoaHolderBody): Participan
   };
 }
 
-export type PoaApi = Pick<CaseFilingApi, "addPoaHolder" | "revokePoaMandate" | "updateParticipant">;
+export type PoaApi = Pick<
+  CaseFilingRepository,
+  "addPoaHolder" | "revokePoaMandate" | "updateParticipant"
+>;
 
 export type PoaSaveResult = { saved?: SavedPoaHolder; error?: unknown };
 

@@ -5,7 +5,13 @@ import { TaskViewDialog } from "@/components/tasks/act/task-view-dialog";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ArchiveIcon, ArchiveRestoreIcon, ArrowRightIcon, ListChecksIcon } from "lucide-react";
+import {
+  ArchiveIcon,
+  ArchiveRestoreIcon,
+  ArrowRightIcon,
+  ListChecksIcon,
+  UnplugIcon,
+} from "lucide-react";
 import { StatusLine, notify } from "@/components/feedback";
 
 import {
@@ -89,7 +95,18 @@ function useNow(): Date {
 export function TasksScreen() {
   const tr = useTranslations();
   const store = useTasks();
-  const { state, error, people, cases, tasks, user, online, reload, requestHighlight } = store;
+  const {
+    state,
+    error,
+    notConnected,
+    people,
+    cases,
+    tasks,
+    user,
+    online,
+    reload,
+    requestHighlight,
+  } = store;
   const { act, busy } = useTaskActions();
   const router = useRouter();
   // This list, with the open task and the filters on it — where a flow should return to.
@@ -325,7 +342,9 @@ export function TasksScreen() {
                   waiting: String(summary.waiting),
                   overdue: String(summary.overdue),
                 })
-              : tr("tasksScreen_loading")}
+              : state === "loading"
+                ? tr("tasksScreen_loading")
+                : null}
           </p>
         </header>
 
@@ -403,7 +422,13 @@ export function TasksScreen() {
           <StatusLine tone="warning">{tr("tasksScreen_youAreOfflineTheTableIs")}</StatusLine>
         ) : null}
 
-        {state === "error" ? (
+        {/* Not connected is a known state, not a failure: neutral, and no Retry, since asking
+            again gets the same answer (AGENTS.md, Data). */}
+        {state === "error" && notConnected ? (
+          <StatusLine tone="neutral" icon={UnplugIcon} still={!online}>
+            {tr("tasksScreen_tasksArentConnectedYet")}
+          </StatusLine>
+        ) : state === "error" ? (
           <StatusLine
             tone="error"
             /* One animated mark per screen: the offline line above may already have played. */
@@ -455,7 +480,7 @@ export function TasksScreen() {
 
         {state === "loading" ? (
           <TasksTableSkeleton />
-        ) : (
+        ) : notConnected ? null : (
           <TasksTable
             rows={rows}
             cases={cases}

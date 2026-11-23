@@ -16,7 +16,7 @@ import { PlusIcon } from "lucide-react";
 
 import { jurisdictionCopy } from "@/lib/filing/content";
 import { jurisdictionDetails } from "@/lib/filing/details";
-import { toLongDate } from "@/lib/filing/format";
+import { toDisplayDate, toLongDate } from "@/lib/filing/format";
 import { useCourt } from "@/components/court/court-provider";
 import { policeStationsFor } from "@/lib/filing/options";
 import { limitationView, noticeServiceDate } from "@/lib/filing/selectors";
@@ -25,14 +25,13 @@ import { useFiling } from "@/lib/filing/store";
 import { useDetailsSection } from "@/lib/filing/use-details-section";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { DateField } from "@/components/filing/date-field";
 import { FilingFooter } from "@/components/filing/filing-footer";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard, FormRow, FormSubhead, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
 import { IfscField } from "@/components/filing/ifsc-field";
-import { ComboField, TextField } from "@/components/filing/inputs";
+import { ComboField, ReadOnlyValue, TextField } from "@/components/filing/inputs";
 import { SectionNotice } from "@/components/filing/notices";
 import { RemoveButton } from "@/components/filing/repeat-lists";
 import { YesNoSegmented } from "@/components/filing/segmented";
@@ -77,19 +76,15 @@ export function JurisdictionSection() {
   // Shown in the derivation line, so the date it counts from is checkable.
   const serviceDate = draft.notices.map(noticeServiceDate).filter(Boolean).sort()[0] ?? "";
 
-  // A late filing cannot be saved without a reason (the backend refuses it), so Continue
-  // stops here and says so under the field rather than moving on with nothing saved.
+  // A late filing needs a condonation reason, but the backend now accepts the section
+  // without it and `validate` flags it before signing — so Continue no longer stops here.
+  // The warning above and the hint under the field keep the missing reason visible.
   const needsReason = delay !== null && !withinLimit && !j.condonationReason.trim();
-  const [reasonAsked, setReasonAsked] = React.useState(false);
 
-  /* Save the section to the case, then move on. A save failure keeps the filer here with
-     the reason, so the data loss is visible. */
+  /* Save whatever is filled to the case, then move on. A save failure keeps the filer here
+     so the data loss is visible. */
   const continueHref = next ? hrefFor(next) : undefined;
   const handleContinue = async () => {
-    if (needsReason) {
-      setReasonAsked(true);
-      return;
-    }
     const result = await save();
     if (result.ok && continueHref) router.push(continueHref);
   };
@@ -285,8 +280,8 @@ export function JurisdictionSection() {
             Neither of these is really a question. The cause of action is fifteen days
             after the demand notice was served, and the filing date is today — both follow
             from what the form already knows, so they are filled in and the working is
-            shown. They stay editable because the derivation cannot cover every case, and
-            an edit sticks: once typed, the date is the filer's and stops following.
+            shown. They are not the filer's to change, so they read as values, with no
+            picker: what is calculated stays.
           */}
           <FormRow>
             <FormField
@@ -319,7 +314,10 @@ export function JurisdictionSection() {
                 ) : undefined
               }
             >
-              <DateField value={limitation.causeDate} onChange={(v) => set("causeDate", v)} />
+              <ReadOnlyValue
+                value={toDisplayDate(limitation.causeDate)}
+                ariaLabel={t("jurisdictionSection_dateOfCauseOfAction")}
+              />
             </FormField>
             <FormField
               label={t("jurisdictionSection_dateOfComplaintFiling")}
@@ -327,7 +325,10 @@ export function JurisdictionSection() {
               error={limitation.filingIssue}
               help={j.filingDate ? undefined : t("jurisdictionSection_today")}
             >
-              <DateField value={limitation.filingDate} onChange={(v) => set("filingDate", v)} />
+              <ReadOnlyValue
+                value={toDisplayDate(limitation.filingDate)}
+                ariaLabel={t("jurisdictionSection_dateOfComplaintFiling")}
+              />
             </FormField>
           </FormRow>
 
@@ -374,7 +375,7 @@ export function JurisdictionSection() {
               label={t("jurisdictionSection_reasonForCondonationOfDelay")}
               name="condonationReason"
               required
-              error={reasonAsked && needsReason ? jurisdictionCopy.condonationMissing : undefined}
+              help={needsReason ? jurisdictionCopy.condonationMissing : undefined}
             >
               <Textarea
                 value={j.condonationReason}

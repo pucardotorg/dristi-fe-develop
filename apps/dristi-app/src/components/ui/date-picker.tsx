@@ -13,7 +13,8 @@ import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
 
 type DatePickerProps = {
-  value?: Date;
+  /** `null` is a controlled empty value; `undefined` leaves the picker to hold its own. */
+  value?: Date | null;
   defaultValue?: Date;
   onValueChange?: (value: Date | undefined) => void;
   placeholder?: string;
@@ -40,7 +41,7 @@ function DatePicker({
 }: DatePickerProps) {
   const t = useTranslations();
   const [internalValue, setInternalValue] = React.useState<Date | undefined>(defaultValue);
-  const selected = value === undefined ? internalValue : value;
+  const selected = value === undefined ? internalValue : (value ?? undefined);
 
   function handleSelect(nextValue: Date | undefined) {
     if (value === undefined) setInternalValue(nextValue);

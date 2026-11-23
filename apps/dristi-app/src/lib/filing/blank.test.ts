@@ -22,6 +22,16 @@ import type { FilingDraft } from "./types";
  * lineage renamed `adr` to `settlement` and deleted the old block, so a draft can come
  * back missing a field every selector here reads. These check that reading one is boring.
  */
+describe("migrateDraft — witnesses", () => {
+  it("gives a draft saved with no witnesses its blank row back", () => {
+    const draft = createBlankDraft("draft-no-witnesses");
+    draft.witnesses = [];
+    const [w, ...rest] = migrateDraft(draft).witnesses;
+    assert.equal(rest.length, 0);
+    assert.equal(w.fullName, "");
+  });
+});
+
 describe("migrateDraft — drafts written by another branch", () => {
   /** A draft as `feature/settlement-options` leaves it: no `adr`, version 4. */
   function settlementShaped(): FilingDraft {

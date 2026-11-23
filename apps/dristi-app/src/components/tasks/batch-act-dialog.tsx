@@ -32,6 +32,7 @@ import { rupees } from "@/lib/tasks/format";
 import { useTasks } from "@/lib/tasks/store";
 import { recordPayment, sign, TransitionError } from "@/lib/tasks/transitions";
 import type { Case, PaymentResult, Person, Task, TaskId } from "@/lib/tasks/types";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
@@ -416,6 +417,7 @@ function GatewayMenu({
   onChange: (value: PaymentResult) => void;
 }) {
   const tr = useTranslations();
+  if (!IS_SANDBOX) return null;
   return (
     <TooltipProvider>
       <DropdownMenu>

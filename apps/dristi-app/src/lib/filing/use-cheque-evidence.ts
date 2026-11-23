@@ -4,11 +4,12 @@
  * Saves the cheque section to the backend case when the filer clicks Continue.
  *
  * Each cheque on the draft becomes two evidence rows — a `CHEQUE` and a `RETURN_MEMO` —
- * matched to the cheque by the order they are created. A row is sent only once it is
- * complete (`evidence.ts`), because the backend rejects a half-filled one; the draft stays
- * the browser's working copy until then. The id each row is given is kept on the cheque, so
- * clicking Continue again updates the row instead of adding a second one. Opening the step
- * reads the case's cheques back (`chequesFromCase`).
+ * matched to the cheque by the order they are created. Whatever is filled is saved: the
+ * builders in `evidence.ts` send only the well-formed fields, so a half-filled cheque still
+ * reaches the case. A row is created once the cheque has something worth saving (a field or
+ * a linked scan) and updated in place after that, by the id kept on the cheque, so clicking
+ * Continue again never adds a second one. Opening the step reads the case's cheques back
+ * (`chequesFromCase`).
  *
  * A draft without a `caseId` (sample and batch drafts, older drafts) is never sent anywhere.
  */
@@ -16,13 +17,9 @@
 import * as React from "react";
 
 import { chequesFromCase } from "./case-details-read";
-import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
-import {
-  chequeEvidenceInfo,
-  chequeReady,
-  returnMemoEvidenceInfo,
-  returnMemoReady,
-} from "./evidence";
+import { getCaseFilingRepository } from "./data";
+import { caseFilingErrorMessage } from "./data/cases-api";
+import { chequeEvidenceInfo, returnMemoEvidenceInfo } from "./evidence";
 import { chequeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
 import type { ChequeDetails, FilingDraft } from "./types";
@@ -32,17 +29,25 @@ export type SaveResult = { ok: boolean; error?: string };
 
 type Update = (recipe: (draft: FilingDraft) => void) => void;
 
-/** Save one cheque's CHEQUE and RETURN_MEMO rows; creates on first save, updates after. */
+/**
+ * Save one cheque's CHEQUE and RETURN_MEMO rows. An existing row is updated with whatever
+ * is now filled (so clearing a field clears it on the case too); a row is created only once
+ * the cheque carries something — a well-formed field, or a linked scan — so an untouched
+ * cheque adds no empty rows.
+ */
 async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, update: Update) {
   const cheque = draft.cheques[index];
 
-  if (chequeReady(draft.cheques, index)) {
+  {
     const evidenceInfo = chequeEvidenceInfo(draft.cheques, index);
     const caseDocumentId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId ?? null;
     if (cheque.chequeEvidenceId) {
-      await caseFilingApi.updateEvidence(cheque.chequeEvidenceId, { evidenceInfo, caseDocumentId });
-    } else {
-      const saved = await caseFilingApi.addEvidence(caseId, {
+      await getCaseFilingRepository().updateEvidence(cheque.chequeEvidenceId, {
+        evidenceInfo,
+        caseDocumentId,
+      });
+    } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
+      const saved = await getCaseFilingRepository().addEvidence(caseId, {
         evidenceType: "CHEQUE",
         evidenceInfo,
         caseDocumentId,
@@ -54,16 +59,16 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
     }
   }
 
-  if (returnMemoReady(cheque)) {
+  {
     const evidenceInfo = returnMemoEvidenceInfo(cheque);
     const caseDocumentId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
     if (cheque.returnMemoEvidenceId) {
-      await caseFilingApi.updateEvidence(cheque.returnMemoEvidenceId, {
+      await getCaseFilingRepository().updateEvidence(cheque.returnMemoEvidenceId, {
         evidenceInfo,
         caseDocumentId,
       });
-    } else {
-      const saved = await caseFilingApi.addEvidence(caseId, {
+    } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
+      const saved = await getCaseFilingRepository().addEvidence(caseId, {
         evidenceType: "RETURN_MEMO",
         evidenceInfo,
         caseDocumentId,
@@ -82,9 +87,11 @@ export function removeChequeEvidence(
 ) {
   for (const id of [cheque.chequeEvidenceId, cheque.returnMemoEvidenceId]) {
     if (!id) continue;
-    caseFilingApi.deleteEvidence(id).catch((error) => {
-      console.warn("[filing] couldn't remove cheque evidence from the case", id, error);
-    });
+    getCaseFilingRepository()
+      .deleteEvidence(id)
+      .catch((error) => {
+        console.warn("[filing] couldn't remove cheque evidence from the case", id, error);
+      });
   }
 }
 
@@ -96,7 +103,7 @@ export function useChequeEvidence() {
   });
   const [error, setError] = React.useState<string | null>(null);
 
-  /** Push every complete cheque and return memo to the case. `ok` is false on a failure. */
+  /** Push every cheque and return memo to the case, as filled in. `ok` is false on a failure. */
   const save = React.useCallback(async (): Promise<SaveResult> => {
     const caseId = draft.caseId;
     if (!caseId) return { ok: true };

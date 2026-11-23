@@ -1,0 +1,44 @@
+---
+name: pull-ui-from-ds
+description: "Build or change Dristi UI using the pinned Pucar DS: inspect relevant primitives, sync missing or drifting components, compose behavior, and verify the result."
+---
+
+# Build from the Pucar DS
+
+1. Confirm the owner explicitly requested implementation. Read the finalized UX
+   agreement when a UX stage occurred; an explicit direct correction can use the
+   current request as its agreement. Read relevant implementation. If a governing
+   decision is missing, request it from the coordinator instead of reconstructing it
+   from feature history. Follow
+   `.agents/policies/pucar-design-system.md`: verify the DS pin before relying on it.
+   Every build reads the full DS `ACCESSIBILITY.md`, Laws, design principles,
+   applicable rules, and affected primitive source; preserve the pin.
+2. Load `ui-craft`. Reuse unchanged guidance already read in this task; read detailed
+   references only for the surfaces or interactions being changed.
+3. Sync only missing or drifting controls with `npm run sync:ui -- <component>`.
+   Coordinate shared sync operations. Never hand-write or modify a synced primitive.
+4. Get data through the feature's store, hook or `getRepository()`; add new data in the
+   contract and the sandbox per `.agents/policies/data-seam.md`, never in the screen. A
+   new feature starts with `npm run new:data -- <feature>` (its own commit); an older
+   feature with no `lib/<feature>/data/` moves its data in a PR of its own first
+   (`npm run new:data -- <feature> --move`; stop and report if that move isn't merged).
+   Contract methods never take the signed-in person's id. Components below the screen
+   take data and callbacks as props.
+5. Compose the agreed behavior in assigned app files. Include relevant loading, empty,
+   errors, "not connected yet" (shown as itself, `isNotIntegratedError`, also from
+   another feature the screen reads), partial data, language/long-label, responsive,
+   keyboard, and recovery states. A visual-only request adds no new information; suggest
+   additions instead.
+   Trace displayed facts to current product sources or real fields; do not invent
+   system actions or user roles. Historical proposals are not required inputs.
+   Match each important region's DS text role to the finalized design or direct
+   request, including rendered size and line-height; token validity alone does not
+   establish correct hierarchy. Explain a choice when the DS role is ambiguous.
+6. Verify using `.agents/policies/verification.md` and the craft render checklist.
+   Return changed files, acceptance results, commands/evidence, necessary deviations,
+   and remaining issues. The coordinator performs a separate review pass or invokes a
+   tagged reviewer, then records decisions/results through `document-ui-feature`.
+
+If a DS capability is missing, first inspect supported variants and composition. Report
+a genuine gap and recommend a supported approach; continue unaffected work. Do not
+silently change behavior or introduce a local primitive copy to avoid the issue.

@@ -1,24 +1,73 @@
 /**
- * Repository access for the filing screens. `getRepository()` is the one place that
- * chooses the implementation — swap it for an HTTP-backed one when the backend lands.
+ * Repository access for the filing screens. Two contracts, each chosen in one place, lazily
+ * (server code imports this module for its helpers, such as `newId`):
+ *
+ *   - `getRepository()`: drafts and file bytes (`FilingRepository`). They stay in this
+ *     browser (`indexeddb.ts`) in every build for now, whatever `NEXT_PUBLIC_DATA_SOURCE`
+ *     says: see below.
+ *   - `getCaseFilingRepository()`: the backend case each step saves to
+ *     (`CaseFilingRepository`): the sandbox (`indexeddb.ts`) or the backend (`http.ts`), by
+ *     `caseFilingSource`.
  */
 
-import { IndexedDbFilingRepository } from "./indexeddb";
-import type { FilingRepository, StoredFile } from "./repository";
+import {
+  AUTH_SOURCE,
+  DATA_SOURCE,
+  browserOnly,
+  selectRepository,
+  type DataSource,
+  type OnlyContract,
+} from "@/lib/data/source";
+
+import { createCaseFilingApi } from "./http";
+import { IndexedDbCaseFilingRepository, IndexedDbFilingRepository } from "./indexeddb";
+import type { CaseFilingRepository, FilingRepository, StoredFile } from "./repository";
 import type { FilingDraft, StoredFileRef } from "../types";
 
-export type { FilingRepository, StoredFile } from "./repository";
+export type { CaseFilingRepository, FilingRepository, StoredFile } from "./repository";
 
-let instance: FilingRepository | null = null;
+/**
+ * Drafts stay in this browser in every build, as they did before the data switch. The
+ * backend has no draft endpoints yet, and the browser copy is the real working copy that
+ * each filing step saves to the backend case from, so an `api` build needs it too. Only
+ * the demo content in it (sample drafts, demo scrutiny returns) is sandbox-only.
+ *
+ * When drafts get a backend (#52), this follows `NEXT_PUBLIC_DATA_SOURCE` again through
+ * `repositoryFor`, with `HttpFilingRepository` (`http.ts`) for `api` builds.
+ */
+const browserDrafts = browserOnly("filing", () => new IndexedDbFilingRepository());
+let drafts: FilingRepository | null = null;
 let active: FilingRepository | null = null;
 
 export function getRepository(): FilingRepository {
-  if (active) return active;
-  if (typeof window === "undefined") {
-    throw new Error("The filing repository is browser-only (IndexedDB).");
-  }
-  if (!instance) instance = new IndexedDbFilingRepository();
-  return instance;
+  return active ?? (drafts ??= browserDrafts());
+}
+
+/**
+ * Where the backend case lives. Its calls need a real session, so it is the sandbox only
+ * when sign-in is in the sandbox too (`npm run dev:sandbox`, previews). Every other build
+ * keeps drafts in the browser and saves cases to the backend.
+ */
+export function caseFilingSource(data: DataSource, auth: DataSource): DataSource {
+  return data === "sandbox" && auth === "sandbox" ? "sandbox" : "api";
+}
+
+let caseFiling: CaseFilingRepository | null = null;
+
+export function getCaseFilingRepository(): CaseFilingRepository {
+  caseFiling ??= selectRepository<CaseFilingRepository>(
+    caseFilingSource(DATA_SOURCE, AUTH_SOURCE),
+    "caseFiling",
+    {
+      sandbox: browserOnly("caseFiling", () => new IndexedDbCaseFilingRepository()),
+      http: () =>
+        createCaseFilingApi() satisfies OnlyContract<
+          ReturnType<typeof createCaseFilingApi>,
+          CaseFilingRepository
+        >,
+    },
+  );
+  return caseFiling;
 }
 
 /**

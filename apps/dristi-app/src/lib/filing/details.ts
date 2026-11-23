@@ -4,10 +4,12 @@
  *
  * Case details are "sections": a whole section object is PUT to
  * `/cases/{id}/details/{section}` and replaces what was stored, so saving is idempotent and
- * needs no per-row id (unlike evidence). The backend rejects a section that is missing a
- * required field, so a section is sent only once its `*Ready` check passes; a half-filled
- * one stays the browser's working copy. These are pure functions; the backend call lives in
- * `data/cases-api.ts`.
+ * needs no per-row id (unlike evidence). The backend accepts a partly filled section — on
+ * save it drops the required-field rules and strips empty values — so each builder sends
+ * only the fields that are filled and well-formed, and returns `null` only when nothing
+ * worth saving has been entered yet (so an untouched section is not PUT). Completeness is
+ * enforced by `POST /cases/{id}/validate` before signing. These are pure functions; the
+ * backend call lives in `data/cases-api.ts`.
  */
 
 import { IFSC_PATTERN } from "./lookups";
@@ -43,110 +45,69 @@ export function richTextHasContent(html: string): boolean {
 }
 
 /**
- * Whether the jurisdiction & limitation section has every field the backend requires.
- * `causeDate` is the effective cause-of-action date (typed, or derived from the notice
- * service date — see `limitationView`), not the raw `jurisdiction.causeDate`. `late` is a
- * filing past the one-month limit, which the backend refuses without a condonation reason.
- */
-export function jurisdictionReady(
-  j: Jurisdiction,
-  causeDate: string,
-  filingDate: string,
-  late = false,
-): boolean {
-  // Both the cause-of-action and complaint filing dates are required by the section.
-  if (!causeDate || !filingDate) return false;
-  if (late && !j.condonationReason.trim()) return false;
-  // When another complaint is pending, the backend requires at least one with a court and
-  // case number, so every listed complaint must be filled in before the section can save.
-  if (j.otherPending === "yes" && otherComplaintsBody(j).length !== j.otherCases.length)
-    return false;
-  if (j.otherPending === "yes" && otherComplaintsBody(j).length === 0) return false;
-  // The police station of the branch that grounds jurisdiction is always required: the
-  // payee's when they deposited the cheque, otherwise the drawer's.
-  const policeStation = j.deposited === "yes" ? j.payeePolice : j.drawerPolice;
-  if (!policeStation.trim()) return false;
-  // When the payee deposited the cheque, jurisdiction follows their collecting branch, so
-  // its bank details are required too.
-  if (j.deposited === "yes") {
-    return (
-      IFSC_PATTERN.test(j.ifsc.trim().toUpperCase()) &&
-      !!j.payeeBankName.trim() &&
-      !!j.payeeBankBranch.trim()
-    );
-  }
-  return true;
-}
-
-/**
- * Build the `jurisdiction_limitation` section body, or `null` when it is not complete.
+ * Build the `jurisdiction_limitation` section body, sending only the fields that are filled
+ * and well-formed, or `null` when nothing beyond the default toggles has been entered.
  *
- * The police station is split by whose branch grounds jurisdiction: the payee's collecting
- * branch when they deposited the cheque (sent with their bank details), otherwise the
- * drawer's. The condonation reason is sent only when the complaint is filed late, since that
- * is the only time the backend's completeness check requires it. When another complaint is
- * pending, each one's court and case number is sent in `other_complaints`.
+ * `causeDate` is the effective cause-of-action date (typed, or derived from the notice
+ * service date — see `limitationView`), not the raw `jurisdiction.causeDate`. The police
+ * station is split by whose branch grounds jurisdiction: the payee's collecting branch when
+ * they deposited the cheque (sent with their bank details), otherwise the drawer's. When
+ * another complaint is pending, each complete one's court and case number is sent in
+ * `other_complaints` (never an empty array, which the backend's `minItems` would reject).
+ * The condonation reason is sent whenever it is written; the backend requires it only for a
+ * late filing, which `validate` checks before signing.
  */
 export function jurisdictionSectionBody(
   j: Jurisdiction,
   causeDate: string,
   filingDate: string,
-  late: boolean,
 ): DetailsSectionBody | null {
-  if (!jurisdictionReady(j, causeDate, filingDate, late)) return null;
   const deposited = j.deposited === "yes";
   const pending = j.otherPending === "yes";
+  const complaints = otherComplaintsBody(j);
   const body: DetailsSectionBody = {
     cheque_deposited_by_payee: deposited,
     other_complaints_pending: pending,
-    cause_of_action_date: causeDate,
-    complaint_filing_date: filingDate,
   };
+  if (causeDate) body.cause_of_action_date = causeDate;
+  if (filingDate) body.complaint_filing_date = filingDate;
   if (deposited) {
-    body.payee_ifsc_code = j.ifsc.trim().toUpperCase();
-    body.payee_bank_name = j.payeeBankName.trim();
-    body.payee_bank_branch = j.payeeBankBranch.trim();
-    body.payee_bank_police_station = j.payeePolice.trim();
-  } else {
+    const ifsc = j.ifsc.trim().toUpperCase();
+    if (IFSC_PATTERN.test(ifsc)) body.payee_ifsc_code = ifsc;
+    if (j.payeeBankName.trim()) body.payee_bank_name = j.payeeBankName.trim();
+    if (j.payeeBankBranch.trim()) body.payee_bank_branch = j.payeeBankBranch.trim();
+    if (j.payeePolice.trim()) body.payee_bank_police_station = j.payeePolice.trim();
+  } else if (j.drawerPolice.trim()) {
     body.drawer_bank_police_station = j.drawerPolice.trim();
   }
-  if (pending) body.other_complaints = otherComplaintsBody(j);
-  if (late && j.condonationReason.trim()) body.condonation_reason = j.condonationReason.trim();
-  return body;
+  if (pending && complaints.length) body.other_complaints = complaints;
+  if (j.condonationReason.trim()) body.condonation_reason = j.condonationReason.trim();
+  // Only the default toggles were set: leave the section unsaved until something is filled.
+  return Object.keys(body).length > 2 ? body : null;
 }
 
 /** The jurisdiction section body for a draft, resolving the effective cause-of-action date. */
 export function jurisdictionDetails(draft: FilingDraft): DetailsSectionBody | null {
   const limitation = limitationView(draft);
-  return jurisdictionSectionBody(
-    draft.jurisdiction,
-    limitation.causeDate,
-    limitation.filingDate,
-    limitation.overBy > 0,
-  );
-}
-
-/** Whether the ADR/prayer section has the one field the backend requires: a final relief. */
-export function adrPrayerReady(a: AdrPrayer): boolean {
-  return richTextHasContent(a.finalRelief);
+  return jurisdictionSectionBody(draft.jurisdiction, limitation.causeDate, limitation.filingDate);
 }
 
 /**
- * Build the `adr_other_prayer` section body, or `null` when the final relief is empty.
+ * Build the `adr_other_prayer` section body, sending only what is filled, or `null` when
+ * nothing has been chosen or written (just the default `yes` ADR preference).
  *
  * `adr_preference` is an optional `YES` / `NO` / `MAYBE` enum on the backend; the design's
- * three choices map one-to-one, so the uppercased choice is always sent. The optional
- * rich-text fields are sent only when they have content; `other_details`, `interim_relief`
- * and `final_relief` are stored as sent and must be sanitised wherever they are rendered.
+ * three choices map one-to-one, so the chosen one is uppercased. The rich-text fields are
+ * sent only when they have real content; `other_details`, `interim_relief` and
+ * `final_relief` are stored as sent and must be sanitised wherever they are rendered.
  */
 export function adrPrayerSectionBody(a: AdrPrayer): DetailsSectionBody | null {
-  if (!adrPrayerReady(a)) return null;
-  const body: DetailsSectionBody = {
-    final_relief: a.finalRelief,
-    adr_preference: a.adr.toUpperCase(),
-  };
+  const body: DetailsSectionBody = { adr_preference: a.adr.toUpperCase() };
+  if (richTextHasContent(a.finalRelief)) body.final_relief = a.finalRelief;
   if (richTextHasContent(a.otherDetails)) body.other_details = a.otherDetails;
   if (richTextHasContent(a.interimRelief)) body.interim_relief = a.interimRelief;
+  // Nothing written and the preference left at its default: leave the section unsaved.
+  if (Object.keys(body).length === 1 && a.adr === "yes") return null;
   return body;
 }
 

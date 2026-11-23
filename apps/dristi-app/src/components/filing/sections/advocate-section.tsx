@@ -18,12 +18,10 @@ import * as React from "react";
 import Link from "next/link";
 import { CheckIcon, ChevronDownIcon, PlusIcon, UserRoundIcon } from "lucide-react";
 
+import { advocateAddedElsewhere } from "@/lib/filing/advocates";
 import { blankAdvocate } from "@/lib/filing/blank";
-import {
-  ADVOCATE_SEARCH_MIN_LENGTH,
-  caseFilingApi,
-  type FoundAdvocate,
-} from "@/lib/filing/data/cases-api";
+import { getCaseFilingRepository } from "@/lib/filing/data";
+import { ADVOCATE_SEARCH_MIN_LENGTH, type FoundAdvocate } from "@/lib/filing/data/cases-api";
 import { useProfile } from "@/lib/filing/profile";
 import {
   complainantChoices,
@@ -83,6 +81,10 @@ export function AdvocateSection() {
   );
   const allInPerson = draft.complainants.length > 0 && represented.length === 0;
 
+  /** One row covers all of an advocate's complainants, so a second row for them is not offered. */
+  const addedElsewhere = (rowId: string, adv: FoundAdvocate) =>
+    advocateAddedElsewhere(advocates, rowId, { advocateId: adv.id, barNumber: adv.barNumber });
+
   /**
    * The source rail is a column beside the form from `xl` up, so it starts expanded
    * there as in the demo; collapsed, it stays in the layout as a strip. Below that it
@@ -104,7 +106,7 @@ export function AdvocateSection() {
     const controller = new AbortController();
     latestSearch.current = controller;
     try {
-      const rows = await caseFilingApi.searchAdvocates(query, controller.signal);
+      const rows = await getCaseFilingRepository().searchAdvocates(query, controller.signal);
       if (controller.signal.aborted) return [];
       setRegister(rows);
       setSearchFailed(false);
@@ -150,14 +152,23 @@ export function AdvocateSection() {
   /**
    * Put the search's exact bar-number match in a row, since only the search gives the id
    * that puts an advocate on the case; without one, the results are left open to pick from.
+   * A match already on another row is not taken: the open results show it as added.
    */
   const takeBarNumberMatch = React.useCallback(
     (rowId: string, barNumber: string, rows: FoundAdvocate[]) => {
       const match = rows.find((r) => r.barNumber.toUpperCase() === barNumber.toUpperCase());
-      setQuery(rowId, match ? "" : barNumber);
-      if (match) choose(rowId, match);
+      const usable =
+        match &&
+        !advocateAddedElsewhere(advocates, rowId, {
+          advocateId: match.id,
+          barNumber: match.barNumber,
+        })
+          ? match
+          : undefined;
+      setQuery(rowId, usable ? "" : barNumber);
+      if (usable) choose(rowId, usable);
     },
-    [choose],
+    [advocates, choose],
   );
 
   /** The signed-in advocate filling in their own row. */
@@ -179,7 +190,7 @@ export function AdvocateSection() {
     const row = draft.advocates.find((a) => !a.advocateId && a.barNumber.trim());
     if (!row) return;
     const barNumber = row.barNumber.trim();
-    caseFilingApi
+    getCaseFilingRepository()
       .searchAdvocates(barNumber)
       .then((rows) => takeBarNumberMatch(row.id, barNumber, rows))
       .catch(() => setQuery(row.id, barNumber));
@@ -424,19 +435,27 @@ export function AdvocateSection() {
                         }}
                         itemKey={(item) => (item as FoundAdvocate).id}
                         itemLabel={(item) => (item as FoundAdvocate).name}
+                        itemDisabled={(item) => addedElsewhere(a.id, item as FoundAdvocate)}
                         renderItem={(item) => {
                           const adv = item as FoundAdvocate;
                           return (
-                            <span className="flex min-w-0 flex-col">
-                              <span className="truncate font-medium">{adv.name}</span>
-                              <span className="truncate text-caption text-muted-foreground">
-                                {/* A combobox row is an option — no control nested inside it. */}
-                                <Identifier
-                                  value={adv.barNumber}
-                                  label={t("advocateSection_barRegistration")}
-                                  copyable={false}
-                                />
+                            <span className="flex w-full min-w-0 items-center gap-3">
+                              <span className="flex min-w-0 flex-col">
+                                <span className="truncate font-medium">{adv.name}</span>
+                                <span className="truncate text-caption text-muted-foreground">
+                                  {/* A combobox row is an option — no control nested inside it. */}
+                                  <Identifier
+                                    value={adv.barNumber}
+                                    label={t("advocateSection_barRegistration")}
+                                    copyable={false}
+                                  />
+                                </span>
                               </span>
+                              {addedElsewhere(a.id, adv) ? (
+                                <span className="ml-auto shrink-0 text-caption text-muted-foreground">
+                                  {t("advocateSection_alreadyAdded")}
+                                </span>
+                              ) : null}
                             </span>
                           );
                         }}

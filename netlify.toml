@@ -1,0 +1,32 @@
+# Netlify build for the Dristi app: the design-review site and PR previews.
+#
+# Next.js 16 (app router) inside an npm-workspaces monorepo. The base directory
+# stays at the repo root so the workspace install resolves. The app builds without
+# the design-system clone (`npm run setup:ds` is opt-in), so the build needs nothing
+# else.
+#
+# Most routes are server-rendered on demand, so this is not a static export —
+# the Next.js runtime plugin below is required.
+
+[build]
+  command = "npm run build"
+  publish = "apps/dristi-app/.next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Public project ID for the FasterFixes feedback widget — inlined into the
+  # client bundle by design, so it is not a secret. Kept here so the deploy
+  # works without a manual dashboard step. Values in this file override Netlify's
+  # env settings, so change it here to point a site at a different project, or set
+  # it to an empty value to ship a build with no widget at all. See
+  # docs/feedback-widget.md.
+  NEXT_PUBLIC_FASTERFIXES_PROJECT_ID = "proj_34da4857dae6d8831cbd098f"
+  # The design-review site runs without a backend: every screen reads the in-browser
+  # sandbox (lib/data/source.ts), and sign-in follows it (any 6-digit code; demo numbers
+  # in lib/auth/sandbox.ts). Values here override Netlify's env settings, so to point a
+  # site at a backend, set these to "api" in this file and API_BASE_URL in Netlify.
+  NEXT_PUBLIC_DATA_SOURCE = "sandbox"
+  NEXT_PUBLIC_AUTH_SOURCE = "sandbox"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

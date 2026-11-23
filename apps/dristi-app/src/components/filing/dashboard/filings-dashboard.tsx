@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { UnplugIcon } from "lucide-react";
 
 import { StatusLine } from "@/components/feedback";
 
@@ -84,7 +85,7 @@ export function FilingsDashboard() {
   const { batch: latestBatch, needAction } = useLatestBatch();
   const mounted = useMounted();
   const { profile } = useProfile();
-  const { ready, error, readAt, drafts, discard, reload } = useDrafts();
+  const { ready, error, notConnected, readAt, drafts, discard, reload } = useDrafts();
   const { tasks, cases: taskCases } = useTasks();
   // The drafts awaiting a discard confirmation — one from a row's bin, several from
   // the selection. Empty means the dialog is closed.
@@ -120,7 +121,16 @@ export function FilingsDashboard() {
         <p className={PAGE_SUBTITLE}>{t("filingsDashboard_startANewFilingImportMany")}</p>
       </header>
 
-      {error ? <StatusLine tone="error">{error}</StatusLine> : null}
+      {/* Not connected is a known state, not a failure: neutral (AGENTS.md, Data). */}
+      {error ? (
+        notConnected ? (
+          <StatusLine tone="neutral" icon={UnplugIcon}>
+            {error}
+          </StatusLine>
+        ) : (
+          <StatusLine tone="error">{error}</StatusLine>
+        )
+      ) : null}
 
       <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
         <StartFilingCard />

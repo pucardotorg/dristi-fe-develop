@@ -1,24 +1,68 @@
 /**
- * Repository access for the filing screens. `getRepository()` is the one place that
- * chooses the implementation — swap it for an HTTP-backed one when the backend lands.
+ * Repository access for the filing screens. Two contracts, each chosen in one place, lazily
+ * (server code imports this module for its helpers, such as `newId`):
+ *
+ *   - `getRepository()`: drafts and file bytes (`FilingRepository`), by `NEXT_PUBLIC_DATA_SOURCE`
+ *     (`lib/data/source.ts`): the in-browser sandbox (`indexeddb.ts`) or the backend
+ *     (`http.ts`).
+ *   - `getCaseFilingRepository()`: the backend case each step saves to
+ *     (`CaseFilingRepository`): the sandbox (`indexeddb.ts`) or the backend (`http.ts`), by
+ *     `caseFilingSource`.
  */
 
-import { IndexedDbFilingRepository } from "./indexeddb";
-import type { FilingRepository, StoredFile } from "./repository";
+import {
+  AUTH_SOURCE,
+  DATA_SOURCE,
+  browserOnly,
+  repositoryFor,
+  selectRepository,
+  type DataSource,
+  type OnlyContract,
+} from "@/lib/data/source";
+
+import { HttpFilingRepository, createCaseFilingApi } from "./http";
+import { IndexedDbCaseFilingRepository, IndexedDbFilingRepository } from "./indexeddb";
+import type { CaseFilingRepository, FilingRepository, StoredFile } from "./repository";
 import type { FilingDraft, StoredFileRef } from "../types";
 
-export type { FilingRepository, StoredFile } from "./repository";
+export type { CaseFilingRepository, FilingRepository, StoredFile } from "./repository";
 
-let instance: FilingRepository | null = null;
+const chosen = repositoryFor<FilingRepository>("filing", {
+  sandbox: browserOnly("filing", () => new IndexedDbFilingRepository()),
+  http: () =>
+    new HttpFilingRepository() satisfies OnlyContract<HttpFilingRepository, FilingRepository>,
+});
 let active: FilingRepository | null = null;
 
 export function getRepository(): FilingRepository {
-  if (active) return active;
-  if (typeof window === "undefined") {
-    throw new Error("The filing repository is browser-only (IndexedDB).");
-  }
-  if (!instance) instance = new IndexedDbFilingRepository();
-  return instance;
+  return active ?? chosen();
+}
+
+/**
+ * Where the backend case lives. Its calls need a real session, so it is the sandbox only
+ * when sign-in is in the sandbox too (`npm run dev:sandbox`, previews). `npm run dev` and
+ * the staging image keep sandbox drafts with real sign-in, and save cases to the backend.
+ */
+export function caseFilingSource(data: DataSource, auth: DataSource): DataSource {
+  return data === "sandbox" && auth === "sandbox" ? "sandbox" : "api";
+}
+
+let caseFiling: CaseFilingRepository | null = null;
+
+export function getCaseFilingRepository(): CaseFilingRepository {
+  caseFiling ??= selectRepository<CaseFilingRepository>(
+    caseFilingSource(DATA_SOURCE, AUTH_SOURCE),
+    "caseFiling",
+    {
+      sandbox: browserOnly("caseFiling", () => new IndexedDbCaseFilingRepository()),
+      http: () =>
+        createCaseFilingApi() satisfies OnlyContract<
+          ReturnType<typeof createCaseFilingApi>,
+          CaseFilingRepository
+        >,
+    },
+  );
+  return caseFiling;
 }
 
 /**

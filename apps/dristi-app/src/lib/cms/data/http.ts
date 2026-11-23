@@ -1,17 +1,20 @@
 /**
- * The CMS seam against the DRISTI backend.
+ * The CMS repository against the DRISTI backend. Engineering owns this file.
  *
- *   getCmsPage   GET /cms/pages/slug/{slug}   → one published content page
+ *   getPage   GET /cms/pages/slug/{slug}   → one published content page
  */
 
 import { api } from "@/lib/api";
 
 import { toCmsPage, type CmsPageResponse } from "../cms-page";
 import type { CmsPage, CmsSlug } from "../types";
+import type { CmsRepository } from "./repository";
 
-export async function getCmsPage(slug: CmsSlug, signal?: AbortSignal): Promise<CmsPage> {
-  const response = await api.get<CmsPageResponse>(`cms/pages/slug/${encodeURIComponent(slug)}`, {
-    signal,
-  });
-  return toCmsPage(response);
+export class HttpCmsRepository implements CmsRepository {
+  async getPage(slug: CmsSlug, signal?: AbortSignal): Promise<CmsPage> {
+    const response = await api.get<CmsPageResponse>(`cms/pages/slug/${encodeURIComponent(slug)}`, {
+      signal,
+    });
+    return toCmsPage(response);
+  }
 }

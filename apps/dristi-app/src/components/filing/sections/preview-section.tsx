@@ -24,7 +24,8 @@ import { joinDot } from "@/lib/filing/format";
 import { CASE_TYPE, COURT } from "@/lib/filing/options";
 import { useProfile } from "@/lib/filing/profile";
 import { sectionComplete, signatories } from "@/lib/filing/selectors";
-import { caseFilingApi, caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
+import { getCaseFilingRepository } from "@/lib/filing/data";
+import { caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
 import { getStep, neighbours, type StepId } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import type { FilingDraft } from "@/lib/filing/types";
@@ -507,7 +508,7 @@ export function PreviewSection() {
     setValidating(true);
     setValidateError(null);
     try {
-      const { isValid, errors } = await caseFilingApi.validateCase(caseId);
+      const { isValid, errors } = await getCaseFilingRepository().validateCase(caseId);
       if (isValid) {
         if (continueHref) router.push(continueHref);
         return;

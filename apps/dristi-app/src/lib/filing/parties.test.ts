@@ -257,6 +257,47 @@ describe("accusedBodies", () => {
     assert.equal(patchFor(body).contact_details_unknown_declared, false);
   });
 
+  it("declares an institution's contacts unknown on the institution, not the participant", () => {
+    const a = accused();
+    a.type = "institution";
+    a.contacts = [{ mobile: "", email: "" }];
+    a.contactUnknownDeclaredAt = "2026-11-03T10:00:00.000Z";
+    // Nobody summoned yet: the institution alone.
+    const [body] = accusedBodies(a);
+    assert.equal(body.institution?.contact_details_unknown_declared, true);
+    // Never on the participant, which has no person for the declaration to belong to.
+    assert.equal("contact_details_unknown_declared" in body, false);
+    // The PATCH carries it in institution_contacts, and nothing at the participant level.
+    const patch = patchFor(body);
+    assert.equal(patch.institution_contacts?.contact_details_unknown_declared, true);
+    assert.equal("contact_details_unknown_declared" in patch, false);
+    assert.equal("contact_details_unknown_declared" in (patch.institution ?? {}), false);
+  });
+
+  it("withdraws an institution's declaration in institution_contacts once a contact is added", () => {
+    const a = accused();
+    a.type = "institution";
+    a.contacts = [{ mobile: "9000000009", email: "" }];
+    a.contactUnknownDeclaredAt = "2026-11-03T10:00:00.000Z";
+    const [body] = accusedBodies(a);
+    assert.equal("contact_details_unknown_declared" in (body.institution ?? {}), false);
+    assert.equal(patchFor(body).institution_contacts?.contact_details_unknown_declared, false);
+  });
+
+  it("declares both the institution's and a summoned person's contacts unknown", () => {
+    const a = accused();
+    a.type = "institution";
+    a.contacts = [{ mobile: "", email: "" }];
+    a.reps = [{ ...blankRepresentative(), name: "A", designation: "Director" }];
+    a.contactUnknownDeclaredAt = "2026-11-03T10:00:00.000Z";
+    const [body] = accusedBodies(a);
+    assert.equal(body.institution?.contact_details_unknown_declared, true);
+    assert.equal(body.contact_details_unknown_declared, true);
+    const patch = patchFor(body);
+    assert.equal(patch.institution_contacts?.contact_details_unknown_declared, true);
+    assert.equal(patch.contact_details_unknown_declared, true);
+  });
+
   it("sends the declaration for every person summoned for an institution", () => {
     const a = accused();
     a.type = "institution";

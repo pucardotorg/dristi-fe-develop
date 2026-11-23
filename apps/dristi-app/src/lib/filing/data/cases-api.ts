@@ -169,6 +169,13 @@ export type InstitutionInput = ContactLists & {
    * PAN, a CIN or this, or the backend refuses it (400).
    */
   pan_cin_skip_declared?: true;
+  /**
+   * Accused institution only: the filer declared they know no phone or email of the
+   * institution itself (PRD ACC-6/7). It belongs to the institution, not the summoned
+   * person, so the backend takes it here — not at the participant level, where it is the
+   * person's own. Sent only while the institution has none.
+   */
+  contact_details_unknown_declared?: true;
 };
 
 /**
@@ -260,8 +267,13 @@ export type ParticipantPatch = ContactLists & {
    * CIN names, creating one when there is none. Sent only when the company itself changed.
    */
   institution?: Omit<InstitutionInput, keyof ContactLists>;
-  /** Institution participants only: the company's own contact lists, without re-linking it. */
-  institution_contacts?: Required<ContactLists>;
+  /**
+   * Institution participants only: the company's own contact lists, without re-linking it,
+   * and — for an accused institution — whether its contacts are declared unknown. The
+   * declaration rides here rather than on the participant, whose own declaration is the
+   * summoned person's; `false` withdraws one made earlier.
+   */
+  institution_contacts?: Required<ContactLists> & { contact_details_unknown_declared?: boolean };
   /** Individual complainants and PoA holders only; `null` makes it the first address. */
   permanent_address?: Partial<AddressInput> | null;
   /** Complainants and accused only. */
@@ -305,7 +317,8 @@ export type ContactListsRead = {
 
 /**
  * The institution's row, with its own contacts on this case. PAN, CIN and the skip
- * declaration are `null` but for a complainant.
+ * declaration are `null` but for a complainant; the contacts-unknown declaration is `null`
+ * but for an accused.
  */
 export type InstitutionRead = ContactListsRead & {
   // Optional on a partly filled case; read back as "" for the form.
@@ -314,6 +327,8 @@ export type InstitutionRead = ContactListsRead & {
   pan: string | null;
   cin: string | null;
   pan_cin_skip_declared: boolean | null;
+  /** Whether the accused institution's own contacts are declared unknown (PRD ACC-6/7). */
+  contact_details_unknown_declared: boolean | null;
 };
 
 export type ParticipantRole = "COMPLAINANT" | "ACCUSED" | "WITNESS" | "POA_HOLDER";

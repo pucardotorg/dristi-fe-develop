@@ -392,10 +392,13 @@ function accusedFrom(group: ParticipantRead[], base: Accused): Accused {
     addresses: addresses.length ? addresses : [blankAddressBlock()],
     reps: inst ? (reps.length ? reps : [blankRepresentative()]) : base.reps,
     jurisdiction: first.resides_within_jurisdiction === false ? "no" : "yes",
-    // Recorded only on those summoned who give no phone or email (see `accusedBodies`).
-    contactUnknownDeclaredAt: group.some((p) => p.contact_details_unknown_declared)
-      ? (base.contactUnknownDeclaredAt ?? first.updated_at)
-      : null,
+    // The institution's own declaration rides on the institution; a person's, on the
+    // participant (see `accusedBodies`). Either standing means the accused was declared.
+    contactUnknownDeclaredAt:
+      inst?.contact_details_unknown_declared ||
+      group.some((p) => p.contact_details_unknown_declared)
+        ? (base.contactUnknownDeclaredAt ?? first.updated_at)
+        : null,
   };
 }
 

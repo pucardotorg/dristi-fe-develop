@@ -20,7 +20,9 @@ with the intake).
 A filing lives in two places, each behind its own contract and chosen in `data/index.ts`:
 
 - **The draft in this browser** (`getRepository()`): the working copy every step edits, and
-  the file bytes. It follows `NEXT_PUBLIC_DATA_SOURCE`.
+  the file bytes. It stays in this browser in every build, `api` included, until drafts get
+  a backend (#52). Only its demo content (sample drafts, demo scrutiny returns) is
+  sandbox-only.
 - **The backend case** (`getCaseFilingRepository()`): what each step saves as it closes and
   reads back as it opens. Its calls need a real session, so it is the sandbox
   (`SandboxCaseFiling` in `data/indexeddb.ts`, kept in IndexedDB `dristi-efiling-cases`)

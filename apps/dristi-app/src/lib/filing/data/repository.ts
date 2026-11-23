@@ -7,7 +7,8 @@
  *   - `FilingRepository`: what the screens keep in this browser, drafts (the whole
  *     `FilingDraft`) and uploaded files (bytes + metadata). It is the working copy of a
  *     draft while sections move to the backend case one by one; it goes once the backend
- *     holds them all. `getRepository()` picks by `NEXT_PUBLIC_DATA_SOURCE`.
+ *     holds them all. `getRepository()` keeps it in this browser in every build until
+ *     drafts get a backend (#52).
  *   - `CaseFilingRepository`: the backend case behind a filing (dristi-be "Case Filing
  *     API"). The steps save to it as they close and read it back as they open.
  *     `getCaseFilingRepository()` picks by `caseFilingSource`. Its request and response

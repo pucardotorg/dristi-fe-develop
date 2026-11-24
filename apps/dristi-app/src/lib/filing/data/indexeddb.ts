@@ -270,6 +270,7 @@ function institutionRead(
     pan: complainant ? (i.pan ?? null) : null,
     cin: complainant ? (i.cin ?? null) : null,
     pan_cin_skip_declared: complainant ? !!i.pan_cin_skip_declared : null,
+    contact_details_unknown_declared: !!i.contact_details_unknown_declared,
     ...listsRead(lists),
   };
 }

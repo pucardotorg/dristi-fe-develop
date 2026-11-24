@@ -16,6 +16,8 @@ import { partyFieldCopy as copy } from "../content";
 const E_DUPLICATE_CONTACT = "E07033";
 /** The field does not apply to this participant — the form sent it in error. */
 const E_FIELD_NOT_APPLICABLE = "E07023";
+/** A value the backend will not take — here, a declaration made while a contact is present. */
+const E_INVALID = "E00001";
 
 /** "" for the first item, which reads as just "the mobile number"; "second " and so on after. */
 function nth(index: number | undefined): string {
@@ -54,15 +56,29 @@ function contactMessage(field: string, codes: readonly string[]): string | undef
 }
 
 const FIELD_MESSAGES: Record<string, string> = {
-  contact_details_unknown_declared: copy.contactUnknownWithContact,
   institution_id: copy.companyNotOnCase,
   institution_contacts: copy.companyContactsNotSaved,
 };
 
+/** The declaration, at the participant level or under `institution`/`institution_contacts`. */
+const DECLARATION_FIELD = /(^|\.)contact_details_unknown_declared$/;
+
+/**
+ * The message for a refused "contacts unknown" declaration. Only the `INVALID` refusal means
+ * a contact is present ("…but one is entered"); any other reason (the field sent at the wrong
+ * level, say) would make that message a lie, so the backend's own, accurate message is used.
+ */
+function declarationMessage(codes: readonly string[]): string | undefined {
+  return codes.includes(E_INVALID) ? copy.contactUnknownWithContact : undefined;
+}
+
 /** The form's message for the first party field the backend refused, if it is one we know. */
 export function partyFieldMessage(error: ApiError): string | undefined {
   for (const field of Object.keys(error.fieldErrors)) {
-    const message = contactMessage(field, error.fieldCodes[field] ?? []) ?? FIELD_MESSAGES[field];
+    const codes = error.fieldCodes[field] ?? [];
+    const message = DECLARATION_FIELD.test(field)
+      ? declarationMessage(codes)
+      : (contactMessage(field, codes) ?? FIELD_MESSAGES[field]);
     if (message) return message;
   }
   return undefined;

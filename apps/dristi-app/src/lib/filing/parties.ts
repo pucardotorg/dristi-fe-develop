@@ -260,18 +260,20 @@ export function accusedBodies(a: Accused): PartyInput[] {
   const emails = a.contacts.map((x) => x.email.trim());
   const addresses = addressBlocks(a.addresses);
   const declared = accusedContactUnknownDeclared(a);
-  /**
-   * The no-contact declaration goes only on a body that sends no phone or email at all,
-   * the company's or the person's own: the backend refuses it alongside either.
-   */
-  const base = (...sent: ContactLists[]) => ({
+  const common = {
     is_party_in_person: false,
     resides_within_jurisdiction: a.jurisdiction !== "no",
-    ...(declared && !sent.some((l) => l.mobile_numbers || l.email_addresses)
-      ? { contact_details_unknown_declared: true as const }
-      : {}),
     additional_details: {},
-  });
+  };
+  /**
+   * A summoned person's own no-contact declaration: it goes on the participant, against
+   * their own phone and email, and the backend refuses it alongside either. An institution's
+   * is separate — it rides inside `institution` (see below), against the institution's own.
+   */
+  const personDeclared = (own: ContactLists) =>
+    declared && !own.mobile_numbers && !own.email_addresses
+      ? { contact_details_unknown_declared: true as const }
+      : {};
 
   if (a.type === "individual") {
     const own = contactLists(
@@ -279,7 +281,9 @@ export function accusedBodies(a: Accused): PartyInput[] {
       emails,
       addresses,
     );
-    return [{ ...base(own), person: compact({ name: a.name.trim() }), ...own }];
+    return [
+      { ...common, ...personDeclared(own), person: compact({ name: a.name.trim() }), ...own },
+    ];
   }
 
   const institution = compact({
@@ -291,9 +295,15 @@ export function accusedBodies(a: Accused): PartyInput[] {
       emails,
       addresses,
     ),
+    // The institution's own declaration, carried on the institution so the backend accepts
+    // it even when nobody is summoned for it. `declared` already requires the accused to
+    // have no contact of its own, so it holds only while the institution sends none.
+    ...(declared ? { contact_details_unknown_declared: true as const } : {}),
   });
   const reps = a.reps.filter((r) => r.name.trim());
-  if (reps.length === 0) return [{ ...base(institution), institution }];
+  // Nobody summoned yet: the institution alone, with no participant-level declaration — it
+  // has no person for one to belong to.
+  if (reps.length === 0) return [{ ...common, institution }];
 
   return reps.map((rep) => {
     const own = contactLists(
@@ -302,7 +312,8 @@ export function accusedBodies(a: Accused): PartyInput[] {
       hasAddress(rep.addr) ? [address(rep.addr, rep.police)] : [],
     );
     return compact({
-      ...base(institution, own),
+      ...common,
+      ...personDeclared(own),
       institution,
       person: representative(rep),
       designation: rep.designation.trim(),
@@ -419,13 +430,23 @@ function institutionPatch(
   institution: InstitutionInput,
   before: InstitutionInput | undefined,
 ): Pick<ParticipantPatch, "institution" | "institution_contacts"> {
-  const split = ({ mobile_numbers, email_addresses, addresses, ...company }: InstitutionInput) => ({
+  const split = ({
+    mobile_numbers,
+    email_addresses,
+    addresses,
+    contact_details_unknown_declared,
+    ...company
+  }: InstitutionInput) => ({
     company,
     contacts: { mobile_numbers, email_addresses, addresses },
+    declared: !!contact_details_unknown_declared,
   });
-  const { company, contacts } = split(institution);
+  const { company, contacts, declared } = split(institution);
   return {
-    institution_contacts: listsPatch(contacts),
+    // Sent whole every time, so a declaration cleared once a contact is added is withdrawn
+    // (`false`) rather than silently kept. It rides here, never in `institution`, so the
+    // backend never sees it twice.
+    institution_contacts: { ...listsPatch(contacts), contact_details_unknown_declared: declared },
     ...(!before || !same(company, split(before).company) ? { institution: company } : {}),
   };
 }
@@ -461,11 +482,15 @@ export function patchFor(body: AnyPartyInput, before?: AnyPartyInput): Participa
     ...(body.institution ? institutionPatch(body.institution, previous?.institution) : {}),
     ...personPatch(body, previous, hasPermanentAddress),
     is_party_in_person: body.is_party_in_person,
-    // Accused only; `false` withdraws a declaration once a phone or email is added.
+    // Accused only. The participant-level declaration is the summoned person's own, so it is
+    // sent only with a person; `false` withdraws one once their phone or email is added. An
+    // institution with nobody summoned has none here — its own rides in `institution_contacts`.
     ...(body.resides_within_jurisdiction !== undefined
       ? {
           resides_within_jurisdiction: body.resides_within_jurisdiction,
-          contact_details_unknown_declared: !!body.contact_details_unknown_declared,
+          ...(body.person
+            ? { contact_details_unknown_declared: !!body.contact_details_unknown_declared }
+            : {}),
         }
       : // Complainant only; `null` withdraws one saved earlier, once they take an advocate.
         { party_in_person_affidavit: body.party_in_person_affidavit ?? null }),

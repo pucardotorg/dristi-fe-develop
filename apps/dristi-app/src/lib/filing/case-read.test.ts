@@ -165,6 +165,7 @@ describe("complainantsFromCase", () => {
             pan: "ABCDE1234F",
             cin: null,
             pan_cin_skip_declared: false,
+            contact_details_unknown_declared: null,
             mobile_numbers: ["0474 2233445"],
             email_addresses: ["office@kollamtraders.in"],
             addresses: [ADDRESS],
@@ -204,6 +205,7 @@ describe("complainantsFromCase", () => {
             pan: null,
             cin: null,
             pan_cin_skip_declared: true,
+            contact_details_unknown_declared: null,
             mobile_numbers: [],
             email_addresses: [],
             addresses: [ADDRESS],
@@ -352,6 +354,7 @@ describe("accusedFromCase", () => {
       pan: null,
       cin: null,
       pan_cin_skip_declared: null,
+      contact_details_unknown_declared: false,
       mobile_numbers: ["0474 2233445"],
       email_addresses: [],
       addresses: [{ ...ADDRESS, police_station: "Kollam East" }],
@@ -409,6 +412,20 @@ describe("accusedFromCase", () => {
     });
     const [a] = accusedFromCase(read, [local]).parties;
     assert.equal(a.contactUnknownDeclaredAt, "2026-11-01T09:00:00Z");
+  });
+
+  it("reads an accused institution's own contacts-unknown declaration back", () => {
+    const read = caseOf({
+      participants: companyRows().map((p) => ({
+        ...p,
+        mobile_numbers: [],
+        institution: p.institution
+          ? { ...p.institution, mobile_numbers: [], contact_details_unknown_declared: true }
+          : null,
+      })),
+    });
+    const [a] = accusedFromCase(read, []).parties;
+    assert.notEqual(a.contactUnknownDeclaredAt, null);
   });
 });
 

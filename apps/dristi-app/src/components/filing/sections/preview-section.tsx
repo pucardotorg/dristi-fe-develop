@@ -65,7 +65,6 @@ import { SectionNotice } from "@/components/filing/notices";
 import { CourtDocument } from "@/components/filing/sections/preview/court-document";
 import { ComplaintPdf } from "@/components/filing/sections/preview/complaint-pdf";
 import {
-  INTERIM_RELIEF_SUMMARY,
   NOT_PROVIDED,
   accusedSummaries,
   adrLabel,
@@ -74,9 +73,11 @@ import {
   chequeSummaries,
   complainantSummary,
   documentSummary,
-  finalReliefSummary,
+  finalReliefText,
+  interimReliefText,
   jurisdictionSummary,
   noticeSummary,
+  otherDetailsText,
   totalChequeText,
   witnessSummaries,
 } from "@/components/filing/sections/preview/derive";
@@ -322,8 +323,9 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
       step: "adr-prayer",
       fields: entered([
         { label: "Open to settlement (ADR)", value: adrLabel(draft) },
-        { label: "Interim relief", value: INTERIM_RELIEF_SUMMARY },
-        { label: "Final relief", value: finalReliefSummary(draft) },
+        { label: "Other details", value: otherDetailsText(draft) },
+        { label: "Interim relief", value: interimReliefText(draft) },
+        { label: "Final relief", value: finalReliefText(draft) },
       ]),
     },
     witnesses: {
@@ -765,8 +767,9 @@ export function PreviewSection() {
               <KeyValues
                 rows={[
                   { term: t("previewSection_openToSettlementAdr"), value: adrLabel(draft) },
-                  { term: t("previewSection_interimRelief"), value: INTERIM_RELIEF_SUMMARY },
-                  { term: t("previewSection_finalRelief"), value: finalReliefSummary(draft) },
+                  { term: t("previewSection_otherDetails"), value: otherDetailsText(draft) },
+                  { term: t("previewSection_interimRelief"), value: interimReliefText(draft) },
+                  { term: t("previewSection_finalRelief"), value: finalReliefText(draft) },
                 ]}
               />
             </FormCard>

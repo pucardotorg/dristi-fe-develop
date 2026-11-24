@@ -34,29 +34,40 @@ type Update = (recipe: (draft: FilingDraft) => void) => void;
 /**
  * Save one demand notice's evidence row; creates on first save, updates after. Resolves
  * to the row's id, which the draft may not hold yet.
+ *
+ * `createdIds` remembers a row's id the moment it is created, by the notice's local id — read
+ * before the `update` that writes it onto the draft has re-rendered. Autosave can fire a
+ * second save before that render, and without this it would create the row again (mirrors the
+ * parties' `lastSaved` map).
  */
-async function saveOneNotice(
+export type NoticeEvidenceIds = Map<string, string>;
+
+export async function saveOneNotice(
   caseId: string,
   draft: FilingDraft,
   index: number,
   update: Update,
+  createdIds: NoticeEvidenceIds,
+  api: Pick<typeof caseFilingApi, "addEvidence" | "updateEvidence"> = caseFilingApi,
 ): Promise<string | undefined> {
   const notice = draft.notices[index];
   const evidenceInfo = demandNoticeEvidenceInfo(notice);
   // `null` unlinks a scan that was removed; a new one is linked as it finishes uploading.
   const caseDocumentId = noticeSourceSlot(draft, index, "demand-notice")?.caseDocumentId ?? null;
 
-  if (notice.noticeEvidenceId) {
-    await caseFilingApi.updateEvidence(notice.noticeEvidenceId, { evidenceInfo, caseDocumentId });
-    return notice.noticeEvidenceId;
+  const existingId = notice.noticeEvidenceId ?? createdIds.get(notice.id);
+  if (existingId) {
+    await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
+    return existingId;
   }
   // An untouched notice carries only its default yes/no answers: add no empty row for it.
   if (!demandNoticeHasContent(notice) && caseDocumentId == null) return undefined;
-  const saved = await caseFilingApi.addEvidence(caseId, {
+  const saved = await api.addEvidence(caseId, {
     evidenceType: "LEGAL_DEMAND_NOTICE",
     evidenceInfo,
     caseDocumentId,
   });
+  createdIds.set(notice.id, saved.caseEvidenceId);
   update((d) => {
     const n = d.notices.find((x) => x.id === notice.id);
     if (n) n.noticeEvidenceId = saved.caseEvidenceId;
@@ -77,24 +88,32 @@ export function removeNoticeEvidence(notice: Pick<DemandNotice, "noticeEvidenceI
 }
 
 export function useDemandNoticeEvidence() {
-  const { draft, update, latest, flush } = useFiling();
+  const { update, latest, flush } = useFiling();
   const [saving, setSaving] = React.useState(false);
   useLoadFromCase((read, d) => {
     d.notices = noticesFromCase(read, d.notices);
   });
   const [error, setError] = React.useState<string | null>(null);
+  // Evidence ids created this session, kept across renders so a follow-up autosave sees them
+  // before the draft catches up (see `saveOneNotice`).
+  const createdIds = React.useRef<NoticeEvidenceIds>(new Map());
 
   /** Push every demand notice to the case, as filled in. `ok` is false on a failure. */
   const runSave = React.useCallback(async (): Promise<SaveResult> => {
-    const caseId = draft.caseId;
+    // Read the newest draft, not a render-old copy: an autosave fires right after an edit.
+    const current = latest();
+    const caseId = current.caseId;
     if (!caseId) return { ok: true };
     setSaving(true);
     setError(null);
     try {
       // In list order, so a notice keeps the same ordinal as its cheque on the backend.
       const savedAs = new Map<string, string | undefined>();
-      for (let i = 0; i < draft.notices.length; i += 1) {
-        savedAs.set(draft.notices[i].id, await saveOneNotice(caseId, draft, i, update));
+      for (let i = 0; i < current.notices.length; i += 1) {
+        savedAs.set(
+          current.notices[i].id,
+          await saveOneNotice(caseId, current, i, update, createdIds.current),
+        );
       }
       // Each notice's proof of dispatch, proof of delivery and reply was often uploaded
       // before the notice was on the case; the backend only counts them once linked.
@@ -110,20 +129,21 @@ export function useDemandNoticeEvidence() {
     } finally {
       setSaving(false);
     }
-  }, [draft, update, latest, flush]);
+  }, [update, latest, flush]);
 
-  // A notice's first save POSTs its row, so the engine runs one save at a time (no double
-  // POST before the id lands). The signature covers each notice's evidence and scan, plus
-  // the document set — a proof of dispatch/delivery/reply that finishes uploading must still
-  // get linked, and that change lives in `documents`, not on the notice.
+  // A notice's first save POSTs its row, so the engine runs one save at a time and
+  // `createdIds` carries the id across (no double POST before it lands). The signature covers
+  // each notice's evidence and scan, plus the document set — a proof of dispatch/delivery/
+  // reply that finishes uploading must still get linked, and that lives in `documents`.
   const save = useSerialSave(runSave, () => {
-    if (!draft.caseId) return null;
+    const current = latest();
+    if (!current.caseId) return null;
     return JSON.stringify({
-      notices: draft.notices.map((notice, i) => ({
+      notices: current.notices.map((notice, i) => ({
         info: demandNoticeEvidenceInfo(notice),
-        scan: noticeSourceSlot(draft, i, "demand-notice")?.caseDocumentId ?? null,
+        scan: noticeSourceSlot(current, i, "demand-notice")?.caseDocumentId ?? null,
       })),
-      documents: draft.documents,
+      documents: current.documents,
     });
   });
   const autosaveProps = onBlurAutosave(() => void save());

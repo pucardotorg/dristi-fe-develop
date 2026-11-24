@@ -34,21 +34,36 @@ type Update = (recipe: (draft: FilingDraft) => void) => void;
  * is now filled (so clearing a field clears it on the case too); a row is created only once
  * the cheque carries something — a well-formed field, or a linked scan — so an untouched
  * cheque adds no empty rows.
+ *
+ * `createdIds` remembers a row's id the moment it is created, by the cheque's local id —
+ * read before the `update` that writes it onto the draft has re-rendered. Autosave can fire a
+ * second save before that render, and without this it would not see the id yet and would
+ * create the row again (mirrors the parties' `lastSaved` map).
  */
-async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, update: Update) {
+export type ChequeEvidenceIds = Map<string, { cheque?: string; memo?: string }>;
+
+export async function saveOneCheque(
+  caseId: string,
+  draft: FilingDraft,
+  index: number,
+  update: Update,
+  createdIds: ChequeEvidenceIds,
+) {
   const cheque = draft.cheques[index];
 
   {
     const evidenceInfo = chequeEvidenceInfo(draft.cheques, index);
     const caseDocumentId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId ?? null;
-    if (cheque.chequeEvidenceId) {
-      await caseFilingApi.updateEvidence(cheque.chequeEvidenceId, { evidenceInfo, caseDocumentId });
+    const existingId = cheque.chequeEvidenceId ?? createdIds.get(cheque.id)?.cheque;
+    if (existingId) {
+      await caseFilingApi.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
     } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
       const saved = await caseFilingApi.addEvidence(caseId, {
         evidenceType: "CHEQUE",
         evidenceInfo,
         caseDocumentId,
       });
+      createdIds.set(cheque.id, { ...createdIds.get(cheque.id), cheque: saved.caseEvidenceId });
       update((d) => {
         const c = d.cheques.find((x) => x.id === cheque.id);
         if (c) c.chequeEvidenceId = saved.caseEvidenceId;
@@ -59,8 +74,9 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
   {
     const evidenceInfo = returnMemoEvidenceInfo(cheque);
     const caseDocumentId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
-    if (cheque.returnMemoEvidenceId) {
-      await caseFilingApi.updateEvidence(cheque.returnMemoEvidenceId, {
+    const existingId = cheque.returnMemoEvidenceId ?? createdIds.get(cheque.id)?.memo;
+    if (existingId) {
+      await caseFilingApi.updateEvidence(existingId, {
         evidenceInfo,
         caseDocumentId,
       });
@@ -70,6 +86,7 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
         evidenceInfo,
         caseDocumentId,
       });
+      createdIds.set(cheque.id, { ...createdIds.get(cheque.id), memo: saved.caseEvidenceId });
       update((d) => {
         const c = d.cheques.find((x) => x.id === cheque.id);
         if (c) c.returnMemoEvidenceId = saved.caseEvidenceId;
@@ -91,23 +108,28 @@ export function removeChequeEvidence(
 }
 
 export function useChequeEvidence() {
-  const { draft, update, flush } = useFiling();
+  const { update, latest, flush } = useFiling();
   const [saving, setSaving] = React.useState(false);
   useLoadFromCase((read, d) => {
     d.cheques = chequesFromCase(read, d.cheques);
   });
   const [error, setError] = React.useState<string | null>(null);
+  // Evidence ids created this session, kept across renders so a follow-up autosave sees them
+  // before the draft catches up (see `saveOneCheque`).
+  const createdIds = React.useRef<ChequeEvidenceIds>(new Map());
 
   /** Push every cheque and return memo to the case, as filled in. `ok` is false on a failure. */
   const runSave = React.useCallback(async (): Promise<SaveResult> => {
-    const caseId = draft.caseId;
+    // Read the newest draft, not a render-old copy: an autosave fires right after an edit.
+    const current = latest();
+    const caseId = current.caseId;
     if (!caseId) return { ok: true };
     setSaving(true);
     setError(null);
     try {
       // In list order, so the cheque and its memo keep the same ordinal on the backend.
-      for (let i = 0; i < draft.cheques.length; i += 1) {
-        await saveOneCheque(caseId, draft, i, update);
+      for (let i = 0; i < current.cheques.length; i += 1) {
+        await saveOneCheque(caseId, current, i, update, createdIds.current);
       }
       // Commit the stored evidence ids to the local draft before we navigate away.
       await flush();
@@ -119,20 +141,21 @@ export function useChequeEvidence() {
     } finally {
       setSaving(false);
     }
-  }, [draft, update, flush]);
+  }, [update, latest, flush]);
 
   // Each cheque's first save POSTs its CHEQUE and RETURN_MEMO rows; a second save in flight
-  // would POST them again before the id lands, so the engine runs one save at a time. The
-  // signature is exactly what `saveOneCheque` would send (its ids excluded), so clicking
-  // through the step without editing re-sends nothing.
+  // would POST them again before the id lands, so the engine runs one save at a time and
+  // `createdIds` carries the id across. The signature is exactly what `saveOneCheque` would
+  // send (its ids excluded), so clicking through the step without editing re-sends nothing.
   const save = useSerialSave(runSave, () => {
-    if (!draft.caseId) return null;
+    const current = latest();
+    if (!current.caseId) return null;
     return JSON.stringify(
-      draft.cheques.map((cheque, i) => ({
-        cheque: chequeEvidenceInfo(draft.cheques, i),
+      current.cheques.map((cheque, i) => ({
+        cheque: chequeEvidenceInfo(current.cheques, i),
         memo: returnMemoEvidenceInfo(cheque),
-        chequeDoc: chequeSourceSlot(draft, i, "cheque-front")?.caseDocumentId ?? null,
-        memoDoc: chequeSourceSlot(draft, i, "return-memo")?.caseDocumentId ?? null,
+        chequeDoc: chequeSourceSlot(current, i, "cheque-front")?.caseDocumentId ?? null,
+        memoDoc: chequeSourceSlot(current, i, "return-memo")?.caseDocumentId ?? null,
       })),
     );
   });

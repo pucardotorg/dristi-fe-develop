@@ -27,7 +27,7 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { notify, OutcomeAmount, OutcomeHeader, OutcomeSummary } from "@/components/feedback";
 import {
   DescriptionDetails,
@@ -51,7 +51,10 @@ import {
 
 import { appUrl } from "@/lib/config";
 import { signingRules } from "@/lib/filing/config";
-import { newCaseFileNumber, newPaymentRef } from "@/lib/filing/data";
+import { isApiError } from "@/lib/api";
+import { getCaseFilingRepository, newCaseFileNumber, newPaymentRef } from "@/lib/filing/data";
+import { RETURN_TO_DRAFT_REASON, signedSlots, voidedSlots } from "@/lib/filing/signing-package";
+import { useSigningPackage } from "@/lib/filing/use-signing-package";
 import { discardStoredFile } from "@/lib/filing/files";
 import { money, toLongDate } from "@/lib/filing/format";
 import {
@@ -443,6 +446,59 @@ export function SignSection() {
   const requested = sign.requestedAt !== null;
   const onPaper = sign.mode === "upload";
 
+  /*
+   * A filing saved on the backend case is signed there: "Continue to sign" froze the case
+   * and prepared the copy everyone signs, and Aadhaar e-sign signs that copy through C-DAC.
+   * The roster below is still the draft's; each slot whose backend signatories have all
+   * signed is marked signed here, so signatures made elsewhere (by another party, or on
+   * the return from C-DAC) show on arrival. A scrutiny correction stays the demo it is.
+   */
+  const caseEsign = !!draft.caseId && !returned && !filed;
+  const { state: packageState, clear: clearPackage } = useSigningPackage(
+    caseEsign ? draft.caseId : undefined,
+  );
+  const signingPackage = packageState.status === "ready" ? packageState.pkg : null;
+  const newlySignedKey = (signingPackage ? signedSlots(draft, signingPackage) : [])
+    .filter((slot) => !sign.signed[slot])
+    .join(" ");
+  // Aadhaar marks the package no longer has: the case was returned to draft and prepared
+  // again, so this round starts unsigned (and the question how to sign is asked again).
+  const voidedKey = (signingPackage ? voidedSlots(draft, signingPackage) : []).join(" ");
+  React.useEffect(() => {
+    if (!newlySignedKey && !voidedKey) return;
+    const at = new Date().toISOString();
+    update((d) => {
+      for (const slot of voidedKey ? voidedKey.split(" ") : []) delete d.sign.signed[slot];
+      if (newlySignedKey) {
+        // Signatures exist, so the complaint is out for e-signature, whoever sent it.
+        d.sign.mode = "digital";
+        d.sign.requestedAt ??= at;
+        for (const slot of newlySignedKey.split(" ")) {
+          d.sign.signed[slot] ??= { at, with: "aadhaar" };
+        }
+      } else if (Object.keys(d.sign.signed).length === 0) {
+        d.sign.requestedAt = null;
+      }
+    });
+  }, [newlySignedKey, voidedKey, update]);
+
+  /*
+   * Back from Aadhaar e-sign with the signature recorded (`?esign=signed`, set by the
+   * landing route): the signing window opens on its outcome, once, and the query is
+   * dropped so a reload does not announce it again.
+   */
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const [esignReturn] = React.useState(() => searchParams.get("esign") === "signed");
+  /** The window's outcome names the Aadhaar signature until it is first closed. */
+  const [returnOutcome, setReturnOutcome] = React.useState(esignReturn);
+  React.useEffect(() => {
+    if (!esignReturn) return;
+    setFlowStart("status");
+    setFlowOpen(true);
+    router.replace(pathname);
+  }, [esignReturn, pathname, router]);
+
   /** The bill, derived from this draft — see `feeBill` for what makes it specific. */
   // The selected state's schedule (`CourtSwitch`); Kerala's is the default.
   const courtFees = useCourt().profile.fees;
@@ -518,13 +574,51 @@ export function SignSection() {
    * other people are holding a task against this document, editing it makes them sign
    * something else. So the guard catches "asked but nobody has signed yet" too.
    */
+  /*
+   * A case frozen for signing refuses every edit on the backend, so going back to edit
+   * returns it to draft first: signatures cleared, the signing copy dropped. Nothing to
+   * lose (nobody asked, nobody signed) means nothing to ask; otherwise the question below
+   * is asked first. Refused while someone is mid-signature (E07039): the person stays.
+   */
+  const frozenOnBackend = caseEsign && !(packageState.status === "ready" && !packageState.pkg);
+  const returnCaseToDraft = React.useCallback(async (): Promise<boolean> => {
+    const caseId = draft.caseId;
+    if (!frozenOnBackend || !caseId) return true;
+    try {
+      await getCaseFilingRepository().returnToDraft(caseId, RETURN_TO_DRAFT_REASON);
+      // The package read on arrival is gone with the round. Kept, it would mark its
+      // signatures again the moment they are discarded, and the next visit would open on them.
+      clearPackage();
+      return true;
+    } catch (error) {
+      // E07004: not frozen after all (never was, or another tab returned it already).
+      if (isApiError(error) && error.hasCode("E07004")) {
+        clearPackage();
+        return true;
+      }
+      notify.error(
+        isApiError(error) && error.hasCode("E07039")
+          ? tr("signSection_someoneIsSigningNow")
+          : tr("signSection_couldntReopenTheCase"),
+      );
+      return false;
+    }
+  }, [draft.caseId, frozenOnBackend, tr, clearPackage]);
+
   const guardLeaving = React.useCallback(
     (href: string) => {
-      if (filed || (!anySigned && !requested)) return false;
+      if (filed) return false;
+      if (!anySigned && !requested) {
+        if (!frozenOnBackend) return false;
+        void returnCaseToDraft().then((reopened) => {
+          if (reopened) router.push(href);
+        });
+        return true;
+      }
       setLeaveTo(href);
       return true;
     },
-    [filed, anySigned, requested, setLeaveTo],
+    [filed, anySigned, requested, setLeaveTo, frozenOnBackend, returnCaseToDraft, router],
   );
   useLeaveGuard(guardLeaving);
 
@@ -555,10 +649,11 @@ export function SignSection() {
     for (const id of oathFiles) discardStoredFile(id);
   };
 
-  const confirmLeave = () => {
+  const confirmLeave = async () => {
     const href = leaveTo;
-    discardSignatures();
     setLeaveTo(null);
+    if (!(await returnCaseToDraft())) return;
+    discardSignatures();
     if (href) router.push(href);
   };
 
@@ -602,7 +697,8 @@ export function SignSection() {
    * The short delay is the point of it: the screen paints, the reader sees where they
    * are, and then the question arrives over it.
    */
-  const shouldAsk = !filed && !requested && !onPaper && everyone.length > 0 && !allSigned;
+  const shouldAsk =
+    !esignReturn && !filed && !requested && !onPaper && everyone.length > 0 && !allSigned;
   /** Asked already on this visit — a close is not undone by a re-render. */
   const askedThisVisit = React.useRef(false);
   React.useEffect(() => {
@@ -1174,8 +1270,12 @@ export function SignSection() {
       <SignFlowDialog
         open={flowOpen}
         start={flowStart}
-        onOpenChange={setFlowOpen}
+        onOpenChange={(open) => {
+          setFlowOpen(open);
+          if (!open) setReturnOutcome(false);
+        }}
         onPrint={printFile}
+        justSigned={returnOutcome ? "aadhaar" : undefined}
       />
 
       {/* ── Choose process & address ── */}

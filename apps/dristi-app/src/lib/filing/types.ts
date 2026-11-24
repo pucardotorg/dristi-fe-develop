@@ -661,6 +661,55 @@ export type FilingDraft = {
   scrutinyReturn?: { resubmittedAt: string | null; signingFrom?: string };
 };
 
+/* ──────────────────────────── Signing package (backend) ─────────────────────────── */
+
+/**
+ * One person who signs the complaint, as the backend's signing package lists them
+ * (`POST /cases/{id}/complaint-pdf`). Today that is each complainant and PoA holder.
+ */
+export type PackageSignatory = {
+  caseParticipantId: string;
+  name: string;
+  /** "Complainant 1", "PoA holder for Complainant 2". */
+  label: string;
+  hasSigned: boolean;
+  /**
+   * The signed-in person signs as this participant. Only when the backend says so; until
+   * it does, the app works it out from the draft (`mySignatories`).
+   */
+  isMe?: boolean;
+};
+
+/** Where one signatory's signature goes, as the backend computed it. */
+export type PackagePlaceholder = {
+  caseParticipantId: string;
+  /** 1-based page number. */
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  signerName: string;
+  reason: string;
+};
+
+/**
+ * The frozen copy of the complaint that every signatory signs, one signature on top of
+ * the last. `currentFileId` is what the next signer signs.
+ */
+export type SigningPackage = {
+  caseId: string;
+  signingRound: number;
+  status: string;
+  complaintFileId: string;
+  signingFileId: string;
+  currentFileId: string;
+  pageCount: number;
+  affidavitPage: number;
+  signatories: PackageSignatory[];
+  placeholders: PackagePlaceholder[];
+};
+
 /* ─────────────────────────────────── Profile ────────────────────────────────────── */
 
 /**

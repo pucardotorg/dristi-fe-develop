@@ -12,7 +12,11 @@
  *     representations off with them, and refuses what the backend refuses with the same
  *     `ApiError`s (status and registered code), so `caseFilingErrorMessage` reads either.
  *     `validateCase` runs a shorter check than the backend's: who is on the case, the three
- *     evidence rows, both details sections and the affidavit. Storage is passed in
+ *     evidence rows, both details sections and the affidavit. Signing works as on the
+ *     backend: `submitForSigning` freezes the case (every save is then refused, E07001)
+ *     until `returnToDraft`; the package lists each complainant and PoA holder with a box
+ *     on page 3, and each recorded signature becomes the current copy. The complaint PDF
+ *     is one sample file for every case, and no PDF is signed or stored. Storage is passed in
  *     (`CaseStore`): IndexedDB here (`dristi-efiling-cases`), memory in tests. Calls run one
  *     at a time, so steps saving together cannot overwrite each other's changes.
  */
@@ -24,7 +28,7 @@ import { getAuthService } from "@/lib/auth";
 
 import { migrateDraft } from "../blank";
 import type { EvidenceType } from "../evidence";
-import type { FilingDraft } from "../types";
+import type { FilingDraft, PackagePlaceholder, PackageSignatory, SigningPackage } from "../types";
 import type { ValidationError, ValidationResult } from "../validation";
 import {
   ADVOCATE_SEARCH_MIN_LENGTH,
@@ -172,7 +176,16 @@ export type SandboxCase = {
   details: Record<string, Record<string, unknown>>;
   affidavit: string | null;
   documents: SandboxDocument[];
+  /** `PENDING_SIGN` once frozen for signing; missing means a draft (cases stored before). */
+  status?: "DRAFT_IN_PROGRESS" | "PENDING_SIGN";
+  /** How many times the case has been frozen for signing. */
+  signingRound?: number;
+  /** The open signing package, while frozen. */
+  signing?: SigningPackage | null;
 };
+
+/** The sample PDF the sandbox shows for every complaint: no PDF is rendered here. */
+const SAMPLE_COMPLAINT_PDF = "/case-file/01-complaint.pdf";
 
 /** Where the sandbox keeps its cases. */
 export type CaseStore = {
@@ -407,6 +420,9 @@ export class SandboxCaseFiling implements CaseFilingRepository {
   private async forSave(caseId: string): Promise<SandboxCase> {
     const c = await this.store.get(caseId);
     if (!c) throw notFound("draft");
+    if (c.status === "PENDING_SIGN") {
+      throw refused(409, "The case is out for signature and cannot be changed.", "E07001");
+    }
     c.created = true;
     return c;
   }
@@ -824,41 +840,97 @@ export class SandboxCaseFiling implements CaseFilingRepository {
 
   async validateCase(caseId: string): Promise<ValidationResult> {
     return this.serial(async () => {
-      const c = await this.forRead(caseId);
-      const errors: ValidationError[] = [];
-      const of = (role: ParticipantRole) => c.participants.filter((p) => p.role === role);
-      if (of("COMPLAINANT").length === 0) {
-        errors.push({
-          field: "participants.complainants",
-          message: "Add at least one complainant.",
+      const errors = missingPieces(await this.forRead(caseId));
+      return { isValid: errors.length === 0, errors };
+    });
+  }
+
+  async getComplaintPdf(caseId: string): Promise<Blob> {
+    return this.serial(async () => {
+      const errors = missingPieces(await this.forRead(caseId));
+      if (errors.length > 0) {
+        throw new ApiError({
+          kind: "http",
+          status: 400,
+          message: "The case is not complete yet.",
+          code: "E07005",
+          fieldErrors: Object.fromEntries(errors.map((e) => [e.field, [e.message]])),
         });
       }
-      for (const p of of("COMPLAINANT")) {
-        const represented = c.representations.some(
-          (r) => r.client_participant_id === p.case_participant_id,
-        );
-        if (!represented && !p.is_party_in_person) {
-          errors.push({
-            field: `participants.${p.case_participant_id}`,
-            message: `Complainant #${p.ordinal} has no advocate and is not appearing in person.`,
-          });
-        }
+      const response = await fetch(SAMPLE_COMPLAINT_PDF);
+      if (!response.ok) throw refused(500, "The complaint PDF could not be built.", "E04011");
+      return response.blob();
+    });
+  }
+
+  async submitForSigning(caseId: string): Promise<void> {
+    return this.serial(async () => {
+      const c = await this.forRead(caseId);
+      if (c.status === "PENDING_SIGN") {
+        throw refused(409, "The case is not a draft in progress.", "E07004");
       }
-      if (of("ACCUSED").length === 0) {
-        errors.push({ field: "participants.accused", message: "Add at least one accused." });
+      if (missingPieces(c).length > 0) {
+        throw refused(400, "The case is not complete yet.", "E07005");
       }
-      for (const need of REQUIRED_EVIDENCE) {
-        if (!c.evidence.some((e) => e.evidence_type === need.type)) {
-          errors.push({ field: need.field, message: need.message });
-        }
+      c.status = "PENDING_SIGN";
+      c.signingRound = (c.signingRound ?? 0) + 1;
+      c.signing = null;
+      await this.store.put(c);
+    });
+  }
+
+  async getSigningPackage(caseId: string): Promise<SigningPackage | null> {
+    return this.serial(async () => {
+      const c = await this.forRead(caseId);
+      return c.status === "PENDING_SIGN" && c.signing ? structuredClone(c.signing) : null;
+    });
+  }
+
+  async prepareSigningPackage(caseId: string): Promise<SigningPackage> {
+    return this.serial(async () => {
+      const c = await this.forRead(caseId);
+      if (c.status !== "PENDING_SIGN") {
+        throw refused(409, "The case is not pending signature.", "E07004");
       }
-      for (const need of REQUIRED_DETAILS) {
-        if (!c.details[need.section]) {
-          errors.push({ field: `details.${need.section}`, message: need.message });
-        }
+      if (!c.signing) {
+        c.signing = signingPackageFor(c);
+        await this.store.put(c);
       }
-      if (!c.affidavit) errors.push({ field: "affidavit", message: "Add the affidavit." });
-      return { isValid: errors.length === 0, errors };
+      return structuredClone(c.signing);
+    });
+  }
+
+  async recordSignature(
+    caseId: string,
+    caseParticipantId: string,
+    signedFileId: string,
+  ): Promise<void> {
+    return this.serial(async () => {
+      const c = await this.forRead(caseId);
+      const pkg = c.status === "PENDING_SIGN" ? c.signing : null;
+      if (!pkg) throw refused(409, "The case is not pending signature.", "E07004");
+      const signer = pkg.signatories.find((s) => s.caseParticipantId === caseParticipantId);
+      if (!signer) throw refused(400, "That participant does not sign this filing.");
+      if (signer.hasSigned) throw refused(409, "That participant has already signed.");
+      if (!signedFileId.trim()) throw refused(400, "Name the signed document.");
+      signer.hasSigned = true;
+      // Each signature is made on top of the last: the next signer signs this copy.
+      pkg.currentFileId = signedFileId;
+      if (pkg.signatories.every((s) => s.hasSigned)) pkg.status = "COMPLETE";
+      await this.store.put(c);
+    });
+  }
+
+  async returnToDraft(caseId: string, reason: string): Promise<void> {
+    return this.serial(async () => {
+      const c = await this.forRead(caseId);
+      if (c.status !== "PENDING_SIGN") {
+        throw refused(409, "The case is not pending signature.", "E07004");
+      }
+      if (!reason.trim()) throw refused(400, "Say why the case goes back to draft.");
+      c.status = "DRAFT_IN_PROGRESS";
+      c.signing = null;
+      await this.store.put(c);
     });
   }
 
@@ -875,6 +947,108 @@ export class SandboxCaseFiling implements CaseFilingRepository {
       });
     });
   }
+}
+
+/**
+ * What `validateCase` reports missing: a shorter check than the backend's (who is on the
+ * case, the three evidence rows, both details sections and the affidavit).
+ */
+function missingPieces(c: SandboxCase): ValidationError[] {
+  const errors: ValidationError[] = [];
+  const of = (role: ParticipantRole) => c.participants.filter((p) => p.role === role);
+  if (of("COMPLAINANT").length === 0) {
+    errors.push({
+      field: "participants.complainants",
+      message: "Add at least one complainant.",
+    });
+  }
+  for (const p of of("COMPLAINANT")) {
+    const represented = c.representations.some(
+      (r) => r.client_participant_id === p.case_participant_id,
+    );
+    if (!represented && !p.is_party_in_person) {
+      errors.push({
+        field: `participants.${p.case_participant_id}`,
+        message: `Complainant #${p.ordinal} has no advocate and is not appearing in person.`,
+      });
+    }
+  }
+  if (of("ACCUSED").length === 0) {
+    errors.push({ field: "participants.accused", message: "Add at least one accused." });
+  }
+  for (const need of REQUIRED_EVIDENCE) {
+    if (!c.evidence.some((e) => e.evidence_type === need.type)) {
+      errors.push({ field: need.field, message: need.message });
+    }
+  }
+  for (const need of REQUIRED_DETAILS) {
+    if (!c.details[need.section]) {
+      errors.push({ field: `details.${need.section}`, message: need.message });
+    }
+  }
+  if (!c.affidavit) errors.push({ field: "affidavit", message: "Add the affidavit." });
+  return errors;
+}
+
+/** Where the sandbox puts the signature block: two boxes a row, on the affidavit's page. */
+const SANDBOX_AFFIDAVIT_PAGE = 3;
+const BOX = { width: 240, height: 60, left: 48, right: 307, top: 520, gap: 80 };
+
+/**
+ * The signing package for a frozen case, as the backend's phase 1 builds it: each
+ * complainant, followed by any PoA holder acting for them, with a box each on the
+ * affidavit page. The files are made-up ids: no PDF is stored here.
+ */
+function signingPackageFor(c: SandboxCase): SigningPackage {
+  const complainants = c.participants
+    .filter((p) => p.role === "COMPLAINANT")
+    .sort((a, b) => a.ordinal - b.ordinal);
+  const labelOf = new Map(
+    complainants.map((p, i) => [p.case_participant_id, `Complainant ${i + 1}`]),
+  );
+  // As the backend orders them: every complainant, then every PoA holder.
+  const signatories: PackageSignatory[] = [
+    ...complainants.map((p) => ({
+      caseParticipantId: p.case_participant_id,
+      name: p.name_at_filing ?? p.institution?.entity_name ?? "-",
+      label: labelOf.get(p.case_participant_id) ?? "",
+      hasSigned: false,
+    })),
+    ...c.participants
+      .filter((h) => h.role === "POA_HOLDER")
+      .map((h) => ({
+        caseParticipantId: h.case_participant_id,
+        name: h.name_at_filing ?? "-",
+        label: `PoA holder for ${c.poaMandates
+          .filter((m) => m.poa_participant_id === h.case_participant_id)
+          .flatMap((m) => labelOf.get(m.represented_participant_id) ?? [])
+          .join(", ")}`,
+        hasSigned: false,
+      })),
+  ];
+  const placeholders: PackagePlaceholder[] = signatories.map((s, i) => ({
+    caseParticipantId: s.caseParticipantId,
+    page: SANDBOX_AFFIDAVIT_PAGE,
+    x: i % 2 === 0 ? BOX.left : BOX.right,
+    y: BOX.top - Math.floor(i / 2) * BOX.gap,
+    width: BOX.width,
+    height: BOX.height,
+    signerName: s.name,
+    reason: s.label,
+  }));
+  const fileId = newId();
+  return {
+    caseId: c.caseId,
+    signingRound: c.signingRound ?? 1,
+    status: "OPEN",
+    complaintFileId: fileId,
+    signingFileId: fileId,
+    currentFileId: fileId,
+    pageCount: SANDBOX_AFFIDAVIT_PAGE,
+    affidavitPage: SANDBOX_AFFIDAVIT_PAGE,
+    signatories,
+    placeholders,
+  };
 }
 
 /** A store in memory: for tests, and anywhere IndexedDB is not available. */

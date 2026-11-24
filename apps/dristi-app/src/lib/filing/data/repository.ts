@@ -16,7 +16,7 @@
  */
 
 import type { EvidenceType } from "../evidence";
-import type { FilingDraft, StoredFileRef } from "../types";
+import type { FilingDraft, SigningPackage, StoredFileRef } from "../types";
 import type { ValidationResult } from "../validation";
 import type {
   AddedParty,
@@ -131,4 +131,19 @@ export interface CaseFilingRepository {
   validateCase(caseId: string, signal?: AbortSignal): Promise<ValidationResult>;
   /** The parties, advocates, mandates, evidence, details and affidavit on the case. */
   getCase(caseId: string): Promise<CaseRead>;
+
+  /* Signing (dristi-be PR 355). */
+
+  /** The complaint as a PDF, built from the saved case; refused while it is incomplete. */
+  getComplaintPdf(caseId: string, signal?: AbortSignal): Promise<Blob>;
+  /** Freeze the case for signing (`PENDING_SIGN`): every edit is refused until it returns. */
+  submitForSigning(caseId: string): Promise<void>;
+  /** The open signing package, or `null` when there is none (not frozen, or not prepared). */
+  getSigningPackage(caseId: string, signal?: AbortSignal): Promise<SigningPackage | null>;
+  /** Prepare the copy everyone signs (frozen cases only); the same package on a repeat call. */
+  prepareSigningPackage(caseId: string): Promise<SigningPackage>;
+  /** Record one participant's completed e-signature: the signed PDF becomes the current copy. */
+  recordSignature(caseId: string, caseParticipantId: string, signedFileId: string): Promise<void>;
+  /** Unfreeze the case for editing: every signature is cleared and the package is dropped. */
+  returnToDraft(caseId: string, reason: string): Promise<void>;
 }

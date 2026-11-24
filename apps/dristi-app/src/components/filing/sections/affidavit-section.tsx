@@ -50,10 +50,12 @@ export function AffidavitSection() {
 
   // "Touched" tells an untouched affidavit (show the standard text, still tracking the
   // case) apart from one the filer has made their own — including one they have cleared,
-  // which must stay empty rather than snap back to the standard text.
-  // An affidavit read from the case after the step opened counts as the filer's own too.
+  // which must stay empty rather than snap back to the standard text. `affidavitProvided`
+  // carries that "it's the filer's own" across reloads: an affidavit saved as empty reads
+  // back as an empty string, which alone looks identical to one never filled in.
   const [edited, setEdited] = React.useState(() => richTextHasContent(draft.affidavit));
-  const touched = edited || richTextHasContent(draft.affidavit);
+  const touched =
+    edited || (draft.affidavitProvided ?? false) || richTextHasContent(draft.affidavit);
 
   const standard = affidavitHtml(draft);
   const value = touched ? draft.affidavit : standard;
@@ -84,6 +86,8 @@ export function AffidavitSection() {
   const restoreStandard = () => {
     update((d) => {
       d.affidavit = "";
+      // Back to tracking the standard text — no longer the filer's own.
+      d.affidavitProvided = false;
     });
     setEdited(false);
     setResetOpen(false);
@@ -124,6 +128,9 @@ export function AffidavitSection() {
               setEdited(true);
               update((d) => {
                 d.affidavit = html;
+                // The filer has made it their own — a later clear must stay cleared, not
+                // snap back to the standard text. Restoring the standard undoes this.
+                d.affidavitProvided = true;
               });
             }}
             ariaLabel={t("affidavitSection_affidavitOfFact")}

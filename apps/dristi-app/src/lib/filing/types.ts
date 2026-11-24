@@ -642,9 +642,17 @@ export type FilingDraft = {
   witnesses: Witness[];
   /**
    * The affidavit as the filer edited it (HTML). Empty means it is still the standard
-   * text, which is composed from the case — see `affidavitBody`.
+   * text, which is composed from the case — see `affidavitBody` — *unless*
+   * `affidavitProvided` is set, when empty means the filer cleared it.
    */
   affidavit: string;
+  /**
+   * Whether the filer has given the affidavit its own value on the case (saved at least
+   * once as something other than the standard text) — including clearing it to empty. This
+   * tells a cleared affidavit (show it empty) from one never filled in (show the standard
+   * text), which otherwise look alike (both empty). Absent on older drafts: not provided.
+   */
+  affidavitProvided?: boolean;
   documents: DocumentGroup[];
   sign: SignState;
   dismissed: DismissedNotices;

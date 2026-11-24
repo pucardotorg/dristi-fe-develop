@@ -251,8 +251,10 @@ describe("affidavitFromCase", () => {
     const draft = createBlankDraft("d1");
     affidavitFromCase(caseOf({ affidavit: "<p>Standard</p>" }), draft, "<p>Standard</p>");
     assert.equal(draft.affidavit, "");
+    assert.equal(draft.affidavitProvided, false, "the standard text keeps tracking the case");
     affidavitFromCase(caseOf({ affidavit: "<p>My own</p>" }), draft, "<p>Standard</p>");
     assert.equal(draft.affidavit, "<p>My own</p>");
+    assert.equal(draft.affidavitProvided, true, "the filer's own text is marked provided");
   });
 
   it("keeps this browser's affidavit while the case has none", () => {
@@ -260,5 +262,13 @@ describe("affidavitFromCase", () => {
     draft.affidavit = "<p>Typed</p>";
     affidavitFromCase(caseOf({ affidavit: null }), draft, "<p>Standard</p>");
     assert.equal(draft.affidavit, "<p>Typed</p>");
+    assert.equal(draft.affidavitProvided, false);
+  });
+
+  it("brings back a cleared affidavit empty rather than re-showing the standard text", () => {
+    const draft = createBlankDraft("d1");
+    affidavitFromCase(caseOf({ affidavit: "" }), draft, "<p>Standard</p>");
+    assert.equal(draft.affidavit, "");
+    assert.equal(draft.affidavitProvided, true, "an empty-but-saved affidavit is still provided");
   });
 });

@@ -90,8 +90,18 @@ function current(t: StoredTransaction): StoredTransaction {
   return open && Date.parse(t.expiresAt) < Date.now() ? { ...t, status: "EXPIRED" } : t;
 }
 
-function publicView({ expiresAt: _expiresAt, ...t }: StoredTransaction): EsignTransaction {
-  return t;
+/** The transaction as the backend reports it: the expiry stays inside the sandbox. */
+function publicView(t: StoredTransaction): EsignTransaction {
+  return {
+    transactionId: t.transactionId,
+    status: t.status,
+    entityType: t.entityType,
+    entityId: t.entityId,
+    sourceFileId: t.sourceFileId,
+    signedFileId: t.signedFileId,
+    failureCode: t.failureCode,
+    failureMessage: t.failureMessage,
+  };
 }
 
 export class IndexedDbEsignRepository implements EsignRepository {

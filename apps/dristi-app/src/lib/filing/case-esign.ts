@@ -28,6 +28,7 @@ import { getCaseFilingRepository, getRepository } from "./data";
 import {
   mySignatories,
   nextSignature,
+  RETURN_TO_DRAFT_REASON,
   signingFailure,
   type SigningFailure,
 } from "./signing-package";
@@ -55,6 +56,24 @@ export async function prepareCaseForSigning(caseId: string): Promise<SigningPack
     if (!(isApiError(error) && error.hasCode(E_NOT_A_DRAFT))) throw error;
   }
   return cases.prepareSigningPackage(caseId);
+}
+
+/** How taking a frozen case back to draft went. */
+export type ReturnToDraftResult = "returned" | "someone-signing" | "failed";
+
+/**
+ * Take a case frozen for signing back to draft, so it can be edited: signatures cleared,
+ * the signing copy dropped. A case that is not frozen (never was, or another tab returned
+ * it already: E07004) counts as returned. Refused while someone is mid-signature (E07039).
+ */
+export async function returnCaseToDraft(caseId: string): Promise<ReturnToDraftResult> {
+  try {
+    await getCaseFilingRepository().returnToDraft(caseId, RETURN_TO_DRAFT_REASON);
+    return "returned";
+  } catch (error) {
+    if (isApiError(error) && error.hasCode(E_NOT_A_DRAFT)) return "returned";
+    return signingFailure(error) === "in-progress" ? "someone-signing" : "failed";
+  }
 }
 
 export type EsignStart =

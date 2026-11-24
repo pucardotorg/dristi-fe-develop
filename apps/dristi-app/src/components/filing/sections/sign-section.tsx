@@ -51,9 +51,9 @@ import {
 
 import { appUrl } from "@/lib/config";
 import { signingRules } from "@/lib/filing/config";
-import { isApiError } from "@/lib/api";
-import { getCaseFilingRepository, newCaseFileNumber, newPaymentRef } from "@/lib/filing/data";
-import { RETURN_TO_DRAFT_REASON, signedSlots, voidedSlots } from "@/lib/filing/signing-package";
+import { returnCaseToDraft as reopenCaseOnBackend } from "@/lib/filing/case-esign";
+import { newCaseFileNumber, newPaymentRef } from "@/lib/filing/data";
+import { signedSlots, voidedSlots } from "@/lib/filing/signing-package";
 import { useSigningPackage } from "@/lib/filing/use-signing-package";
 import { discardStoredFile } from "@/lib/filing/files";
 import { money, toLongDate } from "@/lib/filing/format";
@@ -399,9 +399,19 @@ export function SignSection() {
   const slot = useSourceRailSlot();
 
   const [modal, setModal] = React.useState<ModalKey>(null);
+  /*
+   * Back from Aadhaar e-sign with the signature recorded (`?esign=signed`, set by the
+   * landing route): the signing window opens on its outcome, once, and the query is
+   * dropped so a reload does not announce it again.
+   */
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const [esignReturn] = React.useState(() => searchParams.get("esign") === "signed");
   /** The signing window, and the stage the complaint is actually at when it opens. */
-  const [flowOpen, setFlowOpen] = React.useState(false);
-  const [flowStart, setFlowStart] = React.useState<SignFlowStart>("choose");
+  const [flowOpen, setFlowOpen] = React.useState(esignReturn);
+  const [flowStart, setFlowStart] = React.useState<SignFlowStart>(
+    esignReturn ? "status" : "choose",
+  );
   /** Where the person asked to go while this version is out for signature. */
   const [leaveTo, setLeaveTo] = React.useState<string | null>(null);
   /** The other way round, asked only when there is an uploaded copy to discard. */
@@ -482,21 +492,10 @@ export function SignSection() {
     });
   }, [newlySignedKey, voidedKey, update]);
 
-  /*
-   * Back from Aadhaar e-sign with the signature recorded (`?esign=signed`, set by the
-   * landing route): the signing window opens on its outcome, once, and the query is
-   * dropped so a reload does not announce it again.
-   */
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const [esignReturn] = React.useState(() => searchParams.get("esign") === "signed");
   /** The window's outcome names the Aadhaar signature until it is first closed. */
   const [returnOutcome, setReturnOutcome] = React.useState(esignReturn);
   React.useEffect(() => {
-    if (!esignReturn) return;
-    setFlowStart("status");
-    setFlowOpen(true);
-    router.replace(pathname);
+    if (esignReturn) router.replace(pathname);
   }, [esignReturn, pathname, router]);
 
   /** The bill, derived from this draft — see `feeBill` for what makes it specific. */
@@ -584,25 +583,19 @@ export function SignSection() {
   const returnCaseToDraft = React.useCallback(async (): Promise<boolean> => {
     const caseId = draft.caseId;
     if (!frozenOnBackend || !caseId) return true;
-    try {
-      await getCaseFilingRepository().returnToDraft(caseId, RETURN_TO_DRAFT_REASON);
+    const result = await reopenCaseOnBackend(caseId);
+    if (result === "returned") {
       // The package read on arrival is gone with the round. Kept, it would mark its
       // signatures again the moment they are discarded, and the next visit would open on them.
       clearPackage();
       return true;
-    } catch (error) {
-      // E07004: not frozen after all (never was, or another tab returned it already).
-      if (isApiError(error) && error.hasCode("E07004")) {
-        clearPackage();
-        return true;
-      }
-      notify.error(
-        isApiError(error) && error.hasCode("E07039")
-          ? tr("signSection_someoneIsSigningNow")
-          : tr("signSection_couldntReopenTheCase"),
-      );
-      return false;
     }
+    notify.error(
+      result === "someone-signing"
+        ? tr("signSection_someoneIsSigningNow")
+        : tr("signSection_couldntReopenTheCase"),
+    );
+    return false;
   }, [draft.caseId, frozenOnBackend, tr, clearPackage]);
 
   const guardLeaving = React.useCallback(

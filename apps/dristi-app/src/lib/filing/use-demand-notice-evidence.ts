@@ -18,7 +18,7 @@
 import * as React from "react";
 
 import { noticesFromCase } from "./case-details-read";
-import { getCaseFilingRepository } from "./data";
+import { getCaseFilingRepository, type CaseFilingRepository } from "./data";
 import { caseFilingErrorMessage } from "./data/cases-api";
 import { demandNoticeEvidenceInfo, demandNoticeHasContent } from "./evidence";
 import { noticeSourceSlot } from "./selectors";
@@ -49,23 +49,21 @@ export async function saveOneNotice(
   index: number,
   update: Update,
   createdIds: NoticeEvidenceIds,
-  api: Pick<typeof caseFilingApi, "addEvidence" | "updateEvidence"> = caseFilingApi,
+  api: Pick<CaseFilingRepository, "addEvidence" | "updateEvidence"> = getCaseFilingRepository(),
 ): Promise<string | undefined> {
   const notice = draft.notices[index];
   const evidenceInfo = demandNoticeEvidenceInfo(notice);
   // `null` unlinks a scan that was removed; a new one is linked as it finishes uploading.
   const caseDocumentId = noticeSourceSlot(draft, index, "demand-notice")?.caseDocumentId ?? null;
 
-  if (notice.noticeEvidenceId) {
-    await getCaseFilingRepository().updateEvidence(notice.noticeEvidenceId, {
-      evidenceInfo,
-      caseDocumentId,
-    });
-    return notice.noticeEvidenceId;
+  const existingId = notice.noticeEvidenceId ?? createdIds.get(notice.id);
+  if (existingId) {
+    await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
+    return existingId;
   }
   // An untouched notice carries only its default yes/no answers: add no empty row for it.
   if (!demandNoticeHasContent(notice) && caseDocumentId == null) return undefined;
-  const saved = await getCaseFilingRepository().addEvidence(caseId, {
+  const saved = await api.addEvidence(caseId, {
     evidenceType: "LEGAL_DEMAND_NOTICE",
     evidenceInfo,
     caseDocumentId,

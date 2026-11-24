@@ -17,7 +17,7 @@
 import * as React from "react";
 
 import { chequesFromCase } from "./case-details-read";
-import { getCaseFilingRepository } from "./data";
+import { getCaseFilingRepository, type CaseFilingRepository } from "./data";
 import { caseFilingErrorMessage } from "./data/cases-api";
 import { chequeEvidenceInfo, returnMemoEvidenceInfo } from "./evidence";
 import { chequeSourceSlot } from "./selectors";
@@ -29,7 +29,7 @@ import { useLoadFromCase } from "./use-load-from-case";
 export type { SaveResult };
 
 type Update = (recipe: (draft: FilingDraft) => void) => void;
-type EvidenceApi = Pick<typeof caseFilingApi, "addEvidence" | "updateEvidence">;
+type EvidenceApi = Pick<CaseFilingRepository, "addEvidence" | "updateEvidence">;
 
 /**
  * What a cheque's two rows are saved as, by the cheque's local id. `id` is remembered the
@@ -92,7 +92,7 @@ export async function saveOneCheque(
   index: number,
   update: Update,
   state: ChequeEvidenceState,
-  api: EvidenceApi = caseFilingApi,
+  api: EvidenceApi = getCaseFilingRepository(),
 ) {
   const cheque = draft.cheques[index];
   const entry = rowEntry(state, cheque.id);
@@ -100,13 +100,15 @@ export async function saveOneCheque(
   {
     const evidenceInfo = chequeEvidenceInfo(draft.cheques, index);
     const caseDocumentId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId ?? null;
-    if (cheque.chequeEvidenceId) {
-      await getCaseFilingRepository().updateEvidence(cheque.chequeEvidenceId, {
-        evidenceInfo,
-        caseDocumentId,
-      });
+    const sig = rowSignature(evidenceInfo, caseDocumentId);
+    const existingId = cheque.chequeEvidenceId ?? entry.cheque.id;
+    if (existingId) {
+      if (entry.cheque.sig !== sig) {
+        await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
+        entry.cheque.sig = sig;
+      }
     } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
-      const saved = await getCaseFilingRepository().addEvidence(caseId, {
+      const saved = await api.addEvidence(caseId, {
         evidenceType: "CHEQUE",
         evidenceInfo,
         caseDocumentId,
@@ -122,13 +124,15 @@ export async function saveOneCheque(
   {
     const evidenceInfo = returnMemoEvidenceInfo(cheque);
     const caseDocumentId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
-    if (cheque.returnMemoEvidenceId) {
-      await getCaseFilingRepository().updateEvidence(cheque.returnMemoEvidenceId, {
-        evidenceInfo,
-        caseDocumentId,
-      });
+    const sig = rowSignature(evidenceInfo, caseDocumentId);
+    const existingId = cheque.returnMemoEvidenceId ?? entry.memo.id;
+    if (existingId) {
+      if (entry.memo.sig !== sig) {
+        await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
+        entry.memo.sig = sig;
+      }
     } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
-      const saved = await getCaseFilingRepository().addEvidence(caseId, {
+      const saved = await api.addEvidence(caseId, {
         evidenceType: "RETURN_MEMO",
         evidenceInfo,
         caseDocumentId,

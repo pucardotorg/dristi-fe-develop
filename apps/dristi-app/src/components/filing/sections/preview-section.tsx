@@ -24,7 +24,8 @@ import { joinDot } from "@/lib/filing/format";
 import { CASE_TYPE, COURT } from "@/lib/filing/options";
 import { useProfile } from "@/lib/filing/profile";
 import { sectionComplete, signatories } from "@/lib/filing/selectors";
-import { caseFilingApi, caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
+import { getCaseFilingRepository } from "@/lib/filing/data";
+import { caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
 import { getStep, neighbours, type StepId } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import type { FilingDraft } from "@/lib/filing/types";
@@ -62,7 +63,6 @@ import { FormCard } from "@/components/filing/form-card";
 import { SectionNotice } from "@/components/filing/notices";
 import { CourtDocument } from "@/components/filing/sections/preview/court-document";
 import {
-  INTERIM_RELIEF_SUMMARY,
   NOT_PROVIDED,
   accusedSummaries,
   adrLabel,
@@ -71,9 +71,11 @@ import {
   chequeSummaries,
   complainantSummary,
   documentSummary,
-  finalReliefSummary,
+  finalReliefText,
+  interimReliefText,
   jurisdictionSummary,
   noticeSummary,
+  otherDetailsText,
   totalChequeText,
   witnessSummaries,
 } from "@/components/filing/sections/preview/derive";
@@ -319,8 +321,9 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
       step: "adr-prayer",
       fields: entered([
         { label: "Open to settlement (ADR)", value: adrLabel(draft) },
-        { label: "Interim relief", value: INTERIM_RELIEF_SUMMARY },
-        { label: "Final relief", value: finalReliefSummary(draft) },
+        { label: "Other details", value: otherDetailsText(draft) },
+        { label: "Interim relief", value: interimReliefText(draft) },
+        { label: "Final relief", value: finalReliefText(draft) },
       ]),
     },
     witnesses: {
@@ -507,7 +510,7 @@ export function PreviewSection() {
     setValidating(true);
     setValidateError(null);
     try {
-      const { isValid, errors } = await caseFilingApi.validateCase(caseId);
+      const { isValid, errors } = await getCaseFilingRepository().validateCase(caseId);
       if (isValid) {
         if (continueHref) router.push(continueHref);
         return;
@@ -756,8 +759,9 @@ export function PreviewSection() {
               <KeyValues
                 rows={[
                   { term: t("previewSection_openToSettlementAdr"), value: adrLabel(draft) },
-                  { term: t("previewSection_interimRelief"), value: INTERIM_RELIEF_SUMMARY },
-                  { term: t("previewSection_finalRelief"), value: finalReliefSummary(draft) },
+                  { term: t("previewSection_otherDetails"), value: otherDetailsText(draft) },
+                  { term: t("previewSection_interimRelief"), value: interimReliefText(draft) },
+                  { term: t("previewSection_finalRelief"), value: finalReliefText(draft) },
                 ]}
               />
             </FormCard>

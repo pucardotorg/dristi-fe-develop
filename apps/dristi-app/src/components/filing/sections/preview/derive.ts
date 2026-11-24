@@ -8,7 +8,6 @@
 
 import {
   addressToString,
-  formatINR,
   joinDot,
   plural,
   rupees,
@@ -220,19 +219,21 @@ export function firstReturnReason(draft: FilingDraft): string {
 }
 
 /**
- * What the complaint asks for, in one line each. Both follow the prayer templates in
- * options.ts: the interim figure is the statute's ceiling (S-143A), the final relief is
- * the cheque amount itself — so it is only stated in rupees once cheques have been typed.
+ * What the complaint asks for, read back from the prayer the filer actually wrote — not a
+ * canonical summary. These rich-text fields are stored as HTML; the synopsis flattens each
+ * to one line (its paragraphs joined by a space) and says "Not provided" when the field is
+ * empty, while the court sheet renders the same values as full paragraphs. See issue #61.
  */
-export const INTERIM_RELIEF_SUMMARY =
-  "Interim compensation of up to 20% of the cheque amount (S-143A)";
+export function otherDetailsText(draft: FilingDraft): string {
+  return orNot(htmlToParagraphs(draft.adr.otherDetails).join(" "));
+}
 
-export function finalReliefSummary(draft: FilingDraft): string {
-  const total = chequeTotal(draft);
-  const compensation = total
-    ? `compensation of ₹${formatINR(total)} together with interest`
-    : "compensation equal to the cheque amount together with interest";
-  return `Conviction under S-138, ${compensation}, and process/summons`;
+export function interimReliefText(draft: FilingDraft): string {
+  return orNot(htmlToParagraphs(draft.adr.interimRelief).join(" "));
+}
+
+export function finalReliefText(draft: FilingDraft): string {
+  return orNot(htmlToParagraphs(draft.adr.finalRelief).join(" "));
 }
 
 /** "₹52,05,000 (2 cheques)" — the filing summary's headline figure. */

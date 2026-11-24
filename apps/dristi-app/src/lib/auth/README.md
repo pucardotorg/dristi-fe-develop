@@ -2,12 +2,14 @@
 
 The citizen sign-in (`components/sign-in-block.tsx`) and registration
 (`components/registration/registration-flow.tsx`) talk to one interface, `AuthService`.
-`getAuthService()` (`index.ts`) is the single place that picks who answers:
+`getAuthService()` (`index.ts`) is the single place that picks who answers, from
+`AUTH_SOURCE` in `lib/data/source.ts`: `NEXT_PUBLIC_AUTH_SOURCE` when it is set, otherwise
+the app's data source (`NEXT_PUBLIC_DATA_SOURCE`, default `api`).
 
-| `NEXT_PUBLIC_AUTH_SOURCE` | Implementation                                             | Use                                                        |
-| ------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
-| `api` (default)           | `http.ts` — the DRISTI backend through the `/api/v1` proxy | Development against a backend, and production              |
-| `sandbox`                 | `sandbox.ts` — in the browser, nothing persists            | Demos and design review without a backend (`netlify.toml`) |
+| Sign-in source | Implementation                                             | Use                                                                 |
+| -------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| `api`          | `http.ts` — the DRISTI backend through the `/api/v1` proxy | `npm run dev` (`.env.development`), the published image, production |
+| `sandbox`      | `sandbox.ts` — in the browser, nothing persists            | `npm run dev:sandbox` and the design-review site (`netlify.toml`)   |
 
 Both answer the same way — the sandbox refuses unknown numbers at sign-in and taken
 numbers at registration — so the screens behave identically in either mode.
@@ -34,9 +36,12 @@ Sign-in
                                            (OTP: POST /auth/otp/request {purpose: "login"} first)
   403 / E01013 ........................... awaiting approval (no session)
   next = "profile" ....................... registration resumes with the number verified
-  next = "resubmit" ...................... GET /registrations/current → correction round →
-                                           POST /registrations/current/resubmit → session ends →
-                                           awaiting approval
+  next = "resubmit" ...................... GET /users/me/registration/resubmission →
+                                           correction round →
+                                           POST /users/me/registration/resubmission →
+                                           session ends → awaiting approval
+                                           (GET 404 / E01015, POST 409 / E01012: nothing to
+                                           correct — signs in as normal)
   next = "terms" ......................... re-accept screen, to be built; until then signs
                                            in as normal
   next = null ............................ GET /users/me → role and name → that role's home
@@ -59,11 +64,11 @@ is reported as `unavailable` with a console hint, not as an expired session.
 
 ## Not integrated yet
 
-| Gap                                          | Today                                                  | Needs                                                                                                     |
-| -------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Re-accepting updated terms (`next: "terms"`) | Signs in as normal                                     | A re-accept screen (`POST /users/me/terms/` is on backend `main`)                                         |
-| Forgot password                              | The link does nothing                                  | Screens for `auth/password-reset/verify/` and `auth/password-reset/` (on backend `main`)                  |
-| Readable application number                  | Not shown                                              | Backend: `application_number` in `/advocates`, `/clerks`, `/registrations/current` and resubmit responses |
-| Restoring a session after reload             | The shell trusts what sign-in stored in `localStorage` | Call `getCurrentAccount()` (`GET /users/me`) on load; then route guards                                   |
-| Sign-out                                     | `signOut()` exists; no screen offers it yet            | A sign-out control in the shell                                                                           |
-| Court-staff approval                         | Not integrated (owner, Oct 19: later)                  | Court-staff sign-in; `/dristi-requests/approvals/`                                                        |
+| Gap                                          | Today                                                  | Needs                                                                                                        |
+| -------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Re-accepting updated terms (`next: "terms"`) | Signs in as normal                                     | A re-accept screen (`POST /users/me/terms/` is on backend `main`)                                            |
+| Forgot password                              | The link does nothing                                  | Screens for `auth/password-reset/verify/` and `auth/password-reset/` (on backend `main`)                     |
+| Readable application number                  | Not shown                                              | Backend: `application_number` in `/advocates`, `/clerks` and `/users/me/registration/resubmission` responses |
+| Restoring a session after reload             | The shell trusts what sign-in stored in `localStorage` | Call `getCurrentAccount()` (`GET /users/me`) on load; then route guards                                      |
+| Sign-out                                     | `signOut()` exists; no screen offers it yet            | A sign-out control in the shell                                                                              |
+| Court-staff approval                         | Not integrated (owner, Oct 19: later)                  | Court-staff sign-in; `/dristi-requests/approvals/`                                                           |

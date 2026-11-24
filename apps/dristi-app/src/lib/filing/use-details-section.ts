@@ -16,7 +16,8 @@
 import * as React from "react";
 
 import { ADR_SECTION, adrFromCase, jurisdictionFromCase } from "./case-details-read";
-import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
+import { getCaseFilingRepository } from "./data";
+import { caseFilingErrorMessage } from "./data/cases-api";
 import type { DetailsSectionBody } from "./details";
 import { useFiling } from "./store";
 import type { FilingDraft } from "./types";
@@ -46,7 +47,7 @@ export function useDetailsSection(
     setSaving(true);
     setError(null);
     try {
-      await caseFilingApi.saveDetails(caseId, section, body);
+      await getCaseFilingRepository().saveDetails(caseId, section, body);
       return { ok: true };
     } catch (err) {
       const message = caseFilingErrorMessage(err);

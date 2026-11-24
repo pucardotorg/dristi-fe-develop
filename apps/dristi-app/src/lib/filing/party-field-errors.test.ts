@@ -70,6 +70,21 @@ describe("partyFieldMessage", () => {
     assert.match(partyFieldMessage(error) ?? "", /withdraw the declaration/);
   });
 
+  it("explains an accused institution's declaration sent alongside a contact", () => {
+    for (const field of [
+      "institution.contact_details_unknown_declared",
+      "institution_contacts.contact_details_unknown_declared",
+    ]) {
+      assert.match(partyFieldMessage(refused({ code: "E00001", field })) ?? "", /withdraw/, field);
+    }
+  });
+
+  it("does not claim a contact is present when the declaration was simply misplaced", () => {
+    // E07023 here means the field was sent at the wrong level, not that a contact exists.
+    const error = refused({ code: "E07023", field: "contact_details_unknown_declared" });
+    assert.equal(partyFieldMessage(error), undefined);
+  });
+
   it("leaves a field sent in error, or one it does not know, to the backend's wording", () => {
     const sentInError = refused({ code: "E07023", field: "mobile_numbers" });
     assert.equal(partyFieldMessage(sentInError), undefined);

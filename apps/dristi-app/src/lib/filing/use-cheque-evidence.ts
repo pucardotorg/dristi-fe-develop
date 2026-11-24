@@ -17,7 +17,8 @@
 import * as React from "react";
 
 import { chequesFromCase } from "./case-details-read";
-import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
+import { getCaseFilingRepository } from "./data";
+import { caseFilingErrorMessage } from "./data/cases-api";
 import { chequeEvidenceInfo, returnMemoEvidenceInfo } from "./evidence";
 import { chequeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
@@ -99,15 +100,13 @@ export async function saveOneCheque(
   {
     const evidenceInfo = chequeEvidenceInfo(draft.cheques, index);
     const caseDocumentId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId ?? null;
-    const sig = rowSignature(evidenceInfo, caseDocumentId);
-    const existingId = cheque.chequeEvidenceId ?? entry.cheque.id;
-    if (existingId) {
-      if (entry.cheque.sig !== sig) {
-        await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
-        entry.cheque.sig = sig;
-      }
+    if (cheque.chequeEvidenceId) {
+      await getCaseFilingRepository().updateEvidence(cheque.chequeEvidenceId, {
+        evidenceInfo,
+        caseDocumentId,
+      });
     } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
-      const saved = await api.addEvidence(caseId, {
+      const saved = await getCaseFilingRepository().addEvidence(caseId, {
         evidenceType: "CHEQUE",
         evidenceInfo,
         caseDocumentId,
@@ -123,15 +122,13 @@ export async function saveOneCheque(
   {
     const evidenceInfo = returnMemoEvidenceInfo(cheque);
     const caseDocumentId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
-    const sig = rowSignature(evidenceInfo, caseDocumentId);
-    const existingId = cheque.returnMemoEvidenceId ?? entry.memo.id;
-    if (existingId) {
-      if (entry.memo.sig !== sig) {
-        await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
-        entry.memo.sig = sig;
-      }
+    if (cheque.returnMemoEvidenceId) {
+      await getCaseFilingRepository().updateEvidence(cheque.returnMemoEvidenceId, {
+        evidenceInfo,
+        caseDocumentId,
+      });
     } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
-      const saved = await api.addEvidence(caseId, {
+      const saved = await getCaseFilingRepository().addEvidence(caseId, {
         evidenceType: "RETURN_MEMO",
         evidenceInfo,
         caseDocumentId,
@@ -151,9 +148,11 @@ export function removeChequeEvidence(
 ) {
   for (const id of [cheque.chequeEvidenceId, cheque.returnMemoEvidenceId]) {
     if (!id) continue;
-    caseFilingApi.deleteEvidence(id).catch((error) => {
-      console.warn("[filing] couldn't remove cheque evidence from the case", id, error);
-    });
+    getCaseFilingRepository()
+      .deleteEvidence(id)
+      .catch((error) => {
+        console.warn("[filing] couldn't remove cheque evidence from the case", id, error);
+      });
   }
 }
 

@@ -87,12 +87,19 @@ export function FilingMain({
   width = "default",
   sourceOpen = false,
   className,
+  onBlur,
 }: {
   children: React.ReactNode;
   width?: "default" | "wide" | "narrow";
   /** The source rail has taken a column, so the form has less width to spend on gutters. */
   sourceOpen?: boolean;
   className?: string;
+  /**
+   * The step's autosave trigger (`onBlurAutosave`). React's `onBlur` is a bubbling focusout,
+   * so this one handler fires as the filer leaves any field in the column. Address blocks
+   * stop their own internal moves from reaching it (`AddressFields`).
+   */
+  onBlur?: React.FocusEventHandler<HTMLDivElement>;
 }) {
   /*
    * In a correction round this column is the middle of three panes and the frame around
@@ -105,11 +112,16 @@ export function FilingMain({
   const body = locked ? <PolicyLock reason={locked}>{children}</PolicyLock> : children;
 
   if (inCorrection) {
-    return <div className={cn("flex w-full min-w-0 flex-col gap-6", className)}>{body}</div>;
+    return (
+      <div className={cn("flex w-full min-w-0 flex-col gap-6", className)} onBlur={onBlur}>
+        {body}
+      </div>
+    );
   }
 
   return (
     <div
+      onBlur={onBlur}
       className={cn(
         /* 24px gutters at every width, the page frame's own (`PAGE_GUTTER`): at 16 the
            title sat tighter to the glass than on any other screen. The cards give the

@@ -24,6 +24,7 @@ import { RotateCcwIcon } from "lucide-react";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { useAffidavit } from "@/lib/filing/use-affidavit";
+import { onBlurAutosave, useSerialSave } from "@/lib/filing/use-autosave";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
 import { FilingFooter } from "@/components/filing/filing-footer";
@@ -54,9 +55,18 @@ export function AffidavitSection() {
   const standard = affidavitHtml(draft);
   const value = touched ? draft.affidavit : standard;
 
-  /* Save whatever the box holds — a cleared affidavit included — then move on. The backend
-     is the gate on an empty affidavit: it refuses one and the reason is shown below, which
-     keeps the filer here. */
+  // Autosave when the filer leaves the editor, but only once the affidavit has real content:
+  // the affidavit's own endpoint is an idempotent PUT (no id to race), and skipping an empty
+  // one keeps a blank box from drawing a "couldn't save" while they are still at work. The
+  // standard text is sent too, so an untouched affidavit is on the case before Continue.
+  const autosave = useSerialSave(
+    () => save(value),
+    () => (richTextHasContent(value) ? value : null),
+  );
+
+  /* Continue saves whatever the box holds — a cleared affidavit included — then moves on. The
+     backend is the gate on an empty affidavit: it refuses one and the reason is shown below,
+     which keeps the filer here. */
   const continueHref = next ? hrefFor(next) : undefined;
   const handleContinue = async () => {
     const result = await save(value);
@@ -73,7 +83,7 @@ export function AffidavitSection() {
 
   return (
     <>
-      <FilingMain>
+      <FilingMain {...onBlurAutosave(() => void autosave())}>
         <FilingPageHeader
           title={t("affidavitSection_affidavit")}
           description={t("affidavitSection_theSwornStatementThatGoesOn")}

@@ -66,7 +66,7 @@ export function ChequeSection() {
   const removeRecord = useRemoveCaseRecord();
   const { prev, next } = neighbours("cheque");
   const router = useRouter();
-  const { save, saving, error } = useChequeEvidence();
+  const { save, saving, error, autosaveProps } = useChequeEvidence();
   const cheques = draft.cheques;
 
   const [active, setActive] = React.useState(0);
@@ -171,7 +171,7 @@ export function ChequeSection() {
 
   return (
     <>
-      <FilingMain sourceOpen={sourceOpen}>
+      <FilingMain sourceOpen={sourceOpen} {...autosaveProps}>
         <FilingPageHeader
           title={t("chequeSection_chequeReturnMemoTitle")}
           description={t("chequeSection_addTheDishonouredChequeSAnd")}

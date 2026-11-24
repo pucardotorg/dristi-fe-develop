@@ -22,9 +22,10 @@ import { chequeEvidenceInfo, returnMemoEvidenceInfo } from "./evidence";
 import { chequeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
 import type { ChequeDetails, FilingDraft } from "./types";
+import { onBlurAutosave, useSerialSave, type SaveResult } from "./use-autosave";
 import { useLoadFromCase } from "./use-load-from-case";
 
-export type SaveResult = { ok: boolean; error?: string };
+export type { SaveResult };
 
 type Update = (recipe: (draft: FilingDraft) => void) => void;
 
@@ -98,7 +99,7 @@ export function useChequeEvidence() {
   const [error, setError] = React.useState<string | null>(null);
 
   /** Push every cheque and return memo to the case, as filled in. `ok` is false on a failure. */
-  const save = React.useCallback(async (): Promise<SaveResult> => {
+  const runSave = React.useCallback(async (): Promise<SaveResult> => {
     const caseId = draft.caseId;
     if (!caseId) return { ok: true };
     setSaving(true);
@@ -120,5 +121,22 @@ export function useChequeEvidence() {
     }
   }, [draft, update, flush]);
 
-  return { save, saving, error, clearError: () => setError(null) };
+  // Each cheque's first save POSTs its CHEQUE and RETURN_MEMO rows; a second save in flight
+  // would POST them again before the id lands, so the engine runs one save at a time. The
+  // signature is exactly what `saveOneCheque` would send (its ids excluded), so clicking
+  // through the step without editing re-sends nothing.
+  const save = useSerialSave(runSave, () => {
+    if (!draft.caseId) return null;
+    return JSON.stringify(
+      draft.cheques.map((cheque, i) => ({
+        cheque: chequeEvidenceInfo(draft.cheques, i),
+        memo: returnMemoEvidenceInfo(cheque),
+        chequeDoc: chequeSourceSlot(draft, i, "cheque-front")?.caseDocumentId ?? null,
+        memoDoc: chequeSourceSlot(draft, i, "return-memo")?.caseDocumentId ?? null,
+      })),
+    );
+  });
+  const autosaveProps = onBlurAutosave(() => void save());
+
+  return { save, saving, error, clearError: () => setError(null), autosaveProps };
 }

@@ -67,7 +67,7 @@ export function DemandNoticeSection() {
   const removeRecord = useRemoveCaseRecord();
   const { prev, next } = neighbours("demand-notice");
   const router = useRouter();
-  const { save, saving, error } = useDemandNoticeEvidence();
+  const { save, saving, error, autosaveProps } = useDemandNoticeEvidence();
   const notices = draft.notices;
 
   const [active, setActive] = React.useState(0);
@@ -148,7 +148,7 @@ export function DemandNoticeSection() {
 
   return (
     <>
-      <FilingMain sourceOpen={sourceOpen}>
+      <FilingMain sourceOpen={sourceOpen} {...autosaveProps}>
         <FilingPageHeader
           title={t("demandNoticeSection_demandNoticeDebt")}
           description={t("demandNoticeSection_detailsOfTheStatutoryDemandNotice")}

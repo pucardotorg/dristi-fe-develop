@@ -44,7 +44,10 @@ export function JurisdictionSection() {
   const j = draft.jurisdiction;
   const { prev, next } = neighbours("jurisdiction");
   const router = useRouter();
-  const { save, saving, error } = useDetailsSection("jurisdiction_limitation", jurisdictionDetails);
+  const { save, saving, error, autosaveProps } = useDetailsSection(
+    "jurisdiction_limitation",
+    jurisdictionDetails,
+  );
 
   const set = <K extends keyof typeof j>(key: K, value: (typeof j)[K]) =>
     update((d) => {
@@ -91,7 +94,7 @@ export function JurisdictionSection() {
 
   return (
     <>
-      <FilingMain>
+      <FilingMain {...autosaveProps}>
         <FilingPageHeader
           title={t("jurisdictionSection_jurisdictionLimitation")}
           description={t("jurisdictionSection_establishWhichCourtCanHearThe")}

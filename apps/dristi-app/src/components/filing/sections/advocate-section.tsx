@@ -66,7 +66,7 @@ export function AdvocateSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("advocate");
   const { profile } = useProfile();
-  const { unsaved, retryUnsaved } = useCaseAdvocates();
+  const { unsaved, retryUnsaved, autosaveProps } = useCaseAdvocates();
 
   const advocates = draft.advocates;
   const choices = complainantChoices(draft.complainants);
@@ -228,7 +228,7 @@ export function AdvocateSection() {
 
   return (
     <>
-      <FilingMain sourceOpen={sourceOpen}>
+      <FilingMain sourceOpen={sourceOpen} {...autosaveProps}>
         <FilingPageHeader
           title={t("advocateSection_advocateDetails")}
           description={t("advocateSection_addTheAdvocatesRepresentingTheComplainant")}

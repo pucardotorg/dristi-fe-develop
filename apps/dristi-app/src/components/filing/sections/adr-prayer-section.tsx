@@ -48,7 +48,7 @@ export function AdrPrayerSection() {
   const adr = draft.adr;
   const { prev, next } = neighbours("adr-prayer");
   const router = useRouter();
-  const { save, saving, error } = useDetailsSection("adr_other_prayer", adrPrayerDetails);
+  const { save, saving, autosaveProps } = useDetailsSection("adr_other_prayer", adrPrayerDetails);
 
   const set = <K extends keyof AdrPrayer>(key: K, value: AdrPrayer[K]) =>
     update((d) => {
@@ -65,7 +65,7 @@ export function AdrPrayerSection() {
 
   return (
     <>
-      <FilingMain>
+      <FilingMain {...autosaveProps}>
         <FilingPageHeader
           title={t("adrPrayerSection_adrOtherDetailsPrayer")}
           description={t("adrPrayerSection_willingnessToSettleAnyAdditionalDetails")}

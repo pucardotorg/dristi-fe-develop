@@ -37,7 +37,7 @@ export function WitnessesSection() {
   const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("witnesses");
-  const { unsaved, retryUnsaved } = useCaseParties("witness");
+  const { unsaved, retryUnsaved, autosaveProps } = useCaseParties("witness");
 
   const [activeId, setActiveId] = React.useState(() => draft.witnesses[0]?.id ?? "");
   const [removeId, setRemoveId] = React.useState<string | null>(null);
@@ -97,7 +97,7 @@ export function WitnessesSection() {
 
   return (
     <>
-      <FilingMain>
+      <FilingMain {...autosaveProps}>
         <FilingPageHeader
           title={t("witnessesSection_witnesses")}
           description={t("witnessesSection_listTheWitnessesTheComplainantIntends")}

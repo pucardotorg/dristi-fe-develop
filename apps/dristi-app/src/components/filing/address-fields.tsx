@@ -166,7 +166,15 @@ export function AddressFields({
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    /*
+     * The step autosaves as the filer leaves a field (`FilingMain` onBlur). An address is
+     * sent whole and the backend writes a fresh row for it on each change, so saving once per
+     * line would leave part-filled rows behind — and a dropdown inside it (state) blurs to a
+     * portalled list, which would save a half-typed address mid-pick. So the block keeps its
+     * own focus moves from reaching that autosave; the address rides out on the next field's
+     * blur, Continue, or the step closing.
+     */
+    <div className="flex flex-col gap-4" onBlur={(e) => e.stopPropagation()}>
       <FormField label={t("addressFields_addressLine")} name={key("line1")} required={required}>
         <TextField
           id={idPrefix ? `${idPrefix}-line1` : undefined}

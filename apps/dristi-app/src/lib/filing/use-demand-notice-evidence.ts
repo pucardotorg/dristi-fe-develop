@@ -22,11 +22,12 @@ import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
 import { demandNoticeEvidenceInfo, demandNoticeHasContent } from "./evidence";
 import { noticeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
+import { onBlurAutosave, useSerialSave, type SaveResult } from "./use-autosave";
 import { linkSavedDocuments } from "./use-case-documents";
 import type { DemandNotice, FilingDraft } from "./types";
 import { useLoadFromCase } from "./use-load-from-case";
 
-export type SaveResult = { ok: boolean; error?: string };
+export type { SaveResult };
 
 type Update = (recipe: (draft: FilingDraft) => void) => void;
 
@@ -84,7 +85,7 @@ export function useDemandNoticeEvidence() {
   const [error, setError] = React.useState<string | null>(null);
 
   /** Push every demand notice to the case, as filled in. `ok` is false on a failure. */
-  const save = React.useCallback(async (): Promise<SaveResult> => {
+  const runSave = React.useCallback(async (): Promise<SaveResult> => {
     const caseId = draft.caseId;
     if (!caseId) return { ok: true };
     setSaving(true);
@@ -111,5 +112,21 @@ export function useDemandNoticeEvidence() {
     }
   }, [draft, update, latest, flush]);
 
-  return { save, saving, error, clearError: () => setError(null) };
+  // A notice's first save POSTs its row, so the engine runs one save at a time (no double
+  // POST before the id lands). The signature covers each notice's evidence and scan, plus
+  // the document set — a proof of dispatch/delivery/reply that finishes uploading must still
+  // get linked, and that change lives in `documents`, not on the notice.
+  const save = useSerialSave(runSave, () => {
+    if (!draft.caseId) return null;
+    return JSON.stringify({
+      notices: draft.notices.map((notice, i) => ({
+        info: demandNoticeEvidenceInfo(notice),
+        scan: noticeSourceSlot(draft, i, "demand-notice")?.caseDocumentId ?? null,
+      })),
+      documents: draft.documents,
+    });
+  });
+  const autosaveProps = onBlurAutosave(() => void save());
+
+  return { save, saving, error, clearError: () => setError(null), autosaveProps };
 }

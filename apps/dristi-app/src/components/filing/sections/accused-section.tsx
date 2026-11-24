@@ -63,7 +63,7 @@ export function AccusedSection() {
   const { draft, update, hrefFor } = useFiling();
   const router = useRouter();
   const { prev, next } = neighbours("accused");
-  const { unsaved, retryUnsaved } = useCaseParties("accused");
+  const { unsaved, retryUnsaved, autosaveProps } = useCaseParties("accused");
 
   // Tracked by id, so removing an accused cannot leave the tabs pointing at a stale index.
   const [activeId, setActiveId] = React.useState(() => draft.accused[0]?.id ?? "");
@@ -173,7 +173,7 @@ export function AccusedSection() {
 
   return (
     <>
-      <FilingMain>
+      <FilingMain {...autosaveProps}>
         <FilingPageHeader
           title={t("accusedSection_accusedDetails")}
           description={t("accusedSection_addThePersonOrEntityThis")}

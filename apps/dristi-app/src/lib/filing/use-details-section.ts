@@ -20,9 +20,10 @@ import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
 import type { DetailsSectionBody } from "./details";
 import { useFiling } from "./store";
 import type { FilingDraft } from "./types";
+import { onBlurAutosave, useSerialSave, type SaveResult } from "./use-autosave";
 import { useLoadFromCase } from "./use-load-from-case";
 
-export type SaveResult = { ok: boolean; error?: string };
+export type { SaveResult };
 
 export function useDetailsSection(
   section: string,
@@ -34,7 +35,7 @@ export function useDetailsSection(
   const [error, setError] = React.useState<string | null>(null);
 
   /** PUT the section if it is complete. `ok` is false on a failure. */
-  const save = React.useCallback(async (): Promise<SaveResult> => {
+  const runSave = React.useCallback(async (): Promise<SaveResult> => {
     const caseId = draft.caseId;
     if (!caseId) return { ok: true };
     const body = build(draft);
@@ -54,5 +55,14 @@ export function useDetailsSection(
     }
   }, [draft, section, build]);
 
-  return { save, saving, error, clearError: () => setError(null) };
+  // A whole section is PUT and replaces what was stored, so there is no id to race; the
+  // engine just keeps autosave and Continue from PUTting over each other and skips a PUT
+  // when the built section is unchanged. `null` body (not complete enough) means nothing yet.
+  const save = useSerialSave(runSave, () => {
+    const body = draft.caseId ? build(draft) : null;
+    return body ? JSON.stringify(body) : null;
+  });
+  const autosaveProps = onBlurAutosave(() => void save());
+
+  return { save, saving, error, clearError: () => setError(null), autosaveProps };
 }

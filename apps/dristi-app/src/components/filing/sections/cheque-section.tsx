@@ -66,7 +66,11 @@ export function ChequeSection() {
   const removeRecord = useRemoveCaseRecord();
   const { prev, next } = neighbours("cheque");
   const router = useRouter();
-  const { save, saving, error, autosaveProps } = useChequeEvidence();
+  const { save, error, autosaveProps } = useChequeEvidence();
+  // Drives the Continue button only. It must not follow the hook's autosave state: clicking
+  // Continue blurs the field, which autosaves, and a button disabled by that mid-click would
+  // swallow the click.
+  const [continuing, setContinuing] = React.useState(false);
   const cheques = draft.cheques;
 
   const [active, setActive] = React.useState(0);
@@ -165,8 +169,13 @@ export function ChequeSection() {
      keeps the filer here with the reason, so the data loss is visible. */
   const continueHref = next ? hrefFor(next) : undefined;
   const handleContinue = async () => {
-    const result = await save();
-    if (result.ok && continueHref) router.push(continueHref);
+    setContinuing(true);
+    try {
+      const result = await save();
+      if (result.ok && continueHref) router.push(continueHref);
+    } finally {
+      setContinuing(false);
+    }
   };
 
   return (
@@ -398,8 +407,8 @@ export function ChequeSection() {
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={continueHref ? handleContinue : undefined}
-        continueDisabled={saving}
-        continueLabel={saving ? t("chequeSection_saving") : t("chequeSection_continue")}
+        continueDisabled={continuing}
+        continueLabel={continuing ? t("chequeSection_saving") : t("chequeSection_continue")}
       />
 
       <ConfirmDialog

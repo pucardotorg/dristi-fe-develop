@@ -44,10 +44,13 @@ export function JurisdictionSection() {
   const j = draft.jurisdiction;
   const { prev, next } = neighbours("jurisdiction");
   const router = useRouter();
-  const { save, saving, error, autosaveProps } = useDetailsSection(
+  const { save, error, autosaveProps } = useDetailsSection(
     "jurisdiction_limitation",
     jurisdictionDetails,
   );
+  // Drives the Continue button only — not the hook's autosave state, or the blur that
+  // clicking Continue causes would disable the button mid-click and swallow the click.
+  const [continuing, setContinuing] = React.useState(false);
 
   const set = <K extends keyof typeof j>(key: K, value: (typeof j)[K]) =>
     update((d) => {
@@ -88,8 +91,13 @@ export function JurisdictionSection() {
      so the data loss is visible. */
   const continueHref = next ? hrefFor(next) : undefined;
   const handleContinue = async () => {
-    const result = await save();
-    if (result.ok && continueHref) router.push(continueHref);
+    setContinuing(true);
+    try {
+      const result = await save();
+      if (result.ok && continueHref) router.push(continueHref);
+    } finally {
+      setContinuing(false);
+    }
   };
 
   return (
@@ -403,8 +411,10 @@ export function JurisdictionSection() {
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={continueHref ? handleContinue : undefined}
-        continueDisabled={saving}
-        continueLabel={saving ? t("jurisdictionSection_saving") : t("jurisdictionSection_continue")}
+        continueDisabled={continuing}
+        continueLabel={
+          continuing ? t("jurisdictionSection_saving") : t("jurisdictionSection_continue")
+        }
       />
     </>
   );

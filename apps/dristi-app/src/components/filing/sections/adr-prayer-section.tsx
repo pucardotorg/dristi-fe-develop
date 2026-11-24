@@ -48,7 +48,10 @@ export function AdrPrayerSection() {
   const adr = draft.adr;
   const { prev, next } = neighbours("adr-prayer");
   const router = useRouter();
-  const { save, saving, autosaveProps } = useDetailsSection("adr_other_prayer", adrPrayerDetails);
+  const { save, autosaveProps } = useDetailsSection("adr_other_prayer", adrPrayerDetails);
+  // Drives the Continue button only — not the hook's autosave state, or the blur that
+  // clicking Continue causes would disable the button mid-click and swallow the click.
+  const [continuing, setContinuing] = React.useState(false);
 
   const set = <K extends keyof AdrPrayer>(key: K, value: AdrPrayer[K]) =>
     update((d) => {
@@ -59,8 +62,13 @@ export function AdrPrayerSection() {
      the reason, so the data loss is visible. */
   const continueHref = next ? hrefFor(next) : undefined;
   const handleContinue = async () => {
-    const result = await save();
-    if (result.ok && continueHref) router.push(continueHref);
+    setContinuing(true);
+    try {
+      const result = await save();
+      if (result.ok && continueHref) router.push(continueHref);
+    } finally {
+      setContinuing(false);
+    }
   };
 
   return (
@@ -144,8 +152,8 @@ export function AdrPrayerSection() {
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={continueHref ? handleContinue : undefined}
-        continueDisabled={saving}
-        continueLabel={saving ? t("adrPrayerSection_saving") : t("adrPrayerSection_continue")}
+        continueDisabled={continuing}
+        continueLabel={continuing ? t("adrPrayerSection_saving") : t("adrPrayerSection_continue")}
       />
     </>
   );

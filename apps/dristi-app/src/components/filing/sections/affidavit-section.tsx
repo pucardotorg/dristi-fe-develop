@@ -42,7 +42,10 @@ export function AffidavitSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("affidavit");
   const router = useRouter();
-  const { save, saving, error } = useAffidavit(affidavitHtml);
+  const { save, error } = useAffidavit(affidavitHtml);
+  // Drives the Continue button only — not the hook's autosave state, or the blur that
+  // clicking Continue causes would disable the button mid-click and swallow the click.
+  const [continuing, setContinuing] = React.useState(false);
   const [resetOpen, setResetOpen] = React.useState(false);
 
   // "Touched" tells an untouched affidavit (show the standard text, still tracking the
@@ -69,8 +72,13 @@ export function AffidavitSection() {
      which keeps the filer here. */
   const continueHref = next ? hrefFor(next) : undefined;
   const handleContinue = async () => {
-    const result = await save(value);
-    if (result.ok && continueHref) router.push(continueHref);
+    setContinuing(true);
+    try {
+      const result = await save(value);
+      if (result.ok && continueHref) router.push(continueHref);
+    } finally {
+      setContinuing(false);
+    }
   };
 
   const restoreStandard = () => {
@@ -136,8 +144,8 @@ export function AffidavitSection() {
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={continueHref ? handleContinue : undefined}
-        continueDisabled={saving}
-        continueLabel={saving ? t("affidavitSection_saving") : t("affidavitSection_continue")}
+        continueDisabled={continuing}
+        continueLabel={continuing ? t("affidavitSection_saving") : t("affidavitSection_continue")}
       />
 
       <ConfirmDialog

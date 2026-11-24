@@ -28,42 +28,91 @@ import { useLoadFromCase } from "./use-load-from-case";
 export type { SaveResult };
 
 type Update = (recipe: (draft: FilingDraft) => void) => void;
+type EvidenceApi = Pick<typeof caseFilingApi, "addEvidence" | "updateEvidence">;
+
+/**
+ * What a cheque's two rows are saved as, by the cheque's local id. `id` is remembered the
+ * moment a row is created — read before the `update` that writes it onto the draft has
+ * re-rendered, so a second autosave never creates the row twice (mirrors the parties'
+ * `lastSaved` map). `sig` is what was last sent, so a row whose fields did not change is not
+ * PATCHed again: editing a cheque field saves only the CHEQUE row, a return-memo field only
+ * the RETURN_MEMO row.
+ */
+export type ChequeRowState = { id?: string; sig?: string };
+export type ChequeEvidenceState = Map<string, { cheque: ChequeRowState; memo: ChequeRowState }>;
+
+function rowEntry(state: ChequeEvidenceState, chequeId: string) {
+  let entry = state.get(chequeId);
+  if (!entry) {
+    entry = { cheque: {}, memo: {} };
+    state.set(chequeId, entry);
+  }
+  return entry;
+}
+
+/** What is sent for one row — its fields and its linked scan — as a string to compare on. */
+function rowSignature(evidenceInfo: Record<string, unknown>, caseDocumentId: string | null) {
+  return JSON.stringify({ evidenceInfo, caseDocumentId });
+}
+
+/**
+ * Seed each existing row's baseline from the case as the step opens, so the first edit PATCHes
+ * only the row it changed rather than both. Rows not yet on the case keep an empty baseline.
+ */
+export function seedChequeEvidenceState(draft: FilingDraft, state: ChequeEvidenceState) {
+  draft.cheques.forEach((cheque, index) => {
+    const entry = rowEntry(state, cheque.id);
+    if (cheque.chequeEvidenceId) {
+      const docId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId ?? null;
+      entry.cheque = {
+        id: cheque.chequeEvidenceId,
+        sig: rowSignature(chequeEvidenceInfo(draft.cheques, index), docId),
+      };
+    }
+    if (cheque.returnMemoEvidenceId) {
+      const docId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
+      entry.memo = {
+        id: cheque.returnMemoEvidenceId,
+        sig: rowSignature(returnMemoEvidenceInfo(cheque), docId),
+      };
+    }
+  });
+}
 
 /**
  * Save one cheque's CHEQUE and RETURN_MEMO rows. An existing row is updated with whatever
- * is now filled (so clearing a field clears it on the case too); a row is created only once
- * the cheque carries something — a well-formed field, or a linked scan — so an untouched
- * cheque adds no empty rows.
- *
- * `createdIds` remembers a row's id the moment it is created, by the cheque's local id —
- * read before the `update` that writes it onto the draft has re-rendered. Autosave can fire a
- * second save before that render, and without this it would not see the id yet and would
- * create the row again (mirrors the parties' `lastSaved` map).
+ * is now filled (so clearing a field clears it on the case too) — but only when its fields
+ * actually changed since the last save; a row is created only once the cheque carries
+ * something — a well-formed field, or a linked scan — so an untouched cheque adds no rows.
  */
-export type ChequeEvidenceIds = Map<string, { cheque?: string; memo?: string }>;
-
 export async function saveOneCheque(
   caseId: string,
   draft: FilingDraft,
   index: number,
   update: Update,
-  createdIds: ChequeEvidenceIds,
+  state: ChequeEvidenceState,
+  api: EvidenceApi = caseFilingApi,
 ) {
   const cheque = draft.cheques[index];
+  const entry = rowEntry(state, cheque.id);
 
   {
     const evidenceInfo = chequeEvidenceInfo(draft.cheques, index);
     const caseDocumentId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId ?? null;
-    const existingId = cheque.chequeEvidenceId ?? createdIds.get(cheque.id)?.cheque;
+    const sig = rowSignature(evidenceInfo, caseDocumentId);
+    const existingId = cheque.chequeEvidenceId ?? entry.cheque.id;
     if (existingId) {
-      await caseFilingApi.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
+      if (entry.cheque.sig !== sig) {
+        await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
+        entry.cheque.sig = sig;
+      }
     } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
-      const saved = await caseFilingApi.addEvidence(caseId, {
+      const saved = await api.addEvidence(caseId, {
         evidenceType: "CHEQUE",
         evidenceInfo,
         caseDocumentId,
       });
-      createdIds.set(cheque.id, { ...createdIds.get(cheque.id), cheque: saved.caseEvidenceId });
+      entry.cheque = { id: saved.caseEvidenceId, sig };
       update((d) => {
         const c = d.cheques.find((x) => x.id === cheque.id);
         if (c) c.chequeEvidenceId = saved.caseEvidenceId;
@@ -74,19 +123,20 @@ export async function saveOneCheque(
   {
     const evidenceInfo = returnMemoEvidenceInfo(cheque);
     const caseDocumentId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
-    const existingId = cheque.returnMemoEvidenceId ?? createdIds.get(cheque.id)?.memo;
+    const sig = rowSignature(evidenceInfo, caseDocumentId);
+    const existingId = cheque.returnMemoEvidenceId ?? entry.memo.id;
     if (existingId) {
-      await caseFilingApi.updateEvidence(existingId, {
-        evidenceInfo,
-        caseDocumentId,
-      });
+      if (entry.memo.sig !== sig) {
+        await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
+        entry.memo.sig = sig;
+      }
     } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
-      const saved = await caseFilingApi.addEvidence(caseId, {
+      const saved = await api.addEvidence(caseId, {
         evidenceType: "RETURN_MEMO",
         evidenceInfo,
         caseDocumentId,
       });
-      createdIds.set(cheque.id, { ...createdIds.get(cheque.id), memo: saved.caseEvidenceId });
+      entry.memo = { id: saved.caseEvidenceId, sig };
       update((d) => {
         const c = d.cheques.find((x) => x.id === cheque.id);
         if (c) c.returnMemoEvidenceId = saved.caseEvidenceId;
@@ -110,13 +160,14 @@ export function removeChequeEvidence(
 export function useChequeEvidence() {
   const { update, latest, flush } = useFiling();
   const [saving, setSaving] = React.useState(false);
+  // What each row is saved as, kept across renders (see `saveOneCheque`).
+  const evidenceState = React.useRef<ChequeEvidenceState>(new Map());
   useLoadFromCase((read, d) => {
     d.cheques = chequesFromCase(read, d.cheques);
+    // Seed baselines from the case so the first edit only PATCHes the row it changed.
+    seedChequeEvidenceState(d, evidenceState.current);
   });
   const [error, setError] = React.useState<string | null>(null);
-  // Evidence ids created this session, kept across renders so a follow-up autosave sees them
-  // before the draft catches up (see `saveOneCheque`).
-  const createdIds = React.useRef<ChequeEvidenceIds>(new Map());
 
   /** Push every cheque and return memo to the case, as filled in. `ok` is false on a failure. */
   const runSave = React.useCallback(async (): Promise<SaveResult> => {
@@ -129,7 +180,7 @@ export function useChequeEvidence() {
     try {
       // In list order, so the cheque and its memo keep the same ordinal on the backend.
       for (let i = 0; i < current.cheques.length; i += 1) {
-        await saveOneCheque(caseId, current, i, update, createdIds.current);
+        await saveOneCheque(caseId, current, i, update, evidenceState.current);
       }
       // Commit the stored evidence ids to the local draft before we navigate away.
       await flush();
@@ -145,8 +196,9 @@ export function useChequeEvidence() {
 
   // Each cheque's first save POSTs its CHEQUE and RETURN_MEMO rows; a second save in flight
   // would POST them again before the id lands, so the engine runs one save at a time and
-  // `createdIds` carries the id across. The signature is exactly what `saveOneCheque` would
-  // send (its ids excluded), so clicking through the step without editing re-sends nothing.
+  // `evidenceState` carries each row's id across. The step signature below is everything the
+  // step would send, so clicking through without editing re-sends nothing (per-row skipping
+  // inside `saveOneCheque` then keeps an edit to one row from PATCHing the other).
   const save = useSerialSave(runSave, () => {
     const current = latest();
     if (!current.caseId) return null;

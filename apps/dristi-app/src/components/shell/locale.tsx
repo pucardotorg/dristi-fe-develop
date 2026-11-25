@@ -5,31 +5,41 @@ import { useRouter } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 
 import { getMessageCatalog, TIME_ZONE } from "@/i18n/messages";
-import { serializeLocaleCookie } from "@/lib/locale/cookie";
+import { renderLocale } from "@/lib/languages/languages";
+import { DEFAULT_LOCALE, serializeLocaleCookie } from "@/lib/locale/cookie";
 import type { Locale } from "@/lib/onboarding/content";
-import { SECOND_LANGUAGE, SECOND_LANGUAGES, type SecondLanguage } from "@/lib/locale-config";
 
 /**
  * App-wide language. The old Portal shell carried locale as a prop pair; on the one
  * shared shell it is context, so the top-bar toggle and every screen read the same
  * source. The choice is also kept in a cookie so the server renders the same language
  * on the next request.
+ *
+ * The backend decides which languages are offered (`lib/languages/`), so the chosen
+ * `language` may be one the app has no text for; `locale` is what text renders in —
+ * that language when the app has it, English otherwise.
  */
 type LocaleValue = {
+  /** The language text renders in. */
   locale: Locale;
+  /** Switch to a language the app has text for (the switches beside sign-in and onboarding). */
   setLocale: (locale: Locale) => void;
-  /** The language beside English in the top bar's switch — Hindi unless one is chosen. */
-  secondLanguage: SecondLanguage;
-  /** Put another language beside English, and switch to it. */
-  setSecondLanguage: (language: SecondLanguage) => void;
+  /** The chosen language's code, as the backend lists it. */
+  language: string;
+  /** Switch to any language the backend offers. */
+  setLanguage: (code: string) => void;
+  /** The language the person put beside the default in the top bar's switch, if any. */
+  secondLanguage: string | null;
+  /** Put a language beside the default, and switch to it. */
+  setSecondLanguage: (code: string) => void;
 };
 
 const LocaleContext = React.createContext<LocaleValue | null>(null);
 
 /** `request.ts` and the root layout read this cookie to render the chosen language. */
-function persistLocale(locale: Locale) {
+function persistLanguage(code: string) {
   try {
-    document.cookie = serializeLocaleCookie(locale);
+    document.cookie = serializeLocaleCookie(code);
   } catch {
     // Cookies blocked: the choice still applies until the page is reloaded.
   }
@@ -37,29 +47,30 @@ function persistLocale(locale: Locale) {
 
 export function LocaleProvider({
   children,
-  initialLocale = "en",
+  initialLanguage = DEFAULT_LOCALE,
 }: {
   children: React.ReactNode;
-  initialLocale?: Locale;
+  /** The chosen language's code, from the cookie. */
+  initialLanguage?: string;
 }) {
   const router = useRouter();
-  const [locale, setLocaleState] = React.useState<Locale>(initialLocale);
-  const [secondLanguage, setSecond] = React.useState<SecondLanguage>(
-    (SECOND_LANGUAGES as readonly string[]).includes(initialLocale)
-      ? (initialLocale as SecondLanguage)
-      : SECOND_LANGUAGE,
+  const [language, setLanguageState] = React.useState(initialLanguage);
+  // A language being read was put beside the default on an earlier visit.
+  const [secondLanguage, setSecond] = React.useState<string | null>(
+    initialLanguage === DEFAULT_LOCALE ? null : initialLanguage,
   );
+  const locale = renderLocale(language);
 
   /*
    * Server components render from the cookie, so a switch refreshes them. Changing the
    * state inside the same transition keeps the old language on screen until the
    * refreshed server output arrives, so the page never shows two languages at once.
    */
-  const setLocale = React.useCallback(
-    (next: Locale) => {
-      persistLocale(next);
+  const setLanguage = React.useCallback(
+    (next: string) => {
+      persistLanguage(next);
       React.startTransition(() => {
-        setLocaleState(next);
+        setLanguageState(next);
         router.refresh();
       });
     },
@@ -67,11 +78,11 @@ export function LocaleProvider({
   );
 
   const setSecondLanguage = React.useCallback(
-    (language: SecondLanguage) => {
-      setSecond(language);
-      setLocale(language);
+    (code: string) => {
+      setSecond(code);
+      setLanguage(code);
     },
-    [setLocale],
+    [setLanguage],
   );
 
   React.useEffect(() => {
@@ -79,8 +90,15 @@ export function LocaleProvider({
   }, [locale]);
 
   const value = React.useMemo<LocaleValue>(
-    () => ({ locale, setLocale, secondLanguage, setSecondLanguage }),
-    [locale, setLocale, secondLanguage, setSecondLanguage],
+    () => ({
+      locale,
+      setLocale: setLanguage,
+      language,
+      setLanguage,
+      secondLanguage,
+      setSecondLanguage,
+    }),
+    [locale, language, setLanguage, secondLanguage, setSecondLanguage],
   );
 
   return (

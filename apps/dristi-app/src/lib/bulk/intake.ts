@@ -232,8 +232,8 @@ async function buildDraft(
     return {
       id: uid("dn"),
       natureDebt: trim(n.natureOfDebt),
-      // The bulk format has no column for it yet; an "other" debt is described on screen.
-      natureDebtOther: "",
+      // LDN-1a: kept only for an "other" debt, as the filing sends it only then.
+      natureDebtOther: trim(n.natureOfDebt) === "other" ? trim(n.natureOfDebtOther) : "",
       dispatchDate: trim(n.dispatchedOn),
       modeService: trim(n.mode),
       tracking: trim(n.trackingNumber),

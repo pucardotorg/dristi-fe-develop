@@ -32,6 +32,7 @@ import {
   chequeReturnIssue,
   isCinOrPan,
   limitationView,
+  natureDebtOtherNeeded,
   noticeDispatchIssue,
   noticeServiceIssue,
   sameMobile,
@@ -777,6 +778,22 @@ export function caseFlags(bc: BatchCase): Flag[] {
           label: "scrutiny_natureOfDebt",
           value: "",
           options: NATURE_OF_DEBT,
+        },
+      });
+    // LDN-1a: an "other" debt needs its description, as the filing asks for it.
+    if (natureDebtOtherNeeded(n) && !n.natureDebtOther.trim())
+      push({
+        ...ldn,
+        rule: "ldn-1a",
+        field: "LDN-1a",
+        level: "hold",
+        at: `${p}.natureDebtOther`,
+        message: "Nature of debt is Other liability, but the liability is not described.",
+        fix: {
+          kind: "text",
+          path: `${p}.natureDebtOther`,
+          label: "scrutiny_natureOfDebtOther",
+          value: "",
         },
       });
     const sent = dateFlag(

@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import { blankAccused, blankComplainant, blankWitness, createBlankDraft } from "./blank";
 import {
+  advocateMobileClashes,
   firstAccusedClash,
   firstComplainantClash,
   firstWitnessClash,
@@ -108,11 +109,68 @@ describe("mobileConflicts", () => {
     assert.equal(firstAccusedClash(c), undefined);
   });
 
-  it("lets two witnesses, or a witness and a PoA holder, share a number", () => {
+  it("stops two witnesses sharing a number, on the later witness only", () => {
     const c = mobileConflicts(
-      draftWith([person("9000000001", "9876543210")], [], [["9876543210"], ["9876543210"]]),
+      draftWith([person("9000000001")], [], [["9876543210"], ["+91 98765 43210"]]),
+    );
+    assert.deepEqual(c.witness[0], [undefined]);
+    assert.deepEqual(c.witness[1], [{ role: "witness", witness: 0, contact: 0 }]);
+    assert.equal(firstWitnessClash(c), 1);
+  });
+
+  it("lets one witness repeat a number across their own contact rows", () => {
+    const c = mobileConflicts(
+      draftWith([person("9000000001")], [], [["9876543210", "9876543210"]]),
+    );
+    assert.equal(firstWitnessClash(c), undefined);
+  });
+
+  it("lets a witness and a PoA holder share a number", () => {
+    const c = mobileConflicts(
+      draftWith([person("9000000001", "9876543210")], [], [["9876543210"]]),
     );
     assert.equal(firstWitnessClash(c), undefined);
     assert.equal(firstComplainantClash(c), undefined);
+  });
+});
+
+describe("advocateMobileClashes", () => {
+  const ADVOCATE = "9123456789";
+
+  it("finds the first complainant, accused and witness with the advocate's number", () => {
+    const d = draftWith(
+      [person("9000000001"), person("+91 91234 56789")],
+      [["9000000002"], ["9000000003", ADVOCATE]],
+      [[ADVOCATE]],
+    );
+    assert.deepEqual(advocateMobileClashes(d, ADVOCATE), {
+      complainant: 1,
+      accused: 1,
+      witness: 0,
+    });
+  });
+
+  it("lets a PoA holder have the advocate's number (issue #64)", () => {
+    const d = draftWith([person("9000000001", ADVOCATE)]);
+    assert.equal(advocateMobileClashes(d, ADVOCATE).complainant, undefined);
+  });
+
+  it("checks an institution's representative and the people summoned for an accused entity", () => {
+    const institution = blankComplainant();
+    institution.type = "institution";
+    institution.rep.mobile = ADVOCATE;
+    const d = draftWith([institution], [["9000000002"]]);
+    d.accused[0].type = "institution";
+    d.accused[0].reps = [{ ...d.accused[0].reps[0], mobile: ADVOCATE }];
+    assert.deepEqual(advocateMobileClashes(d, ADVOCATE), {
+      complainant: 0,
+      accused: 0,
+      witness: undefined,
+    });
+  });
+
+  it("checks nothing when the advocate's number is unknown", () => {
+    const d = draftWith([person(ADVOCATE)], [[ADVOCATE]], [[ADVOCATE]]);
+    assert.deepEqual(advocateMobileClashes(d, undefined), {});
   });
 });

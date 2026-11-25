@@ -162,6 +162,32 @@ test("a missing or malformed drawer account number holds the case, with the fiel
   assert.equal(spaced, undefined);
 });
 
+test("an 'other' debt without its description holds the case, with the field to fix (LDN-1a)", async () => {
+  const notice = goodCase("x").notices[0];
+  const batch = await batchOf([
+    goodCase("H-1", { notices: [{ ...notice, natureOfDebt: "other" }] }),
+    goodCase("H-2", { notices: [{ ...notice, natureOfDebt: "other", natureOfDebtOther: "  " }] }),
+    goodCase("H-3", {
+      notices: [{ ...notice, natureOfDebt: "other", natureOfDebtOther: "Unpaid rent" }],
+    }),
+    goodCase("H-4", { notices: [{ ...notice, natureOfDebtOther: "Unpaid rent" }] }),
+  ]);
+  const [missing, blank, described, notOther] = batch.cases.map((bc) =>
+    caseFlags(bc).find((f) => f.rule === "ldn-1a"),
+  );
+  assert.equal(missing?.level, "hold");
+  assert.equal(missing?.fix?.kind, "text");
+  assert.equal(
+    missing?.fix && "path" in missing.fix ? missing.fix.path : "",
+    "notices.0.natureDebtOther",
+  );
+  assert.equal(blank?.level, "hold");
+  assert.equal(described, undefined);
+  assert.equal(notOther, undefined);
+  const [, , ok] = batch.cases;
+  assert.equal(ok.draft.notices[0].natureDebtOther, "Unpaid rent");
+});
+
 test("a late case needs a reason for condonation; a notice in transit holds the case", async () => {
   const late = goodCase("E-1", {
     cheques: [

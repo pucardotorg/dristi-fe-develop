@@ -11,7 +11,11 @@
 import * as React from "react";
 
 import { blankWitness } from "@/lib/filing/blank";
-import { firstWitnessClash, mobileConflicts } from "@/lib/filing/mobile-conflicts";
+import {
+  advocateMobileClashes,
+  firstWitnessClash,
+  mobileConflicts,
+} from "@/lib/filing/mobile-conflicts";
 import { useProfile } from "@/lib/filing/profile";
 import { filingAdvocateMobile, witnessComplete, witnessEntered } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
@@ -51,7 +55,9 @@ export function WitnessesSection() {
   const w = draft.witnesses[index];
 
   const conflicts = mobileConflicts(draft);
-  const clashAt = firstWitnessClash(conflicts);
+  const partyClashAt = firstWitnessClash(conflicts);
+  // A party with the advocate's own number stops the step the same way.
+  const clashAt = partyClashAt ?? advocateMobileClashes(draft, advocateMobile).witness;
   const conflictMessage = useMobileConflictMessage();
   /** A number a complainant or accused already has stops the step; the filer is taken to it. */
   const showClash = () => {
@@ -234,7 +240,11 @@ export function WitnessesSection() {
         continueHref={next ? hrefFor(next) : undefined}
         onContinue={showClash}
         continueBlocked={clashAt !== undefined}
-        continueHint={t("mobileConflict_continueHint")}
+        continueHint={t(
+          partyClashAt !== undefined
+            ? "mobileConflict_continueHint"
+            : "mobileConflict_advocateContinueHint",
+        )}
       />
 
       <ConfirmDialog

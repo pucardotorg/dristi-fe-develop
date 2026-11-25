@@ -432,8 +432,10 @@ export function filingAdvocateMobile(profile: UserProfile | null): string | unde
 
 /**
  * A party's mobile must be their own, not the advocate's: notices, OTPs and the account
- * link all follow the number. Checked for complainants, PoA holders, representatives,
- * accused and witnesses.
+ * link all follow the number. Checked for complainants, representatives, accused and
+ * witnesses, but not a PoA holder: the advocate may hold the power of attorney (issue #64),
+ * so the PoA holder's field never passes `advocateMobile`. The same rule stops Continue
+ * (`advocateMobileClashes`).
  */
 export function advocateMobileIssue(
   value: string,

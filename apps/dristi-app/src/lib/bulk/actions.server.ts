@@ -240,7 +240,7 @@ const EDITABLE = [
   /^accused\.\d+\.contacts\.0\.(mobile|email)$/,
   /^accused\.\d+\.addresses\.\d+\.addr\.(line1|city|pin)$/,
   /^cheques\.\d+\.(dateOnCheque|amount|chequeNumber|ifsc|presentDate|returnDate|returnReason)$/,
-  /^notices\.\d+\.(natureDebt|dispatchDate|modeService|deliveryDate|returnDate|nonDeliveryReason|partAmount)$/,
+  /^notices\.\d+\.(natureDebt|natureDebtOther|dispatchDate|modeService|deliveryDate|returnDate|nonDeliveryReason|partAmount)$/,
   /^jurisdiction\.(deposited|ifsc|payeePolice|drawerPolice|condonationReason)$/,
   /^notices\.\d+\.(tracking|replied)$/,
 ];

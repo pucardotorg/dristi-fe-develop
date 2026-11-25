@@ -15,7 +15,11 @@ import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 
 import { blankComplainant } from "@/lib/filing/blank";
 import { ENTITY_TYPES, GENDER_OPTIONS } from "@/lib/filing/options";
-import { firstComplainantClash, mobileConflicts } from "@/lib/filing/mobile-conflicts";
+import {
+  advocateMobileClashes,
+  firstComplainantClash,
+  mobileConflicts,
+} from "@/lib/filing/mobile-conflicts";
 import { fetchOnCourtRecord } from "@/lib/filing/registry";
 import {
   complainantComplete,
@@ -112,7 +116,9 @@ export function ComplainantSection() {
   const c = complainants[active];
 
   const conflicts = mobileConflicts(draft);
-  const clashAt = firstComplainantClash(conflicts);
+  const partyClashAt = firstComplainantClash(conflicts);
+  // A party with the advocate's own number stops the step the same way.
+  const clashAt = partyClashAt ?? advocateMobileClashes(draft, advocateMobile).complainant;
   const conflictMessage = useMobileConflictMessage();
 
   /* A scrutiny defect on "Complainant 1 › Age" selects that tab before it takes focus. */
@@ -483,7 +489,6 @@ export function ComplainantSection() {
                         required
                         value={c.poaHolder.mobile}
                         onChange={(v) => setPoa("mobile", v)}
-                        advocateMobile={advocateMobile}
                         conflict={conflictMessage(conflicts.poaHolder[active], true)}
                       />
                     </HalfWidth>
@@ -733,7 +738,11 @@ export function ComplainantSection() {
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={continueHref ? handleContinue : undefined}
         continueBlocked={clashAt !== undefined}
-        continueHint={t("mobileConflict_continueHint")}
+        continueHint={t(
+          partyClashAt !== undefined
+            ? "mobileConflict_continueHint"
+            : "mobileConflict_advocateContinueHint",
+        )}
       />
 
       <SourcePanel

@@ -53,13 +53,16 @@ export function MobileField({
 /**
  * Words for the party a number clashes with, from the side of a PoA holder's field or not.
  * A clash shows only on the later party's field, so the number is always an earlier
- * complainant's or an accused's.
+ * complainant's, an accused's or an earlier witness's.
  */
 export function useMobileConflictMessage() {
   const t = useTranslations();
   return (other: MobileOwner | undefined, onPoaHolderField = false): string | undefined => {
     if (other?.role === "accused") {
       return t("mobileConflict_accused", { number: String(other.accused + 1) });
+    }
+    if (other?.role === "witness") {
+      return t("mobileConflict_witness", { number: String(other.witness + 1) });
     }
     if (other?.role !== "complainant") return undefined;
     return onPoaHolderField

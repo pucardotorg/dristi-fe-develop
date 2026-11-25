@@ -554,6 +554,15 @@ function chequeGroups(draft: FilingDraft): FieldGroupDef[] {
         value: shown(c.bankBranch),
         ...readFrom(front, "bankBranch", c.bankBranch),
       },
+      {
+        // CHQ-7a: as typed, blank when the cheque shares the previous one's bank, like the
+        // IFSC and bank above.
+        id: `q${n}-acct`,
+        label: "Bank account number",
+        value: shown(c.accountNumber),
+        ident: true,
+        ...readFrom(front, "accountNumber", c.accountNumber),
+      },
     );
     const returned: Field[] = [
       {

@@ -47,7 +47,7 @@ export const TARGETABLE_FIELDS = {
     "returnReason",
   ],
   complainant: ["name", "age", "email"],
-  "demand-notice": ["natureDebt", "dispatchDate", "modeService", "tracking"],
+  "demand-notice": ["natureDebt", "natureDebtOther", "dispatchDate", "modeService", "tracking"],
   jurisdiction: [
     "deposited",
     "ifsc",

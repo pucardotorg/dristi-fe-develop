@@ -26,7 +26,11 @@ import {
 } from "@/lib/filing/selectors";
 import { useProfile } from "@/lib/filing/profile";
 import { nameList } from "@/lib/filing/format";
-import { firstAccusedClash, mobileConflicts } from "@/lib/filing/mobile-conflicts";
+import {
+  advocateMobileClashes,
+  firstAccusedClash,
+  mobileConflicts,
+} from "@/lib/filing/mobile-conflicts";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
@@ -83,7 +87,9 @@ export function AccusedSection() {
   const isIndividual = a.type === "individual";
 
   const conflicts = mobileConflicts(draft);
-  const clashAt = firstAccusedClash(conflicts);
+  const partyClashAt = firstAccusedClash(conflicts);
+  // A party with the advocate's own number stops the step the same way.
+  const clashAt = partyClashAt ?? advocateMobileClashes(draft, advocateMobile).accused;
   const conflictMessage = useMobileConflictMessage();
 
   const confirmCheckboxId = React.useId();
@@ -331,7 +337,11 @@ export function AccusedSection() {
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={handleContinue}
         continueBlocked={clashAt !== undefined}
-        continueHint={t("mobileConflict_continueHint")}
+        continueHint={t(
+          partyClashAt !== undefined
+            ? "mobileConflict_continueHint"
+            : "mobileConflict_advocateContinueHint",
+        )}
       />
 
       {/* Continue while some accused — named here — has no phone or email. */}

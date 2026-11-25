@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { lookupPin } from "@/lib/filing/lookups";
+import { lookupPin, pinLookupFill } from "@/lib/filing/lookups";
 import { STATES } from "@/lib/filing/options";
 import type { Address } from "@/lib/filing/types";
 import { FormRow } from "@/components/filing/form-card";
@@ -21,8 +21,10 @@ type PinFill = { pin: string; district: boolean; state: boolean };
  * Address line · pincode · city · district · state.
  *
  * The pincode is the fast path: once six digits are in, the postal service is asked for
- * the district and state and fills whichever of the two is still blank. Anything the
- * person typed is never overwritten, and a failed lookup says nothing — they just type.
+ * the district and state. On a first load those two fill only while blank, so a saved
+ * address is left as it is; but *changing* the pincode to a different area refreshes both
+ * to the new one (issue #58), since a changed pincode means the old district/state no
+ * longer belong. A failed lookup says nothing — they just type.
  */
 export function AddressFields({
   value,
@@ -54,14 +56,19 @@ export function AddressFields({
 
   const [pinFill, setPinFill] = React.useState<PinFill | null>(null);
 
-  // The lookup resolves after the fact, so it reads the newest address and the newest
-  // fill state through a ref — depending on them would restart the debounce on every key.
-  const latest = React.useRef({ value, onChange, pinFill });
-  React.useEffect(() => {
-    latest.current = { value, onChange, pinFill };
-  });
-
   const pin6 = value.pin.replace(/\D/g, "");
+
+  // The PIN whose area the district and state already reflect: seeded from the saved
+  // address so a revisit's own lookup leaves it untouched, then moved forward each time a
+  // lookup fills it. A lookup for a *different* PIN refreshes both fields (issue #58).
+  const appliedPin = React.useRef<string | null>(pin6.length === 6 ? pin6 : null);
+
+  // The lookup resolves after the fact, so it reads the newest address through a ref —
+  // depending on it would restart the debounce on every key.
+  const latest = React.useRef({ value, onChange });
+  React.useEffect(() => {
+    latest.current = { value, onChange };
+  });
 
   React.useEffect(() => {
     if (pin6.length !== 6) return;
@@ -70,18 +77,12 @@ export function AddressFields({
       lookupPin(pin6)
         .then((hit) => {
           if (cancelled || !hit) return;
-          const { value: addr, onChange: commit, pinFill: filled } = latest.current;
-          // Only the state spellings the select actually offers can be filled into it.
-          const stateHit = STATES.find((s) => s.toLowerCase() === hit.state.trim().toLowerCase());
-          const fillDistrict = !addr.district.trim() || !!filled?.district;
-          const fillState = (!addr.state.trim() || !!filled?.state) && !!stateHit;
-          if (!fillDistrict && !fillState) return;
-          commit({
-            ...addr,
-            district: fillDistrict ? hit.district : addr.district,
-            state: fillState && stateHit ? stateHit : addr.state,
-          });
-          setPinFill({ pin: hit.pin, district: fillDistrict, state: fillState });
+          const { value: addr, onChange: commit } = latest.current;
+          const fill = pinLookupFill(hit, addr, appliedPin.current, STATES);
+          if (!fill) return;
+          commit({ ...addr, district: fill.district, state: fill.state });
+          appliedPin.current = hit.pin;
+          setPinFill({ pin: hit.pin, district: fill.filled.district, state: fill.filled.state });
         })
         // Best-effort: an unknown PIN or an unreachable service says nothing.
         .catch(() => {});

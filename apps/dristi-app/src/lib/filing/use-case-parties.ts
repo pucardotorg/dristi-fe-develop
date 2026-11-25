@@ -289,6 +289,16 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
         p.poaSyncError = result.error ? caseFilingErrorMessage(result.error) : undefined;
       });
     }
+
+    // A PoA holder's identity proof is often uploaded before the holder is on the case.
+    await linkSavedDocuments(latest, update, {
+      participantIdOf: (c) => savedParticipantIds(c)[0],
+      poaHolderIdOf: (c) => {
+        if (c.poa !== "yes") return undefined;
+        const saved = lastPoa.has(c.id) ? lastPoa.get(c.id) : c.savedPoaHolder;
+        return saved?.participantId;
+      },
+    });
   });
 
   // The complainant step waits for the profile before its first save (above); read the

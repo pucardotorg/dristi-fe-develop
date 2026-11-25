@@ -26,6 +26,20 @@ export const IFSC_PATTERN = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 /** A cheque's serial number: exactly six digits (the first MICR set), as the backend requires. */
 export const CHEQUE_NUMBER_PATTERN = /^[0-9]{6}$/;
 
+/** A bank account number as the backend accepts it on a cheque (`CHQ-7a`): 9 to 18 digits. */
+export const ACCOUNT_NUMBER_PATTERN = /^[0-9]{9,18}$/;
+
+/** An account number as typed, without the spaces and hyphens people group it with. */
+export function normaliseAccountNumber(value: string): string {
+  return value.replace(/[\s-]/g, "");
+}
+
+/** Whether a typed account number is one the backend would refuse. Empty is not wrong. */
+export function accountNumberInvalid(value: string): boolean {
+  const number = normaliseAccountNumber(value);
+  return !!number && !ACCOUNT_NUMBER_PATTERN.test(number);
+}
+
 /** Bank details for an IFSC, `null` when the code is not known. Throws on network error. */
 export function lookupIfsc(code: string): Promise<IfscResult | null> {
   const ifsc = code.trim().toUpperCase();

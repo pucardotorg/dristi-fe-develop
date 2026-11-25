@@ -132,9 +132,13 @@ export function chequesFromCase(read: CaseRead, local: ChequeDetails[]): ChequeD
 /* ────────────────────────────────── Demand notices ──────────────────────────────── */
 
 function noticeFrom(e: EvidenceRead, base: DemandNotice | undefined): DemandNotice {
+  const saved = noticeFromEvidence(e.evidence_info);
   return {
     ...(base ?? blankNotice()),
-    ...noticeFromEvidence(e.evidence_info),
+    ...saved,
+    // A notice saved before the backend held the "other" description (LDN-1a) has none
+    // there: keep this browser's, so the next save sends it rather than losing it.
+    natureDebtOther: saved.natureDebtOther || (base?.natureDebtOther ?? ""),
     noticeEvidenceId: e.case_evidence_id,
   };
 }

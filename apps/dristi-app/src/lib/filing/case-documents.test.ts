@@ -144,6 +144,12 @@ describe("complainant document links", () => {
     return draft;
   }
 
+  function partySlot(draft: FilingDraft, index: number, docType: IntakeDocType): IntakeSlot {
+    const slot = draft.intake.parties[index].slots.find((s) => s.docType === docType);
+    assert.ok(slot, `no ${docType} slot for party ${index + 1}`);
+    return slot;
+  }
+
   it("uploads a saved complainant's identity proof linked to them", () => {
     const draft = twoComplainantDraft();
     const upload = caseUploadFor(draft, { kind: "slot", key: "p1id" });
@@ -167,14 +173,16 @@ describe("complainant document links", () => {
 
   it("lists saved documents not yet linked to their complainant", () => {
     const draft = twoComplainantDraft();
-    const [idProof, poa, vakalatnama] = draft.intake.parties[0].slots;
+    const idProof = partySlot(draft, 0, "id-proof");
+    const poa = partySlot(draft, 0, "poa");
+    const vakalatnama = partySlot(draft, 0, "vakalatnama");
     idProof.caseDocumentId = "d-id";
     vakalatnama.caseDocumentId = "d-vak";
     vakalatnama.linkedParticipantId = "p-1";
     poa.caseDocumentId = "d-poa";
     poa.syncing = true;
     // Complainant 2 is not saved, so their document waits.
-    draft.intake.parties[1].slots[0].caseDocumentId = "d-id-2";
+    partySlot(draft, 1, "id-proof").caseDocumentId = "d-id-2";
 
     assert.deepEqual(pendingLinks(draft), [
       { target: { kind: "slot", key: "p1id" }, caseDocumentId: "d-id", participantId: "p-1" },
@@ -183,7 +191,7 @@ describe("complainant document links", () => {
 
   it("relinks a document when its complainant is added again under a new id", () => {
     const draft = twoComplainantDraft();
-    const vakalatnama = draft.intake.parties[0].slots[2];
+    const vakalatnama = partySlot(draft, 0, "vakalatnama");
     vakalatnama.caseDocumentId = "d-vak";
     vakalatnama.linkedParticipantId = "p-old";
     assert.deepEqual(
@@ -193,6 +201,75 @@ describe("complainant document links", () => {
       ]),
       [["d-vak", "p-new"]],
     );
+  });
+
+  describe("the PoA holder's identity proof (DCM-10)", () => {
+    /** Complainant 1 acts through a PoA holder saved on the case as `h-1`. */
+    function withPoaHolder(): FilingDraft {
+      const draft = twoComplainantDraft();
+      const c = draft.complainants[0];
+      c.poa = "yes";
+      c.savedPoaHolder = {
+        participantId: "h-1",
+        mandateIds: ["m-1"],
+        forParticipantId: "p-1",
+        body: "{}",
+      };
+      return draft;
+    }
+
+    it("uploads as an identity proof linked to the PoA holder, not the complainant", () => {
+      const draft = withPoaHolder();
+      const key = partySlot(draft, 0, "poa-holder-id-proof").key;
+      const upload = caseUploadFor(draft, { kind: "slot", key });
+      assert.equal(upload?.documentType, "IDENTITY_PROOF");
+      assert.equal(upload?.meta.caseParticipantId, "h-1");
+    });
+
+    it("leaves the link out until the PoA holder is on the case", () => {
+      const draft = withPoaHolder();
+      draft.complainants[0].savedPoaHolder = undefined;
+      const key = partySlot(draft, 0, "poa-holder-id-proof").key;
+      assert.equal(caseUploadFor(draft, { kind: "slot", key })?.meta.caseParticipantId, undefined);
+    });
+
+    it("never links to a holder left on the draft after the complainant stops using one", () => {
+      const draft = withPoaHolder();
+      draft.complainants[0].poa = "no";
+      const slot = partySlot(draft, 0, "poa-holder-id-proof");
+      slot.caseDocumentId = "d-hid";
+      assert.equal(
+        caseUploadFor(draft, { kind: "slot", key: slot.key })?.meta.caseParticipantId,
+        undefined,
+      );
+      assert.deepEqual(pendingLinks(draft), []);
+    });
+
+    it("is linked afterwards once the PoA holder is saved", () => {
+      const draft = withPoaHolder();
+      const slot = partySlot(draft, 0, "poa-holder-id-proof");
+      slot.caseDocumentId = "d-hid";
+      assert.deepEqual(pendingLinks(draft), [
+        { target: { kind: "slot", key: slot.key }, caseDocumentId: "d-hid", participantId: "h-1" },
+      ]);
+      // Read from the step that has just saved the holder, before the draft holds the id.
+      draft.complainants[0].savedPoaHolder = undefined;
+      assert.deepEqual(
+        pendingLinks(draft, { poaHolderIdOf: () => "h-2" }).map((l) => l.participantId),
+        ["h-2"],
+      );
+    });
+
+    it("is relinked when the PoA holder is saved again under a new id", () => {
+      const draft = withPoaHolder();
+      const slot = partySlot(draft, 0, "poa-holder-id-proof");
+      slot.caseDocumentId = "d-hid";
+      slot.linkedParticipantId = "h-old";
+      assert.deepEqual(
+        pendingLinks(draft).map((l) => l.participantId),
+        ["h-1"],
+      );
+    });
   });
 });
 

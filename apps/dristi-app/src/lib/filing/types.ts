@@ -97,6 +97,8 @@ export type IntakeDocType =
   | "notice-reply"
   | "id-proof"
   | "poa"
+  /** The complainant's PoA holder's own identity proof (`DCM-10`). */
+  | "poa-holder-id-proof"
   | "vakalatnama"
   | "other"
   | "supporting";
@@ -323,6 +325,7 @@ export type ChequeField =
   | "ifsc"
   | "bankName"
   | "bankBranch"
+  | "accountNumber"
   | "presentDate"
   | "returnDate"
   | "returnReason";
@@ -336,6 +339,11 @@ export type ChequeDetails = {
   ifsc: string;
   bankName: string;
   bankBranch: string;
+  /**
+   * The drawer's account the cheque is drawn on (`CHQ-7a`), 9 to 18 digits. Required by
+   * the form, as the bulk-upload spec requires it; the backend schema still accepts none.
+   */
+  accountNumber: string;
   presentDate: ISODate;
   returnDate: ISODate;
   returnReason: string;
@@ -349,11 +357,16 @@ export type ChequeDetails = {
 /* ───────────────────────────── Demand notice & debt ─────────────────────────────── */
 
 export type NoticeField =
-  "natureDebt" | "dispatchDate" | "tracking" | "modeService" | "deliveryDate";
+  "natureDebt" | "natureDebtOther" | "dispatchDate" | "tracking" | "modeService" | "deliveryDate";
 
 export type DemandNotice = {
   id: string;
   natureDebt: string;
+  /**
+   * What the liability is, when the nature of debt is "other" (`LDN-1a`). Kept in this
+   * browser only until the backend's demand-notice schema has a field for it.
+   */
+  natureDebtOther: string;
   dispatchDate: ISODate;
   modeService: string;
   tracking: string;

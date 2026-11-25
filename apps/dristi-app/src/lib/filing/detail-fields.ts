@@ -13,11 +13,12 @@
  */
 
 import { addressToString, nameList, rupees, toLongDate } from "./format";
-import { COURT, MODE_OF_SERVICE, NATURE_OF_DEBT, RETURN_REASONS, type Option } from "./options";
+import { COURT, MODE_OF_SERVICE, RETURN_REASONS, type Option } from "./options";
 import {
   advocateName,
   causeOfActionDate,
   complaintFilingDate,
+  natureOfDebtText,
   totalChequeAmount,
 } from "./selectors";
 import type { FilingDraft, StepId } from "./types";
@@ -179,7 +180,7 @@ export const DETAIL_FIELD_GROUPS: DetailFieldGroup[] = [
       {
         name: "Nature of Debt",
         step: "demand-notice",
-        resolve: (d) => each(d.notices, (n) => label(NATURE_OF_DEBT, n.natureDebt)),
+        resolve: (d) => each(d.notices, (n) => natureOfDebtText(n)),
       },
       {
         name: "Notice Dispatch Date",

@@ -573,6 +573,17 @@ export const COLUMNS: Column[] = [
     example: "Loan / advance repayment",
   },
   {
+    key: "natureDebtOther",
+    group: "notice",
+    header: "Other debt description",
+    sheet: "Demand notice {n} other debt description",
+    field: "LDN-1a",
+    kind: "text",
+    required: "When nature of debt is Other liability",
+    aliases: ["Other liability", "Describe the debt", "Debt description"],
+    example: "",
+  },
+  {
     key: "dispatchDate",
     group: "notice",
     header: "Notice dispatch date",

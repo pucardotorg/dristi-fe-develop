@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { CreditCardIcon } from "lucide-react";
 
 import { blankCheque } from "@/lib/filing/blank";
-import type { IfscResult } from "@/lib/filing/lookups";
+import { accountNumberInvalid, type IfscResult } from "@/lib/filing/lookups";
 import { RETURN_REASONS, S138_SAFE_REASONS } from "@/lib/filing/options";
 import {
   chequeComplete,
@@ -311,6 +311,27 @@ export function ChequeSection() {
                     />
                   </FormField>
                 </FormRow>
+                <HalfWidth>
+                  <FormField
+                    label={t("chequeSection_bankAccountNumber")}
+                    name="accountNumber"
+                    required
+                    tip={t("chequeSection_theAccountNumberPrintedOnThe")}
+                    error={
+                      accountNumberInvalid(cheque.accountNumber)
+                        ? t("chequeSection_enterTheAccountNumberAs9To18Digits")
+                        : undefined
+                    }
+                  >
+                    <TextField
+                      value={cheque.accountNumber}
+                      onChange={(v) => editField("accountNumber", v)}
+                      placeholder={t("chequeSection_9To18Digits")}
+                      inputMode="numeric"
+                      autoComplete="off"
+                    />
+                  </FormField>
+                </HalfWidth>
               </>
             ) : null}
 

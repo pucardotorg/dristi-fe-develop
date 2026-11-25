@@ -18,6 +18,7 @@ import {
   PAYMENT_STATUS,
 } from "@/lib/filing/options";
 import {
+  natureDebtOtherNeeded,
   noticeSourceSlot,
   noticeComplete,
   noticeDispatchIssue,
@@ -202,6 +203,20 @@ export function DemandNoticeSection() {
                 />
               </FormField>
             </FormRow>
+            {natureDebtOtherNeeded(notice) ? (
+              <FormField
+                label={t("demandNoticeSection_describeTheDebtOrLiability")}
+                name="natureDebtOther"
+                required
+                help={t("demandNoticeSection_whatTheChequeWasGivenTo")}
+              >
+                <TextField
+                  value={notice.natureDebtOther}
+                  onChange={(v) => editField("natureDebtOther", v)}
+                  placeholder={t("demandNoticeSection_eGUnpaidRentForThe")}
+                />
+              </FormField>
+            ) : null}
           </FormCard>
 
           {/* The notice itself, and how it was served */}

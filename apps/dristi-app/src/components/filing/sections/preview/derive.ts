@@ -97,6 +97,20 @@ export function complainantSummary(c: Complainant | undefined) {
   };
 }
 
+export type ComplainantSummary = ReturnType<typeof complainantSummary> & {
+  key: string;
+  label: string;
+};
+
+/** Every complainant on the case — a filing may have co-complainants. */
+export function complainantSummaries(draft: FilingDraft): ComplainantSummary[] {
+  return draft.complainants.map((c, i) => ({
+    key: c.id,
+    label: `Complainant ${i + 1}`,
+    ...complainantSummary(c),
+  }));
+}
+
 export type AdvocateSummary = {
   key: string;
   label: string;
@@ -273,6 +287,20 @@ export function noticeSummary(n: DemandNotice | undefined) {
         : orNot(payment),
     paidYesNo: n?.paymentStatus === "part" ? "previewDerive_yesInPart" : "No",
   };
+}
+
+export type NoticeSummary = ReturnType<typeof noticeSummary> & {
+  key: string;
+  label: string;
+};
+
+/** Every demand notice on the case — a filing may rely on more than one. */
+export function noticeSummaries(draft: FilingDraft): NoticeSummary[] {
+  return draft.notices.map((n, i) => ({
+    key: n.id,
+    label: `Demand notice ${i + 1}`,
+    ...noticeSummary(n),
+  }));
 }
 
 /**

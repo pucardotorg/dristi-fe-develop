@@ -31,21 +31,6 @@ describe("buildUpstreamUrl", () => {
     assert.equal(buildUpstreamUrl(BASE, "/api/v1", "")?.href, "http://backend:8000/api/v1/");
   });
 
-  it("leaves the slash off the e-sign routes, which the backend declares without it", () => {
-    assert.equal(
-      buildUpstreamUrl(BASE, "/api/v1/esign/_esign", "")?.href,
-      "http://backend:8000/api/v1/esign/_esign",
-    );
-    assert.equal(
-      buildUpstreamUrl(BASE, "/api/v1/esign/transactions/3fa85f64", "")?.href,
-      "http://backend:8000/api/v1/esign/transactions/3fa85f64",
-    );
-    assert.equal(
-      buildUpstreamUrl(BASE, "/api/v1/esign-settings", "")?.href,
-      "http://backend:8000/api/v1/esign-settings/",
-    );
-  });
-
   it("follows the configured base path, whatever it is", () => {
     assert.equal(
       buildUpstreamUrl("https://gw.example.org/dristi/api/v2", "/api/v1/users", "")?.href,

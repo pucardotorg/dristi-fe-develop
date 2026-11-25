@@ -106,12 +106,7 @@ export function buildUpstreamUrl(baseUrl: string, pathname: string, search: stri
     segments.push(encodeURIComponent(segment));
   }
 
-  // The one exception to rule 1: the backend's e-sign routes (`esign/_esign`,
-  // `esign/transactions/<id>`) are declared without the slash and 404 with it. Remove this
-  // once the backend adds the slash to them; until both sides change together, a POST to the
-  // wrong form fails rather than redirecting.
-  const noSlash = segments[0] === "esign";
-  const path = segments.length ? `${segments.join("/")}${noSlash ? "" : "/"}` : "";
+  const path = segments.length ? `${segments.join("/")}/` : "";
   const url = new URL(`${baseUrl}/${path}`);
   url.search = search;
 

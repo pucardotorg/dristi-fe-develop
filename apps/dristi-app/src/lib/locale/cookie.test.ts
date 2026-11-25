@@ -25,4 +25,12 @@ describe("locale cookie", () => {
       `${LOCALE_COOKIE}=hi; Path=/; Max-Age=31536000; SameSite=Lax`,
     );
   });
+
+  it("stores a language the backend offers even without app text, and refuses a non-code", () => {
+    assert.equal(
+      serializeLocaleCookie("ta"),
+      `${LOCALE_COOKIE}=ta; Path=/; Max-Age=31536000; SameSite=Lax`,
+    );
+    assert.throws(() => serializeLocaleCookie("en; Domain=evil.example"), TypeError);
+  });
 });

@@ -23,7 +23,27 @@ export function parseLocale(value: string | undefined): Locale {
   return isLocale(value) ? value : DEFAULT_LOCALE;
 }
 
-/** The `document.cookie` assignment that persists the chosen locale for the whole app. */
-export function serializeLocaleCookie(locale: Locale): string {
-  return `${LOCALE_COOKIE}=${locale}; Path=/; Max-Age=${ONE_YEAR_SECONDS}; SameSite=Lax`;
+/**
+ * A lowercase BCP 47 tag ("en", "ml", "en-in"). The backend decides which languages
+ * exist, so the cookie may hold one the app has no text for; anything not shaped like a
+ * tag is refused rather than escaped, since it goes into a cookie and `lang` attributes.
+ */
+const LANGUAGE_CODE = /^[a-z]{2,3}(-[a-z0-9]{2,8})*$/;
+
+export function isLanguageCode(value: unknown): value is string {
+  return typeof value === "string" && LANGUAGE_CODE.test(value);
+}
+
+/** The chosen language's code; a missing or malformed cookie means English. */
+export function parseLanguageCode(value: string | undefined): string {
+  return isLanguageCode(value) ? value : DEFAULT_LOCALE;
+}
+
+/**
+ * The `document.cookie` assignment that persists the chosen language for the whole app.
+ * Any language code may be stored; `parseLocale` renders one without text in English.
+ */
+export function serializeLocaleCookie(code: string): string {
+  if (!isLanguageCode(code)) throw new TypeError(`Not a language code: "${code}"`);
+  return `${LOCALE_COOKIE}=${code}; Path=/; Max-Age=${ONE_YEAR_SECONDS}; SameSite=Lax`;
 }

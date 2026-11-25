@@ -70,6 +70,41 @@ export function lookupIfsc(code: string): Promise<IfscResult | null> {
 
 export type PinResult = { pin: string; district: string; state: string; offices: string[] };
 
+/** The district and state a resolved PIN lookup should write, with which of the two it wrote. */
+export type PinFillUpdate = {
+  district: string;
+  state: string;
+  filled: { district: boolean; state: boolean };
+};
+
+/**
+ * What a resolved PIN lookup writes into an address.
+ *
+ * A *changed* PIN means a different area, so district and state refresh to the new one
+ * (issue #58): district always, state only when the lookup's spelling matches one the
+ * select offers. `appliedPin` is the PIN whose area the fields already reflect — the one
+ * saved with the address, or the last one the lookup filled. When the lookup is for that
+ * same PIN (a first load or a revisit) only still-blank fields are filled, so nothing the
+ * person saved is overwritten without a change. Returns `null` when there is nothing to do.
+ */
+export function pinLookupFill(
+  hit: Pick<PinResult, "pin" | "district" | "state">,
+  current: { district: string; state: string },
+  appliedPin: string | null,
+  states: readonly string[],
+): PinFillUpdate | null {
+  const stateHit = states.find((s) => s.toLowerCase() === hit.state.trim().toLowerCase());
+  const pinChanged = hit.pin !== appliedPin;
+  const fillDistrict = pinChanged || !current.district.trim();
+  const fillState = (pinChanged || !current.state.trim()) && !!stateHit;
+  if (!fillDistrict && !fillState) return null;
+  return {
+    district: fillDistrict ? hit.district : current.district,
+    state: fillState && stateHit ? stateHit : current.state,
+    filled: { district: fillDistrict, state: fillState },
+  };
+}
+
 const pinCache = new Map<string, Promise<PinResult | null>>();
 
 /** District and state for a 6-digit PIN, `null` when unknown. Throws on network error. */

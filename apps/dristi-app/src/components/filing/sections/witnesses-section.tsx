@@ -11,8 +11,13 @@
 import * as React from "react";
 
 import { blankWitness } from "@/lib/filing/blank";
-import { firstWitnessClash, mobileConflicts } from "@/lib/filing/mobile-conflicts";
-import { witnessComplete, witnessEntered } from "@/lib/filing/selectors";
+import {
+  advocateMobileClashes,
+  firstWitnessClash,
+  mobileConflicts,
+} from "@/lib/filing/mobile-conflicts";
+import { useProfile } from "@/lib/filing/profile";
+import { filingAdvocateMobile, witnessComplete, witnessEntered } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
@@ -36,6 +41,7 @@ import { useTranslations } from "next-intl";
 export function WitnessesSection() {
   const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
+  const advocateMobile = filingAdvocateMobile(useProfile().profile);
   const { prev, next } = neighbours("witnesses");
   const { unsaved, retryUnsaved } = useCaseParties("witness");
 
@@ -49,7 +55,9 @@ export function WitnessesSection() {
   const w = draft.witnesses[index];
 
   const conflicts = mobileConflicts(draft);
-  const clashAt = firstWitnessClash(conflicts);
+  const partyClashAt = firstWitnessClash(conflicts);
+  // A party with the advocate's own number stops the step the same way.
+  const clashAt = partyClashAt ?? advocateMobileClashes(draft, advocateMobile).witness;
   const conflictMessage = useMobileConflictMessage();
   /** A number a complainant or accused already has stops the step; the filer is taken to it. */
   const showClash = () => {
@@ -205,6 +213,7 @@ export function WitnessesSection() {
               emailLabel={t("witnessesSection_emailId")}
               mobilePlaceholder={t("witnessesSection_enterMobileNumber")}
               emailPlaceholder={t("witnessesSection_exXyzGmailCom")}
+              advocateMobile={advocateMobile}
               mobileConflicts={conflicts.witness[index]?.map((other) => conflictMessage(other))}
             />
           </FormCard>
@@ -231,7 +240,11 @@ export function WitnessesSection() {
         continueHref={next ? hrefFor(next) : undefined}
         onContinue={showClash}
         continueBlocked={clashAt !== undefined}
-        continueHint={t("mobileConflict_continueHint")}
+        continueHint={t(
+          partyClashAt !== undefined
+            ? "mobileConflict_continueHint"
+            : "mobileConflict_advocateContinueHint",
+        )}
       />
 
       <ConfirmDialog

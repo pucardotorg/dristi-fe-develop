@@ -96,6 +96,16 @@ test("a reply is recorded only for a delivered notice, as the filing asks it", a
   assert.equal((await draftOf(oneCase())).notices[0].replied, "no");
 });
 
+test("an 'other' debt keeps its description (LDN-1a); any other nature drops it", async () => {
+  const notice = oneCase().notices[0];
+  const other = oneCase({
+    notices: [{ ...notice, natureOfDebt: "other", natureOfDebtOther: " Unpaid rent " }],
+  });
+  const loan = oneCase({ notices: [{ ...notice, natureOfDebtOther: "Unpaid rent" }] });
+  assert.equal((await draftOf(other)).notices[0].natureDebtOther, "Unpaid rent");
+  assert.equal((await draftOf(loan)).notices[0].natureDebtOther, "");
+});
+
 test("ADR takes the filing's three answers", async () => {
   assert.equal((await draftOf(oneCase(), "maybe")).adr.adr, "maybe");
 });

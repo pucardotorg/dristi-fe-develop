@@ -633,6 +633,7 @@ export function buildRequest(
         const paid = r.raw("paidAmount", i);
         return {
           natureOfDebt: r.list("natureDebt", i),
+          natureOfDebtOther: r.raw("natureDebtOther", i),
           dispatchedOn: sheetDate(r.raw("dispatchDate", i)),
           mode: r.list("mode", i),
           trackingNumber: r.raw("tracking", i),

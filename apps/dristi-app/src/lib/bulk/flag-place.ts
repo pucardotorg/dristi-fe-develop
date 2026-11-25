@@ -26,6 +26,7 @@ const CODE_FIELD: Record<string, string> = {
   "CHQ-9": "returnDate",
   "CHQ-10": "returnReason",
   "LDN-1": "natureDebt",
+  "LDN-1a": "natureDebtOther",
   "LDN-2": "dispatchDate",
   "LDN-3": "modeService",
   "LDN-4": "tracking",

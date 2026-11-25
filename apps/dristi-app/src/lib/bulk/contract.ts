@@ -116,6 +116,8 @@ export type ApiCheque = {
 export type ApiNotice = {
   /** `LDN-1`, a `NATURE_OF_DEBT` value. */
   natureOfDebt: string;
+  /** `LDN-1a`: what the liability is, when `natureOfDebt` is "other". */
+  natureOfDebtOther?: string;
   /** `LDN-2`. */
   dispatchedOn: string;
   /** `LDN-3`, a `MODE_OF_SERVICE` value. */

@@ -34,6 +34,7 @@ function goodCase(reference: string, over: Partial<ApiCase> = {}): ApiCase {
         date: iso(60),
         amount: "125000",
         ifsc: "SBIN0060421",
+        accountNumber: "32104567890",
         presentedOn: iso(50),
         returnedOn: iso(47),
         returnReason: "funds-insufficient",
@@ -143,6 +144,48 @@ test("a list value the court does not know is held, never guessed", async () => 
   const f = caseFlags(batch.cases[0]).find((x) => x.rule === "chq-10-list");
   assert.equal(f?.level, "hold");
   assert.match(f!.message, /01 - Funds Insufficient/);
+});
+
+test("a missing or malformed drawer account number holds the case, with the field to fix (CHQ-7a)", async () => {
+  const cheque = goodCase("x").cheques[0];
+  const batch = await batchOf([
+    goodCase("F-1", { cheques: [{ ...cheque, accountNumber: undefined }] }),
+    goodCase("F-2", { cheques: [{ ...cheque, accountNumber: "12345" }] }),
+    goodCase("F-3", { cheques: [{ ...cheque, accountNumber: "3210 4567 890" }] }),
+  ]);
+  const [missing, short, spaced] = batch.cases.map((bc) =>
+    caseFlags(bc).find((f) => f.rule === "chq-7a"),
+  );
+  assert.equal(missing?.level, "hold");
+  assert.equal(missing?.fix?.kind, "text");
+  assert.match(short?.message ?? "", /12345/);
+  assert.equal(spaced, undefined);
+});
+
+test("an 'other' debt without its description holds the case, with the field to fix (LDN-1a)", async () => {
+  const notice = goodCase("x").notices[0];
+  const batch = await batchOf([
+    goodCase("H-1", { notices: [{ ...notice, natureOfDebt: "other" }] }),
+    goodCase("H-2", { notices: [{ ...notice, natureOfDebt: "other", natureOfDebtOther: "  " }] }),
+    goodCase("H-3", {
+      notices: [{ ...notice, natureOfDebt: "other", natureOfDebtOther: "Unpaid rent" }],
+    }),
+    goodCase("H-4", { notices: [{ ...notice, natureOfDebtOther: "Unpaid rent" }] }),
+  ]);
+  const [missing, blank, described, notOther] = batch.cases.map((bc) =>
+    caseFlags(bc).find((f) => f.rule === "ldn-1a"),
+  );
+  assert.equal(missing?.level, "hold");
+  assert.equal(missing?.fix?.kind, "text");
+  assert.equal(
+    missing?.fix && "path" in missing.fix ? missing.fix.path : "",
+    "notices.0.natureDebtOther",
+  );
+  assert.equal(blank?.level, "hold");
+  assert.equal(described, undefined);
+  assert.equal(notOther, undefined);
+  const [, , ok] = batch.cases;
+  assert.equal(ok.draft.notices[0].natureDebtOther, "Unpaid rent");
 });
 
 test("a late case needs a reason for condonation; a notice in transit holds the case", async () => {

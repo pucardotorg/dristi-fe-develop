@@ -12,9 +12,20 @@ import {
   toLongDate,
   todayIso,
 } from "./format";
-import { CHEQUE_NUMBER_PATTERN, IFSC_PATTERN } from "./lookups";
+import {
+  ACCOUNT_NUMBER_PATTERN,
+  CHEQUE_NUMBER_PATTERN,
+  IFSC_PATTERN,
+  normaliseAccountNumber,
+} from "./lookups";
 import { KERALA_FEES, type FeeSchedule } from "@/lib/court/fees";
-import { CHANNEL_FEE, defaultProcessRounds, DELIVERY_MIN_ROUNDS, PROCESS_OPTIONS } from "./options";
+import {
+  CHANNEL_FEE,
+  defaultProcessRounds,
+  DELIVERY_MIN_ROUNDS,
+  NATURE_OF_DEBT,
+  PROCESS_OPTIONS,
+} from "./options";
 import { WALK_ORDER } from "./steps";
 import type {
   Accused,
@@ -332,12 +343,14 @@ function chequeAmountFilled(amount: string): boolean {
  * one return memo to each cheque by ordinal, which this row-per-cheque shape already satisfies.
  */
 export function chequeFullyComplete(c: ChequeDetails, index: number): boolean {
+  // A cheque on the previous one's bank takes its account too (`chequeBank`).
   const inheritsBank = index > 0 && c.sameAsPrev === "yes";
   const bankOk =
     inheritsBank ||
     (IFSC_PATTERN.test(c.ifsc.trim().toUpperCase()) &&
       !!c.bankName.trim() &&
-      !!c.bankBranch.trim());
+      !!c.bankBranch.trim() &&
+      ACCOUNT_NUMBER_PATTERN.test(normaliseAccountNumber(c.accountNumber)));
   return (
     !!c.dateOnCheque &&
     chequeAmountFilled(c.amount) &&
@@ -410,14 +423,53 @@ export function mobileIssue(value: string): string | undefined {
 }
 
 /**
+ * The advocate's mobile, when the filing knows it: only when the filer is the advocate.
+ * The advocate search returns no numbers, so another advocate on record has none here.
+ */
+export function filingAdvocateMobile(profile: UserProfile | null): string | undefined {
+  return profile?.role === "ADVOCATE" && profile.mobile ? profile.mobile : undefined;
+}
+
+/**
+ * A party's mobile must be their own, not the advocate's: notices, OTPs and the account
+ * link all follow the number. Checked for complainants, representatives, accused and
+ * witnesses, but not a PoA holder: the advocate may hold the power of attorney (issue #64),
+ * so the PoA holder's field never passes `advocateMobile`. The same rule stops Continue
+ * (`advocateMobileClashes`).
+ */
+export function advocateMobileIssue(
+  value: string,
+  advocateMobile: string | undefined,
+): string | undefined {
+  if (!advocateMobile || !sameMobile(value, advocateMobile)) return undefined;
+  return mobileFieldCopy.advocates;
+}
+
+/** An "other" nature of debt needs the filer to say what the liability is (`LDN-1a`). */
+export function natureDebtOtherNeeded(n: DemandNotice): boolean {
+  return n.natureDebt === "other";
+}
+
+/**
+ * The nature of debt as the complaint reads it: the option, and for "other" what the
+ * filer wrote — "Other liability: unpaid rent". Empty when nothing is chosen.
+ */
+export function natureOfDebtText(n: DemandNotice | undefined): string {
+  const label = NATURE_OF_DEBT.find((o) => o.value === n?.natureDebt)?.label ?? "";
+  const other = n && natureDebtOtherNeeded(n) ? n.natureDebtOther.trim() : "";
+  return label && other ? `${label}: ${other}` : label;
+}
+
+/**
  * Whether a demand notice would pass `validate`. Needs the nature of debt, dispatch date, mode
- * of service and payment status; a delivered notice its delivery date, an undelivered one its
+ * of service and payment status (and, for an "other" debt, what it was); a delivered notice its delivery date, an undelivered one its
  * return date and non-delivery reason; a part payment a positive amount. (`is_delivered` and
  * `accused_replied` are yes/no answers the form always carries.) The date-order rules are
  * checked by `noticeDispatchIssue` / `noticeServiceIssue` in `sectionComplete`.
  */
 export function noticeComplete(n: DemandNotice): boolean {
   if (!(n.natureDebt && n.dispatchDate && n.modeService && n.paymentStatus)) return false;
+  if (natureDebtOtherNeeded(n) && !n.natureDebtOther.trim()) return false;
   if (n.delivered === "yes") {
     if (!n.deliveryDate) return false;
   } else if (!n.returnDate || !n.nonDeliveryReason) {

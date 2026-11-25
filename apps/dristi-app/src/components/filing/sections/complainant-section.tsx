@@ -15,17 +15,23 @@ import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 
 import { blankComplainant } from "@/lib/filing/blank";
 import { ENTITY_TYPES, GENDER_OPTIONS } from "@/lib/filing/options";
-import { firstComplainantClash, mobileConflicts } from "@/lib/filing/mobile-conflicts";
+import {
+  advocateMobileClashes,
+  firstComplainantClash,
+  mobileConflicts,
+} from "@/lib/filing/mobile-conflicts";
 import { fetchOnCourtRecord } from "@/lib/filing/registry";
 import {
   complainantComplete,
   complainantLabel,
   complainantsMissingCinPan,
+  filingAdvocateMobile,
   isCinOrPan,
   normaliseCinPan,
   partySourceSlot,
 } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
+import { useProfile } from "@/lib/filing/profile";
 import { useFiling } from "@/lib/filing/store";
 import { useCaseParties } from "@/lib/filing/use-case-parties";
 import { useRemoveCaseRecord } from "@/lib/filing/use-remove-case-record";
@@ -99,6 +105,7 @@ const COMPLAINANT_TYPES: { value: ComplainantType; label: string }[] = [
 export function ComplainantSection() {
   const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
+  const advocateMobile = filingAdvocateMobile(useProfile().profile);
   const { prev, next } = neighbours("complainant");
   const { unsaved, retryUnsaved } = useCaseParties("complainant");
   const removeRecord = useRemoveCaseRecord();
@@ -109,7 +116,9 @@ export function ComplainantSection() {
   const c = complainants[active];
 
   const conflicts = mobileConflicts(draft);
-  const clashAt = firstComplainantClash(conflicts);
+  const partyClashAt = firstComplainantClash(conflicts);
+  // A party with the advocate's own number stops the step the same way.
+  const clashAt = partyClashAt ?? advocateMobileClashes(draft, advocateMobile).complainant;
   const conflictMessage = useMobileConflictMessage();
 
   /* A scrutiny defect on "Complainant 1 › Age" selects that tab before it takes focus. */
@@ -369,6 +378,7 @@ export function ComplainantSection() {
                     required
                     value={c.mobile}
                     onChange={setMobile}
+                    advocateMobile={advocateMobile}
                     conflict={conflictMessage(conflicts.complainant[active])}
                   />
                   <FormField label={t("complainantSection_emailAddress")} name="email" optional>
@@ -634,6 +644,7 @@ export function ComplainantSection() {
                     required
                     value={c.rep.mobile}
                     onChange={(v) => setRep("mobile", v)}
+                    advocateMobile={advocateMobile}
                   />
                 </HalfWidth>
                 <FormRow>
@@ -727,7 +738,11 @@ export function ComplainantSection() {
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={continueHref ? handleContinue : undefined}
         continueBlocked={clashAt !== undefined}
-        continueHint={t("mobileConflict_continueHint")}
+        continueHint={t(
+          partyClashAt !== undefined
+            ? "mobileConflict_continueHint"
+            : "mobileConflict_advocateContinueHint",
+        )}
       />
 
       <SourcePanel

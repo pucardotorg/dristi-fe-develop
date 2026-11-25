@@ -17,16 +17,17 @@ import {
 import {
   ACCUSED_TYPES,
   MODE_OF_SERVICE,
-  NATURE_OF_DEBT,
   NON_DELIVERY_REASONS,
   PAYMENT_STATUS,
   RETURN_REASONS,
   type Option,
 } from "@/lib/filing/options";
+import { chequeBank } from "@/lib/filing/evidence";
 import {
   advocateName,
   documentsProgress,
   limitationView,
+  natureOfDebtText,
   totalChequeAmount,
 } from "@/lib/filing/selectors";
 import type {
@@ -195,6 +196,8 @@ export type ChequeSummary = {
   drawerBank: string;
   bankName: string;
   bankBranch: string;
+  /** `CHQ-7a`; inherited, like the bank, when the cheque shares the previous one's. */
+  accountNumber: string;
   presentDate: string;
   returnDate: string;
   returnReason: string;
@@ -215,6 +218,7 @@ export function chequeSummaries(draft: FilingDraft): ChequeSummary[] {
       drawerBank: orNot(commaJoin(c.bankName, c.bankBranch)),
       bankName: orNot(c.bankName),
       bankBranch: orNot(c.bankBranch),
+      accountNumber: orNot(chequeBank(draft.cheques, i).accountNumber),
       presentDate: displayDate(c.presentDate),
       returnDate: displayDate(c.returnDate),
       returnReason: orNot(reason),
@@ -268,7 +272,7 @@ export function noticeSummary(n: DemandNotice | undefined) {
   const payment = optionLabel(PAYMENT_STATUS, n?.paymentStatus ?? "");
   const partAmount = rupees(n?.partAmount ?? "");
   return {
-    nature: orNot(optionLabel(NATURE_OF_DEBT, n?.natureDebt ?? "")),
+    nature: orNot(natureOfDebtText(n)),
     dispatched: orNot(
       joinDot(
         toDisplayDate(n?.dispatchDate ?? ""),

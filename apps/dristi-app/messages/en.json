@@ -3944,6 +3944,7 @@
   "mobileConflict_complainant": "Complainant {number} already uses this number.",
   "mobileConflict_continueHint": "Two parties share a mobile number. Change one to continue.",
   "mobileConflict_ownComplainant": "The complainant already uses this number.",
+  "mobileConflict_poaHolder": "The PoA holder of complainant {number} already uses this number.",
   "mobileConflict_witness": "Witness {number} already uses this number.",
   "mobileHearingCard_caseNumber": "case number",
   "navigation_order": "Order",

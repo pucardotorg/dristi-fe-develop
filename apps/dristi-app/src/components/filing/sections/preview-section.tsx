@@ -71,11 +71,13 @@ import {
   advocateSummaries,
   amountClaimedText,
   chequeSummaries,
+  complainantSummaries,
   complainantSummary,
   documentSummary,
   finalReliefText,
   interimReliefText,
   jurisdictionSummary,
+  noticeSummaries,
   noticeSummary,
   otherDetailsText,
   totalChequeText,
@@ -436,11 +438,11 @@ export function PreviewSection() {
   /** Complete, and now being frozen for signing with its signing copy prepared. */
   const [preparing, setPreparing] = React.useState(false);
 
-  const complainant = complainantSummary(draft.complainants[0]);
+  const complainants = complainantSummaries(draft);
   const advocates = advocateSummaries(draft);
   const accused = accusedSummaries(draft);
   const cheques = chequeSummaries(draft);
-  const notice = noticeSummary(draft.notices[0]);
+  const notices = noticeSummaries(draft);
   const jurisdiction = jurisdictionSummary(draft);
   const witnesses = witnessSummaries(draft);
   const documents = documentSummary(draft);
@@ -595,26 +597,25 @@ export function PreviewSection() {
                 />
               }
             >
-              <KeyValues
-                rows={[
-                  { term: t("previewSection_name"), value: complainant.name },
-                  { term: t("previewSection_type"), value: complainant.type },
-                  ...(complainant.cinPan
-                    ? [{ term: t("previewSection_cinOrPan"), value: complainant.cinPan }]
-                    : []),
-                  { term: t("previewSection_mobile"), value: complainant.mobile },
-                  { term: t("previewSection_email"), value: complainant.email },
-                  {
-                    term: t("previewSection_presentAddress"),
-                    value: complainant.presentAddress,
-                  },
-                  {
-                    term: t("previewSection_permanentAddress"),
-                    value: complainant.permanentAddress,
-                  },
-                  { term: t("previewSection_powerOfAttorney"), value: complainant.poa },
-                ]}
-              />
+              {complainants.map((c) => (
+                <SubBlock
+                  key={c.key}
+                  title={c.label}
+                  rows={[
+                    { term: t("previewSection_name"), value: c.name },
+                    { term: t("previewSection_type"), value: c.type },
+                    ...(c.cinPan ? [{ term: t("previewSection_cinOrPan"), value: c.cinPan }] : []),
+                    { term: t("previewSection_mobile"), value: c.mobile },
+                    { term: t("previewSection_email"), value: c.email },
+                    { term: t("previewSection_presentAddress"), value: c.presentAddress },
+                    {
+                      term: t("previewSection_permanentAddress"),
+                      value: c.permanentAddress,
+                    },
+                    { term: t("previewSection_powerOfAttorney"), value: c.poa },
+                  ]}
+                />
+              ))}
             </FormCard>
 
             <FormCard
@@ -703,15 +704,19 @@ export function PreviewSection() {
                 />
               }
             >
-              <KeyValues
-                rows={[
-                  { term: t("previewSection_natureOfDebt"), value: notice.nature },
-                  { term: t("previewSection_noticeDispatched"), value: notice.dispatched },
-                  { term: t("previewSection_delivered"), value: notice.delivered },
-                  { term: t("previewSection_replyReceived"), value: notice.replied },
-                  { term: t("previewSection_paymentReceived"), value: notice.payment },
-                ]}
-              />
+              {notices.map((n) => (
+                <SubBlock
+                  key={n.key}
+                  title={n.label}
+                  rows={[
+                    { term: t("previewSection_natureOfDebt"), value: n.nature },
+                    { term: t("previewSection_noticeDispatched"), value: n.dispatched },
+                    { term: t("previewSection_delivered"), value: n.delivered },
+                    { term: t("previewSection_replyReceived"), value: n.replied },
+                    { term: t("previewSection_paymentReceived"), value: n.payment },
+                  ]}
+                />
+              ))}
             </FormCard>
 
             <FormCard

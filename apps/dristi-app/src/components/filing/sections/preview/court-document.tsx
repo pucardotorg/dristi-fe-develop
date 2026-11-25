@@ -14,7 +14,6 @@ import type { FilingDraft } from "@/lib/filing/types";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import {
-  INTERIM_RELIEF_SUMMARY,
   NOT_PROVIDED,
   accusedSummaries,
   adrLabel,
@@ -22,7 +21,6 @@ import {
   chequeSummaries,
   complainantSummary,
   documentSummary,
-  finalReliefSummary,
   htmlToParagraphs,
   jurisdictionSummary,
   leadAdvocateName,
@@ -264,7 +262,7 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
           <DocGroupRow>{t("previewCourtDocument_prayerReliefSought")}</DocGroupRow>
           <tr>
             <DocCell span={3}>
-              {finalReliefSummary(draft)}. {INTERIM_RELIEF_SUMMARY}.
+              {[...finalRelief, ...interimRelief].join(" ") || NOT_PROVIDED}
             </DocCell>
           </tr>
         </tbody>

@@ -19,7 +19,7 @@ import * as React from "react";
 import { awaitKeyedSave } from "./autosave-queue";
 import { chequesFromCase } from "./case-details-read";
 import { getCaseFilingRepository, type CaseFilingRepository } from "./data";
-import { caseFilingErrorMessage } from "./data/cases-api";
+import { caseFilingErrorMessage, type CaseRead } from "./data/cases-api";
 import { chequeEvidenceInfo, returnMemoEvidenceInfo } from "./evidence";
 import { chequeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
@@ -81,22 +81,34 @@ function rowSignature(evidenceInfo: Record<string, unknown>, caseDocumentId: str
 /**
  * Seed each existing row's baseline from the case as the step opens, so the first edit PATCHes
  * only the row it changed rather than both. Rows not yet on the case keep an empty baseline.
+ *
+ * The baseline's linked scan is read from the case (`case_document_id` on the evidence row),
+ * never from this browser's upload record: a scan uploaded but not yet attached (its PATCH
+ * failed) is still absent on the case, so the baseline must show it absent — otherwise the
+ * next save thinks it is already attached and never sends it, leaving the cheque with no scan.
  */
-export function seedChequeEvidenceState(draft: FilingDraft, state: ChequeEvidenceState) {
+export function seedChequeEvidenceState(
+  draft: FilingDraft,
+  read: CaseRead,
+  state: ChequeEvidenceState,
+) {
+  const docOnCase = (evidenceId: string) =>
+    read.evidence.find((e) => e.case_evidence_id === evidenceId)?.case_document_id ?? null;
   draft.cheques.forEach((cheque, index) => {
     const entry = rowEntry(state, cheque.id);
     if (cheque.chequeEvidenceId) {
-      const docId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId ?? null;
       entry.cheque = {
         id: cheque.chequeEvidenceId,
-        sig: rowSignature(chequeEvidenceInfo(draft.cheques, index), docId),
+        sig: rowSignature(
+          chequeEvidenceInfo(draft.cheques, index),
+          docOnCase(cheque.chequeEvidenceId),
+        ),
       };
     }
     if (cheque.returnMemoEvidenceId) {
-      const docId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
       entry.memo = {
         id: cheque.returnMemoEvidenceId,
-        sig: rowSignature(returnMemoEvidenceInfo(cheque), docId),
+        sig: rowSignature(returnMemoEvidenceInfo(cheque), docOnCase(cheque.returnMemoEvidenceId)),
       };
     }
   });
@@ -207,7 +219,7 @@ export function useChequeEvidence() {
   useLoadFromCase((read, d) => {
     d.cheques = chequesFromCase(read, d.cheques);
     // Seed baselines from the case so the first edit only PATCHes the row it changed.
-    if (d.caseId) seedChequeEvidenceState(d, chequeEvidenceStateFor(d.caseId));
+    if (d.caseId) seedChequeEvidenceState(d, read, chequeEvidenceStateFor(d.caseId));
   });
   const [error, setError] = React.useState<string | null>(null);
 

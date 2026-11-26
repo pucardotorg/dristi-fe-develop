@@ -3,13 +3,27 @@ import { describe, it } from "node:test";
 
 import { runKeyedSave, type SaveResult } from "./autosave-queue";
 import { createBlankDraft } from "./blank";
-import type { SavedEvidence } from "./data/cases-api";
+import type { CaseRead, EvidenceRead, SavedEvidence } from "./data/cases-api";
+import { chequeEvidenceInfo } from "./evidence";
 import {
   chequeEvidenceStateFor,
   removeChequeEvidence,
   saveOneCheque,
+  seedChequeEvidenceState,
   type ChequeEvidenceState,
 } from "./use-cheque-evidence";
+
+/** A case read holding just the evidence rows under test. */
+function caseWith(evidence: EvidenceRead[]): CaseRead {
+  return {
+    participants: [],
+    representations: [],
+    poa_mandates: [],
+    evidence,
+    details: {},
+    affidavit: null,
+  };
+}
 
 /** Let queued microtasks run until `done` holds, or give up after a bound. */
 async function settle(done: () => boolean) {
@@ -137,5 +151,56 @@ describe("removeChequeEvidence", () => {
     c.finish(0, { ok: true });
     await settle(() => deleted.length > 0);
     assert.deepEqual(deleted, ["CHEQUE-9"], "the row is deleted once the save has settled");
+  });
+});
+
+describe("seedChequeEvidenceState (scan attach baseline)", () => {
+  /** One cheque whose scan this browser uploaded (its id sits in the intake slot). */
+  function draftWithUploadedScan() {
+    const draft = createBlankDraft("draft-attach");
+    draft.caseId = "case-attach";
+    draft.cheques[0].amount = "1000";
+    draft.cheques[0].chequeEvidenceId = "chq-1";
+    const slot = draft.intake.cheques[0].slots.find((s) => s.docType === "cheque-front");
+    assert.ok(slot, "the cheque has a front-scan intake slot");
+    slot.caseDocumentId = "doc-1";
+    return draft;
+  }
+
+  function chequeRow(caseDocumentId: string | null, evidenceInfo: Record<string, unknown>) {
+    return {
+      case_evidence_id: "chq-1",
+      case_document_id: caseDocumentId,
+      evidence_type: "CHEQUE",
+      ordinal: 1,
+      evidence_info: evidenceInfo,
+    };
+  }
+
+  it("re-sends a scan the case does not hold yet (uploaded but attach failed)", async () => {
+    const draft = draftWithUploadedScan();
+    // The case has the cheque row but no scan on it: the earlier attach never landed.
+    const read = caseWith([chequeRow(null, chequeEvidenceInfo(draft.cheques, 0))]);
+    const state: ChequeEvidenceState = new Map();
+    seedChequeEvidenceState(draft, read, state);
+
+    const { api, calls } = fakeApi();
+    await saveOneCheque("case-attach", draft, 0, () => {}, state, api);
+    assert.deepEqual(
+      calls,
+      [{ method: "update", id: "chq-1" }],
+      "the scan is attached on the next save",
+    );
+  });
+
+  it("sends nothing when the case already holds the scan", async () => {
+    const draft = draftWithUploadedScan();
+    const read = caseWith([chequeRow("doc-1", chequeEvidenceInfo(draft.cheques, 0))]);
+    const state: ChequeEvidenceState = new Map();
+    seedChequeEvidenceState(draft, read, state);
+
+    const { api, calls } = fakeApi();
+    await saveOneCheque("case-attach", draft, 0, () => {}, state, api);
+    assert.deepEqual(calls, [], "already attached, nothing to send");
   });
 });

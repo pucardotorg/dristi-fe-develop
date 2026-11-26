@@ -53,7 +53,7 @@ import { appUrl } from "@/lib/config";
 import { signingRules } from "@/lib/filing/config";
 import { returnCaseToDraft as reopenCaseOnBackend } from "@/lib/filing/case-esign";
 import { newCaseFileNumber, newPaymentRef } from "@/lib/filing/data";
-import { signedSlots, voidedSlots } from "@/lib/filing/signing-package";
+import { leavingSignAsks, signedSlots, voidedSlots } from "@/lib/filing/signing-package";
 import { useSigningPackage } from "@/lib/filing/use-signing-package";
 import { discardStoredFile } from "@/lib/filing/files";
 import { money, toLongDate } from "@/lib/filing/format";
@@ -601,17 +601,40 @@ export function SignSection() {
   const guardLeaving = React.useCallback(
     (href: string) => {
       if (filed) return false;
-      if (!anySigned && !requested) {
-        if (!frozenOnBackend) return false;
+      if (!leavingSignAsks({ anySigned, requested, backendCase: caseEsign })) {
+        // Nobody has signed: how to sign is asked again on the next visit.
+        const forgetChoice = () => {
+          if (!requested) return;
+          update((d) => {
+            d.sign.requestedAt = null;
+            d.sign.notified = {};
+          });
+        };
+        if (!frozenOnBackend) {
+          forgetChoice();
+          return false;
+        }
         void returnCaseToDraft().then((reopened) => {
-          if (reopened) router.push(href);
+          if (!reopened) return;
+          forgetChoice();
+          router.push(href);
         });
         return true;
       }
       setLeaveTo(href);
       return true;
     },
-    [filed, anySigned, requested, setLeaveTo, frozenOnBackend, returnCaseToDraft, router],
+    [
+      filed,
+      anySigned,
+      requested,
+      caseEsign,
+      update,
+      setLeaveTo,
+      frozenOnBackend,
+      returnCaseToDraft,
+      router,
+    ],
   );
   useLeaveGuard(guardLeaving);
 

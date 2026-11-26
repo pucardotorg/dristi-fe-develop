@@ -191,6 +191,27 @@ function slotsOnPackage(draft: FilingDraft, pkg: SigningPackage): Map<string, bo
   return bySlot;
 }
 
+/* ─────────────────────────────── Leaving Sign ───────────────────────────────────── */
+
+export type LeavingSign = {
+  /** Someone has signed this version of the complaint. */
+  anySigned: boolean;
+  /** The draft is marked as sent for signature ("Sign digitally" was chosen). */
+  requested: boolean;
+  /** The filing is signed on the backend case (Aadhaar e-sign), not the in-browser demo. */
+  backendCase: boolean;
+};
+
+/**
+ * Whether leaving Sign asks first, because leaving loses something. A signature always
+ * counts. "Sign digitally" counts only off the backend: there it stands for links sent to
+ * the other parties, while on the backend case it only marks this draft and this app
+ * sends nobody anything, so until someone signs there is no request to recall.
+ */
+export function leavingSignAsks({ anySigned, requested, backendCase }: LeavingSign): boolean {
+  return anySigned || (requested && !backendCase);
+}
+
 /* ─────────────────────────────────── Errors ─────────────────────────────────────── */
 
 /** "There is no open signing package for this case": the GET answers 404. */

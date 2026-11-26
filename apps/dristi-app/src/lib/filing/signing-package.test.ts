@@ -5,6 +5,7 @@ import { ApiError } from "@/lib/api";
 
 import { blankComplainant, createBlankDraft } from "./blank";
 import {
+  leavingSignAsks,
   mySignatories,
   nextSignature,
   signedSlots,
@@ -185,6 +186,26 @@ describe("voidedSlots", () => {
     d.sign.signed["sig-c-c1"] = { at, with: "paper" };
     d.sign.signed["sig-a-adv1"] = { at, with: "aadhaar" };
     assert.deepEqual(voidedSlots(d, pkg()), []);
+  });
+});
+
+describe("leavingSignAsks", () => {
+  it("asks once someone has signed", () => {
+    assert.equal(leavingSignAsks({ anySigned: true, requested: true, backendCase: true }), true);
+    assert.equal(leavingSignAsks({ anySigned: true, requested: false, backendCase: false }), true);
+  });
+
+  it("does not ask on the backend case when 'Sign digitally' was only chosen", () => {
+    assert.equal(leavingSignAsks({ anySigned: false, requested: true, backendCase: true }), false);
+    assert.equal(leavingSignAsks({ anySigned: false, requested: false, backendCase: true }), false);
+  });
+
+  it("asks off the backend once requests have gone out", () => {
+    assert.equal(leavingSignAsks({ anySigned: false, requested: true, backendCase: false }), true);
+    assert.equal(
+      leavingSignAsks({ anySigned: false, requested: false, backendCase: false }),
+      false,
+    );
   });
 });
 

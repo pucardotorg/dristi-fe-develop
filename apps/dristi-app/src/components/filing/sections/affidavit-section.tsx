@@ -60,23 +60,32 @@ export function AffidavitSection() {
   const standard = affidavitHtml(draft);
   const value = touched ? draft.affidavit : standard;
 
-  // Autosave when the filer leaves the editor, but only once the affidavit has real content:
-  // the affidavit's own endpoint is an idempotent PUT (no id to race), and skipping an empty
-  // one keeps a blank box from drawing a "couldn't save" while they are still at work. The
-  // standard text is sent too, so an untouched affidavit is on the case before Continue.
-  const autosave = useSerialSave(
+  // One queued save for both the blur autosave and Continue, so clicking Continue — which
+  // blurs the editor and so fires the autosave too — never runs two PUTs at once, and the
+  // queue learns Continue saved (the same text is not sent again on the next blur). The
+  // signature skips a save whose text is unchanged since the last that stuck. The affidavit's
+  // own endpoint is an idempotent PUT, so there is no id to race.
+  const queuedSave = useSerialSave(
     () => save(value),
-    () => (richTextHasContent(value) ? value : null),
+    () => value,
   );
 
-  /* Continue saves whatever the box holds — a cleared affidavit included — then moves on. The
-     backend is the gate on an empty affidavit: it refuses one and the reason is shown below,
-     which keeps the filer here. */
+  // Autosave only once the affidavit has real content: skipping an empty one keeps a blank box
+  // from drawing a "couldn't save" while the filer is still at work. (The standard text is
+  // content, so an untouched affidavit is still saved on blur, before Continue.) Continue is
+  // the one path that saves an empty affidavit — see below.
+  const autosave = () => {
+    if (richTextHasContent(value)) void queuedSave();
+  };
+
+  /* Continue saves whatever the box holds — a cleared affidavit included — then moves on,
+     through the same queue as the autosave. The backend is the gate on an empty affidavit: it
+     refuses one and the reason is shown below, which keeps the filer here. */
   const continueHref = next ? hrefFor(next) : undefined;
   const handleContinue = async () => {
     setContinuing(true);
     try {
-      const result = await save(value);
+      const result = await queuedSave();
       if (result.ok && continueHref) router.push(continueHref);
     } finally {
       setContinuing(false);
@@ -95,7 +104,7 @@ export function AffidavitSection() {
 
   return (
     <>
-      <FilingMain {...onBlurAutosave(() => void autosave())}>
+      <FilingMain {...onBlurAutosave(autosave)}>
         <FilingPageHeader
           title={t("affidavitSection_affidavit")}
           description={t("affidavitSection_theSwornStatementThatGoesOn")}

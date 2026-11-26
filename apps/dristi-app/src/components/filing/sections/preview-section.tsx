@@ -43,7 +43,13 @@ import {
   DescriptionTerm,
 } from "@/components/ui/description-list";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  DialogBody,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Dialog } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import {
@@ -897,42 +903,48 @@ export function PreviewSection() {
           if (!open) setProblems(null);
         }}
       >
-        <ChromeDialogContent mobileSheet className="sm:max-w-lg">
+        <ChromeDialogContent pinned mobileSheet className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{t("previewSection_someDetailsAreStillNeeded")}</DialogTitle>
             <DialogDescription>{t("previewSection_theCourtNeedsTheseBeforeYou")}</DialogDescription>
           </DialogHeader>
 
-          <ul className="flex flex-col divide-y divide-hairline">
-            {problems?.map((p, i) => {
-              const step = stepForValidationField(p.field, p.message, participantStepById);
-              return (
-                <li key={`${p.field}-${i}`} className="flex items-start justify-between gap-3 py-3">
-                  <span className="flex min-w-0 items-start gap-2 text-body-compact">
-                    <TriangleAlertIcon
-                      className="mt-0.5 size-4 shrink-0 text-warning-ink"
-                      aria-hidden
-                    />
-                    {p.message}
-                  </span>
-                  {step ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="shrink-0"
-                      onClick={() => {
-                        setProblems(null);
-                        router.push(hrefFor(step));
-                      }}
-                    >
-                      {t("previewSection_goToTitle", { title: getStep(step).title })}
-                    </Button>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
+          {/* Scrolls on its own when the list is long, so the header and footer stay put. */}
+          <DialogBody>
+            <ul className="flex flex-col divide-y divide-hairline">
+              {problems?.map((p, i) => {
+                const step = stepForValidationField(p.field, p.message, participantStepById);
+                return (
+                  <li
+                    key={`${p.field}-${i}`}
+                    className="flex items-start justify-between gap-3 py-3"
+                  >
+                    <span className="flex min-w-0 items-start gap-2 text-body-compact">
+                      <TriangleAlertIcon
+                        className="mt-0.5 size-4 shrink-0 text-warning-ink"
+                        aria-hidden
+                      />
+                      {p.message}
+                    </span>
+                    {step ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0"
+                        onClick={() => {
+                          setProblems(null);
+                          router.push(hrefFor(step));
+                        }}
+                      >
+                        {t("previewSection_goToTitle", { title: getStep(step).title })}
+                      </Button>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </DialogBody>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setProblems(null)}>

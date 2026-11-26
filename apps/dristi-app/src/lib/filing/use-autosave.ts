@@ -28,7 +28,7 @@
 
 import * as React from "react";
 
-import { createCoalescingSave, type SaveResult } from "./autosave-queue";
+import { createCoalescingSave, runKeyedSave, type SaveResult } from "./autosave-queue";
 import { caseFilingErrorMessage } from "./data/cases-api";
 
 export type { SaveResult };
@@ -46,6 +46,10 @@ export function onBlurAutosave(trigger: () => void): AutosaveProps {
  * trailing save, and is skipped when its `signature` is unchanged since the last save that
  * stuck (or `null`). `fn` reports failure as `{ ok: false }` rather than throwing; an
  * unexpected throw is still caught so the queue never wedges.
+ *
+ * The queue lives inside this component, which suits a step whose save is idempotent (a
+ * section PUT, the affidavit). A step that creates rows with no id — cheques, notices —
+ * needs the queue to outlive the step unmounting, so it uses `useKeyedSerialSave` instead.
  */
 export function useSerialSave(
   fn: () => Promise<SaveResult>,
@@ -80,4 +84,37 @@ export function useSerialSave(
   }, []);
 
   return React.useCallback(() => coalescedRef.current?.() ?? Promise.resolve({ ok: true }), []);
+}
+
+/**
+ * Like `useSerialSave`, but the queue and its last-saved signature live at module scope under
+ * `keyOf()` — a case and
+ * step — so they survive the step unmounting: a save left running when the filer leaves the
+ * step never runs in parallel with one the step starts when they come back, which for a row
+ * with no id yet would create it twice (`runKeyedSave`). `keyOf` returning `null` (no case to
+ * save to yet) means there is nothing to save.
+ */
+export function useKeyedSerialSave(
+  keyOf: () => string | null,
+  fn: () => Promise<SaveResult>,
+  signature: () => string | null,
+): () => Promise<SaveResult> {
+  const keyOfRef = React.useRef(keyOf);
+  const fnRef = React.useRef(fn);
+  const signatureRef = React.useRef(signature);
+  React.useEffect(() => {
+    keyOfRef.current = keyOf;
+    fnRef.current = fn;
+    signatureRef.current = signature;
+  });
+
+  return React.useCallback(() => {
+    const key = keyOfRef.current();
+    if (key === null) return Promise.resolve({ ok: true });
+    return runKeyedSave(
+      key,
+      () => fnRef.current(),
+      () => signatureRef.current(),
+    );
+  }, []);
 }

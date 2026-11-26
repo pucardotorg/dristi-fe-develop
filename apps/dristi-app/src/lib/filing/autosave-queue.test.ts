@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { createCoalescingSave, type SaveResult } from "./autosave-queue";
+import {
+  awaitKeyedSave,
+  createCoalescingSave,
+  runKeyedSave,
+  type SaveResult,
+} from "./autosave-queue";
 
 /** Let queued microtasks run until `done` holds, or give up after a bound. */
 async function settle(done: () => boolean) {
@@ -77,4 +82,66 @@ test("serial awaited calls each run their own pass", async () => {
     await pass;
   }
   assert.equal(c.calls, 3);
+});
+
+// Each test below uses its own key, so the module-level registry never carries state between
+// them (the registry is keyed by case + step and is never cleared, as in the real app).
+
+test("runKeyedSave runs one pass at a time per key, even as the driving step is replaced", async () => {
+  const key = "case-keyed-1:cheque";
+  const first = controllable();
+  const second = controllable();
+
+  // A save started by one mount of the step.
+  const a = runKeyedSave(key, first.perform, () => "sig-1");
+  assert.equal(first.calls, 1, "the first save starts a pass");
+
+  // The step unmounts and mounts again; its newest save is registered and asked for while the
+  // first is still in flight. It must not start a parallel pass (which would POST a row twice).
+  const b = runKeyedSave(key, second.perform, () => "sig-2");
+  assert.equal(second.calls, 0, "no second pass starts while the first is in flight");
+
+  first.finish(0, { ok: true });
+  await settle(() => second.calls === 1);
+  assert.equal(second.calls, 1, "the newest save runs only once the first has finished");
+  second.finish(0, { ok: true });
+  await Promise.all([a, b]);
+});
+
+test("runKeyedSave skips a pass whose signature is unchanged since the last that stuck", async () => {
+  const key = "case-keyed-2:notice";
+  const c = controllable();
+
+  const first = runKeyedSave(key, c.perform, () => "same");
+  c.finish(0, { ok: true });
+  assert.deepEqual(await first, { ok: true });
+  assert.equal(c.calls, 1);
+
+  // Same signature: nothing to send, so no pass runs.
+  assert.deepEqual(await runKeyedSave(key, c.perform, () => "same"), { ok: true });
+  assert.equal(c.calls, 1, "an unchanged step is not saved again");
+});
+
+test("awaitKeyedSave waits for a save in flight, and returns at once when none is", async () => {
+  const key = "case-keyed-3:cheque";
+
+  // Nothing running yet.
+  let idleResolved = false;
+  await awaitKeyedSave(key).then(() => {
+    idleResolved = true;
+  });
+  assert.equal(idleResolved, true, "an idle key resolves immediately");
+
+  const c = controllable();
+  runKeyedSave(key, c.perform, () => "sig");
+  let waited = false;
+  void awaitKeyedSave(key).then(() => {
+    waited = true;
+  });
+  await settle(() => false);
+  assert.equal(waited, false, "it does not resolve while the save is still running");
+
+  c.finish(0, { ok: true });
+  await settle(() => waited);
+  assert.equal(waited, true, "it resolves once the save has settled");
 });

@@ -1,9 +1,27 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+import { runKeyedSave, type SaveResult } from "./autosave-queue";
 import { createBlankDraft } from "./blank";
 import type { SavedEvidence } from "./data/cases-api";
-import { saveOneNotice, type NoticeEvidenceIds } from "./use-demand-notice-evidence";
+import {
+  noticeEvidenceStateFor,
+  removeNoticeEvidence,
+  saveOneNotice,
+  type NoticeEvidenceIds,
+} from "./use-demand-notice-evidence";
+
+/** Let queued microtasks run until `done` holds, or give up after a bound. */
+async function settle(done: () => boolean) {
+  for (let i = 0; i < 50 && !done(); i += 1) await Promise.resolve();
+}
+
+/** A save pass that resolves only when the test hands it a result. */
+function controllable() {
+  const resolvers: Array<(result: SaveResult) => void> = [];
+  const perform = () => new Promise<SaveResult>((resolve) => resolvers.push(resolve));
+  return { perform, finish: (i: number, r: SaveResult) => resolvers[i](r) };
+}
 
 /** A stand-in evidence API that records whether each call created or updated a row. */
 function fakeApi() {
@@ -56,5 +74,50 @@ describe("saveOneNotice", () => {
     const result = await saveOneNotice("case-2", draft, 0, () => {}, createdIds, api);
     assert.equal(result, undefined);
     assert.deepEqual(calls, []);
+  });
+});
+
+describe("removeNoticeEvidence", () => {
+  it("deletes the row an in-flight save created, even before the draft holds its id", async () => {
+    const caseId = "case-remove-notice-1";
+    const draft = createBlankDraft("draft-remove-notice-1");
+    draft.caseId = caseId;
+    draft.notices[0].tracking = "RX123456789IN";
+    const { api } = fakeApi();
+
+    // The save records the created id into the case's module-level state.
+    await saveOneNotice(caseId, draft, 0, () => {}, noticeEvidenceStateFor(caseId), api);
+
+    const deleted: string[] = [];
+    const delApi = {
+      async deleteEvidence(id: string) {
+        deleted.push(id);
+      },
+    };
+    // The notice passed in carries no id; removal must find the created one in module state.
+    removeNoticeEvidence(caseId, { id: draft.notices[0].id, noticeEvidenceId: undefined }, delApi);
+    await settle(() => deleted.length > 0);
+    assert.deepEqual(deleted, ["ev-1"]);
+  });
+
+  it("waits for a save still running before deleting", async () => {
+    const caseId = "case-remove-notice-2";
+    const c = controllable();
+    void runKeyedSave(`${caseId}:notice`, c.perform, () => "sig");
+
+    const deleted: string[] = [];
+    const delApi = {
+      async deleteEvidence(id: string) {
+        deleted.push(id);
+      },
+    };
+    removeNoticeEvidence(caseId, { id: "notice-x", noticeEvidenceId: "ev-9" }, delApi);
+
+    await settle(() => false);
+    assert.equal(deleted.length, 0, "nothing is deleted while the save is still running");
+
+    c.finish(0, { ok: true });
+    await settle(() => deleted.length > 0);
+    assert.deepEqual(deleted, ["ev-9"], "the row is deleted once the save has settled");
   });
 });

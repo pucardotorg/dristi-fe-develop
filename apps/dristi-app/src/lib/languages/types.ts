@@ -9,3 +9,10 @@ export type UiLanguage = {
   /** The fallback language. The backend marks exactly one. */
   isDefault: boolean;
 };
+
+/** Where the backend's language list stands, as `useUiLanguages` reports it. */
+export type UiLanguagesState =
+  | { status: "loading" }
+  | { status: "ready"; languages: UiLanguage[] }
+  | { status: "not-connected" }
+  | { status: "failed" };

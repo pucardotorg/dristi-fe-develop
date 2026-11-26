@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 
 import { getMessageCatalog, TIME_ZONE } from "@/i18n/messages";
-import { renderLocale } from "@/lib/languages/languages";
+import { checkSavedLanguage, renderLocale } from "@/lib/languages/languages";
+import type { UiLanguagesState } from "@/lib/languages/types";
+import { useUiLanguages } from "@/lib/languages/use-ui-languages";
 import { DEFAULT_LOCALE, serializeLocaleCookie } from "@/lib/locale/cookie";
 import type { Locale } from "@/lib/onboarding/content";
 
@@ -24,7 +26,7 @@ type LocaleValue = {
   locale: Locale;
   /** Switch to a language the app has text for (the switches beside sign-in and onboarding). */
   setLocale: (locale: Locale) => void;
-  /** The chosen language's code, as the backend lists it. */
+  /** The language in use, as the backend lists it: the saved one, or English while the list can't be had. */
   language: string;
   /** Switch to any language the backend offers. */
   setLanguage: (code: string) => void;
@@ -32,6 +34,11 @@ type LocaleValue = {
   secondLanguage: string | null;
   /** Put a language beside the default, and switch to it. */
   setSecondLanguage: (code: string) => void;
+  /**
+   * The backend's language list. Read it here rather than calling `useUiLanguages` again,
+   * so the switch and the language in use always agree on one answer.
+   */
+  uiLanguages: UiLanguagesState;
 };
 
 const LocaleContext = React.createContext<LocaleValue | null>(null);
@@ -54,11 +61,24 @@ export function LocaleProvider({
   initialLanguage?: string;
 }) {
   const router = useRouter();
-  const [language, setLanguageState] = React.useState(initialLanguage);
+  const [savedLanguage, setLanguageState] = React.useState(initialLanguage);
   // A language being read was put beside the default on an earlier visit.
   const [secondLanguage, setSecond] = React.useState<string | null>(
     initialLanguage === DEFAULT_LOCALE ? null : initialLanguage,
   );
+  /*
+   * The backend's list decides whether the saved language still applies
+   * (`checkSavedLanguage`). When the list can't be had, English shows for this visit and
+   * the cookie keeps the saved choice. Known gap: only client-rendered text follows that
+   * fallback; the pages that render text on the server from the cookie (terms, privacy,
+   * support, and the filing application and documents pages) still show the saved
+   * language until the backend answers again (owner accepted, 2026-11-26).
+   */
+  const uiLanguages = useUiLanguages();
+  const check = checkSavedLanguage(uiLanguages, savedLanguage);
+  // A language picked during this visit is shown even while the list can't be had.
+  const [pickedThisVisit, setPickedThisVisit] = React.useState(false);
+  const language = check.kind === "visit" && !pickedThisVisit ? check.to : savedLanguage;
   const locale = renderLocale(language);
 
   /*
@@ -70,6 +90,7 @@ export function LocaleProvider({
     (next: string) => {
       persistLanguage(next);
       React.startTransition(() => {
+        setPickedThisVisit(true);
         setLanguageState(next);
         router.refresh();
       });
@@ -85,6 +106,12 @@ export function LocaleProvider({
     [setLanguage],
   );
 
+  // The backend no longer offers the saved language: move to its default for good.
+  const resetTo = check.kind === "reset" ? check.to : null;
+  React.useEffect(() => {
+    if (resetTo) setLanguage(resetTo);
+  }, [resetTo, setLanguage]);
+
   React.useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
@@ -97,8 +124,9 @@ export function LocaleProvider({
       setLanguage,
       secondLanguage,
       setSecondLanguage,
+      uiLanguages,
     }),
-    [locale, language, setLanguage, secondLanguage, setSecondLanguage],
+    [locale, language, setLanguage, secondLanguage, setSecondLanguage, uiLanguages],
   );
 
   return (

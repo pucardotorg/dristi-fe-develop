@@ -3,7 +3,13 @@ import { describe, it } from "node:test";
 
 import { isLanguageCode, parseLanguageCode } from "@/lib/locale/cookie";
 
-import { fallbackLanguages, languagePair, renderLocale, toUiLanguages } from "./languages";
+import {
+  checkSavedLanguage,
+  fallbackLanguages,
+  languagePair,
+  renderLocale,
+  toUiLanguages,
+} from "./languages";
 import type { UiLanguage } from "./types";
 
 const lang = (code: string, isDefault = false): UiLanguage => ({
@@ -148,5 +154,32 @@ describe("languagePair", () => {
       null,
     );
     assert.equal(languagePair([], { selected: "en", chosenSecond: null }), null);
+  });
+});
+
+describe("checkSavedLanguage", () => {
+  const ready = { status: "ready" as const, languages: [lang("en", true), lang("hi")] };
+
+  it("waits while the list loads", () => {
+    assert.deepEqual(checkSavedLanguage({ status: "loading" }, "hi"), { kind: "keep" });
+  });
+
+  it("keeps a language the backend offers", () => {
+    assert.deepEqual(checkSavedLanguage(ready, "hi"), { kind: "keep" });
+  });
+
+  it("resets a language the backend dropped to its default", () => {
+    assert.deepEqual(checkSavedLanguage(ready, "ml"), { kind: "reset", to: "en" });
+  });
+
+  it("shows English for this visit when the list can't be had, keeping the choice", () => {
+    for (const listed of [
+      { status: "failed" as const },
+      { status: "not-connected" as const },
+      { status: "ready" as const, languages: [] },
+    ]) {
+      assert.deepEqual(checkSavedLanguage(listed, "hi"), { kind: "visit", to: "en" });
+      assert.deepEqual(checkSavedLanguage(listed, "en"), { kind: "keep" });
+    }
   });
 });

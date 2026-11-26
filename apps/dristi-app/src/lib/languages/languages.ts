@@ -10,7 +10,7 @@
 import { DEFAULT_LOCALE, isLanguageCode, isLocale, parseLocale } from "@/lib/locale/cookie";
 import { LANGUAGE_NAME, SECOND_LANGUAGE } from "@/lib/locale-config";
 
-import type { UiLanguage } from "./types";
+import type { UiLanguage, UiLanguagesState } from "./types";
 
 /** The language the switch falls back to, before the backend's list arrives or without it. */
 const BASE_LANGUAGE: string = DEFAULT_LOCALE;
@@ -90,4 +90,26 @@ export function languagePair(
     choices[0] ??
     null;
   return { primary, second, choices };
+}
+
+/**
+ * What to do with the saved language once the backend's list is known:
+ *   - `keep` it (still loading, or the backend offers it);
+ *   - `reset` it to the default language, cookie and all, when the backend no longer
+ *     offers it;
+ *   - show English for this `visit` only, keeping the cookie, when the list can't be had
+ *     (any error, "not connected", or an empty list), so the saved choice returns once the
+ *     backend answers again (owner, 2026-11-26).
+ */
+export type SavedLanguageCheck =
+  { kind: "keep" } | { kind: "reset"; to: string } | { kind: "visit"; to: string };
+
+export function checkSavedLanguage(listed: UiLanguagesState, saved: string): SavedLanguageCheck {
+  if (listed.status === "loading") return { kind: "keep" };
+  if (listed.status !== "ready" || listed.languages.length === 0) {
+    return saved === BASE_LANGUAGE ? { kind: "keep" } : { kind: "visit", to: BASE_LANGUAGE };
+  }
+  if (listed.languages.some((l) => l.code === saved)) return { kind: "keep" };
+  const fallback = listed.languages.find((l) => l.isDefault) ?? listed.languages[0];
+  return { kind: "reset", to: fallback?.code ?? BASE_LANGUAGE };
 }

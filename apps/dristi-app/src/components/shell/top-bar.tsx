@@ -34,7 +34,6 @@ import { NotificationsBell, type ShellNotification } from "@/components/shell/no
 import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import { pick, ui } from "@/lib/onboarding/content";
 import { fallbackLanguages, languagePair } from "@/lib/languages/languages";
-import { useUiLanguages } from "@/lib/languages/use-ui-languages";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -375,7 +374,7 @@ function useTaskNotifications() {
 /**
  * The app-wide language switch: the backend's default language (English) beside a second
  * one, and a menu that changes which second language that is. The backend lists the
- * languages (`useUiLanguages`); Hindi sits beside English until the person picks another
+ * languages (read from `useLocale().uiLanguages`); Hindi sits beside English until the person picks another
  * (owner, 2026-10-08). Choosing from the menu also switches to that language, since that
  * is why anyone opens the menu. A language without a message catalog shows English.
  *
@@ -384,8 +383,14 @@ function useTaskNotifications() {
  */
 function LanguageToggle() {
   const tr = useTranslations();
-  const { locale, language, setLanguage, secondLanguage, setSecondLanguage } = useLocale();
-  const listed = useUiLanguages();
+  const {
+    locale,
+    language,
+    setLanguage,
+    secondLanguage,
+    setSecondLanguage,
+    uiLanguages: listed,
+  } = useLocale();
   const ready = listed.status === "ready" && listed.languages.length > 0;
   const languages = ready ? listed.languages : fallbackLanguages(language);
   const pair = languagePair(languages, { selected: language, chosenSecond: secondLanguage });

@@ -5,13 +5,9 @@ import { useEffect, useState } from "react";
 import { isNotIntegratedError } from "@/lib/data/source";
 
 import { getLanguagesRepository } from "./data";
-import type { UiLanguage } from "./types";
+import type { UiLanguage, UiLanguagesState } from "./types";
 
-export type UiLanguagesState =
-  | { status: "loading" }
-  | { status: "ready"; languages: UiLanguage[] }
-  | { status: "not-connected" }
-  | { status: "failed" };
+export type { UiLanguagesState } from "./types";
 
 /**
  * One request per page load, shared by every caller: the list changes only when the
@@ -30,7 +26,8 @@ function loadOnce(): Promise<UiLanguage[]> {
 }
 
 /**
- * The languages the interface may be shown in. Only this browser's view reads them, so
+ * The languages the interface may be shown in. `LocaleProvider` is its one caller;
+ * components read the result from `useLocale().uiLanguages`, so they all see one answer. Only this browser's view reads them, so
  * other tabs need not hear of a change. Starts as "loading" on the server and the client
  * alike, so the first render matches.
  */

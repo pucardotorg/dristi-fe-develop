@@ -32,12 +32,14 @@ import {
   chequeReturnIssue,
   isCinOrPan,
   limitationView,
+  natureDebtOtherNeeded,
   noticeDispatchIssue,
   noticeServiceIssue,
   sameMobile,
   sectionComplete,
 } from "@/lib/filing/selectors";
 import { toLongDate } from "@/lib/filing/format";
+import { ACCOUNT_NUMBER_PATTERN, normaliseAccountNumber } from "@/lib/filing/lookups";
 import type { Address, FilingDraft, StepId } from "@/lib/filing/types";
 
 import { OFFICE_ADVOCATES } from "./clients";
@@ -633,6 +635,24 @@ export function caseFlags(bc: BatchCase): Flag[] {
           value: q.ifsc,
         },
       });
+    if (!ACCOUNT_NUMBER_PATTERN.test(normaliseAccountNumber(q.accountNumber)))
+      push({
+        ...chq,
+        rule: "chq-7a",
+        field: "CHQ-7a",
+        level: "hold",
+        at: `${p}.accountNumber`,
+        message: q.accountNumber
+          ? `Account number "${q.accountNumber}" must be 9 to 18 digits.`
+          : "Drawer's account number is missing.",
+        fix: {
+          kind: "text",
+          path: `${p}.accountNumber`,
+          label: "scrutiny_drawerAccountNumber",
+          value: q.accountNumber,
+          inputMode: "numeric",
+        },
+      });
     const presented = dateFlag(
       push,
       q.presentDate,
@@ -758,6 +778,22 @@ export function caseFlags(bc: BatchCase): Flag[] {
           label: "scrutiny_natureOfDebt",
           value: "",
           options: NATURE_OF_DEBT,
+        },
+      });
+    // LDN-1a: an "other" debt needs its description, as the filing asks for it.
+    if (natureDebtOtherNeeded(n) && !n.natureDebtOther.trim())
+      push({
+        ...ldn,
+        rule: "ldn-1a",
+        field: "LDN-1a",
+        level: "hold",
+        at: `${p}.natureDebtOther`,
+        message: "Nature of debt is Other liability, but the liability is not described.",
+        fix: {
+          kind: "text",
+          path: `${p}.natureDebtOther`,
+          label: "scrutiny_natureOfDebtOther",
+          value: "",
         },
       });
     const sent = dateFlag(

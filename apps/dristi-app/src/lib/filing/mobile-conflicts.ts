@@ -1,17 +1,23 @@
 /**
- * Mobile numbers two parties may not share, checked on the form before the filer moves on.
+ * Mobile numbers two parties may not share, checked on the single-filing form before the
+ * filer moves on (bulk filing does not use these rules).
  *
- * A complainant's number may not be another complainant's, any accused's, or their own PoA
- * holder's. Another complainant's PoA holder may share it, as one complainant can hold the
- * power of attorney for another. A witness's number may not be any complainant's or any
- * accused's. A clash shows only on the field of the party entered later (see `shownOn`).
- * Pairs the rules do not name (two accused, two witnesses, a PoA holder and an accused or a
- * witness) are left alone.
+ * No two parties may share a number, with two exceptions for a PoA holder: a complainant may
+ * be another complainant's PoA holder, so a PoA holder may have a complainant's number (just
+ * not their own complainant's); and a PoA holder often gives evidence for the complainant, so
+ * may share a witness's number. So: two complainants, two accused, two PoA holders or two
+ * witnesses; a complainant and an accused; an accused and a PoA holder; and a witness and a
+ * complainant or an accused all clash. One party's own contact rows may repeat a number. A
+ * clash shows only on the field of the party entered later (see `shownOn`).
+ *
+ * No party's number may be the filing advocate's own either (`advocateMobileClashes`), except
+ * a PoA holder's: the advocate may hold the power of attorney (issue #64).
  */
 
 import { isIndianMobile, toNationalMobile } from "@/lib/auth/mobile";
 
-import type { FilingDraft } from "./types";
+import { sameMobile } from "./selectors";
+import type { Accused, Complainant, FilingDraft, Witness } from "./types";
 
 /** Whose number a mobile field holds. Indices are positions in the draft's lists. */
 export type MobileOwner =
@@ -61,12 +67,23 @@ function heldNumbers(draft: FilingDraft): Held[] {
   return held;
 }
 
+/** The party's position in its own list: complainant (and their PoA holder), accused, witness. */
+function partyIndex(o: MobileOwner): number {
+  if (o.role === "accused") return o.accused;
+  if (o.role === "witness") return o.witness;
+  return o.complainant;
+}
+
 function clash(a: MobileOwner, b: MobileOwner): boolean {
-  if (b.role === "witness" && a.role !== "witness") return clash(b, a);
-  if (a.role === "witness") return b.role === "complainant" || b.role === "accused";
-  if (b.role === "complainant" && a.role !== "complainant") return clash(b, a);
-  if (a.role !== "complainant") return false;
-  return b.role !== "poa-holder" || b.complainant === a.complainant;
+  // The same party (one accused's or one witness's own contact rows) never clashes.
+  if (a.role === b.role) return partyIndex(a) !== partyIndex(b);
+  // A PoA holder often gives evidence for the complainant, so may also be a witness.
+  if (a.role === "witness" && b.role === "poa-holder") return false;
+  if (a.role === "poa-holder" && b.role === "witness") return false;
+  // A PoA holder may hold another complainant's number, never their own complainant's.
+  if (a.role === "complainant" && b.role === "poa-holder") return a.complainant === b.complainant;
+  if (a.role === "poa-holder" && b.role === "complainant") return a.complainant === b.complainant;
+  return true;
 }
 
 /** The order parties are entered in: complainants, their PoA holders, accused, witnesses. */
@@ -80,12 +97,10 @@ const ENTRY_ORDER: Record<MobileOwner["role"], number> = {
 /**
  * Whether `field` carries its clash with `other`. The number belongs to whoever had it
  * first; the party entered after them is the one told, so the clash shows on that field
- * alone. Between two complainants, the later one is told.
+ * alone. Between two parties of the same kind, the later one is told.
  */
 function shownOn(field: MobileOwner, other: MobileOwner): boolean {
-  if (field.role === "complainant" && other.role === "complainant") {
-    return other.complainant < field.complainant;
-  }
+  if (field.role === other.role) return partyIndex(other) < partyIndex(field);
   return ENTRY_ORDER[other.role] < ENTRY_ORDER[field.role];
 }
 
@@ -132,4 +147,52 @@ export function firstAccusedClash(conflicts: MobileConflicts): number | undefine
 export function firstWitnessClash(conflicts: MobileConflicts): number | undefined {
   const i = conflicts.witness.findIndex((rows) => rows.some(Boolean));
   return i >= 0 ? i : undefined;
+}
+
+/* ─────────────────────────── The filing advocate's own number ─────────────────────────── */
+
+/**
+ * The numbers on a complainant that may not be the advocate's: an individual's own, or an
+ * institution's authorised representative's. Not the PoA holder's: the advocate may hold it.
+ */
+function complainantMobiles(c: Complainant): string[] {
+  return c.type === "individual" ? [c.mobile] : [c.rep.mobile];
+}
+
+/** An accused's contact numbers, and those of everyone summoned for an accused entity. */
+function accusedMobiles(a: Accused): string[] {
+  const own = a.contacts.map((contact) => contact.mobile);
+  return a.type === "individual" ? own : [...own, ...a.reps.map((r) => r.mobile)];
+}
+
+function witnessMobiles(w: Witness): string[] {
+  return w.contacts.map((contact) => contact.mobile);
+}
+
+/** For each step, the first party with a number that is the filing advocate's own. */
+export type AdvocateMobileClashes = {
+  complainant?: number;
+  accused?: number;
+  witness?: number;
+};
+
+/**
+ * Where a party has the filing advocate's own number, which stops Continue on that step
+ * just as a clash between two parties does. `advocateMobile` is unknown (no check) unless
+ * the filer is the advocate (`filingAdvocateMobile`).
+ */
+export function advocateMobileClashes(
+  draft: FilingDraft,
+  advocateMobile: string | undefined,
+): AdvocateMobileClashes {
+  if (!advocateMobile) return {};
+  const first = <T>(rows: T[], mobiles: (row: T) => string[]): number | undefined => {
+    const i = rows.findIndex((row) => mobiles(row).some((m) => sameMobile(m, advocateMobile)));
+    return i >= 0 ? i : undefined;
+  };
+  return {
+    complainant: first(draft.complainants, complainantMobiles),
+    accused: first(draft.accused, accusedMobiles),
+    witness: first(draft.witnesses, witnessMobiles),
+  };
 }

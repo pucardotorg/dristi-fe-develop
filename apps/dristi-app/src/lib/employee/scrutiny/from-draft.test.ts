@@ -57,6 +57,7 @@ describe("scrutiny reads the e-filing draft", () => {
       });
       draft.cheques.forEach((_, i) => {
         assert.ok(ids.has(`q${i + 1}-branch`), f.no);
+        assert.ok(ids.has(`q${i + 1}-acct`), f.no);
         assert.ok(ids.has(`m${i + 1}-why`), f.no);
         assert.ok(ids.has(`n${i + 1}-nature`), f.no);
       });

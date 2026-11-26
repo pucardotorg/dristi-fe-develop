@@ -17,16 +17,17 @@ import {
 import {
   ACCUSED_TYPES,
   MODE_OF_SERVICE,
-  NATURE_OF_DEBT,
   NON_DELIVERY_REASONS,
   PAYMENT_STATUS,
   RETURN_REASONS,
   type Option,
 } from "@/lib/filing/options";
+import { chequeBank } from "@/lib/filing/evidence";
 import {
   advocateName,
   documentsProgress,
   limitationView,
+  natureOfDebtText,
   totalChequeAmount,
 } from "@/lib/filing/selectors";
 import type {
@@ -95,6 +96,20 @@ export function complainantSummary(c: Complainant | undefined) {
     poa: c?.poa === "yes" ? "Appointed" : "Not appointed",
     age: (c?.age ?? "").trim(),
   };
+}
+
+export type ComplainantSummary = ReturnType<typeof complainantSummary> & {
+  key: string;
+  label: string;
+};
+
+/** Every complainant on the case — a filing may have co-complainants. */
+export function complainantSummaries(draft: FilingDraft): ComplainantSummary[] {
+  return draft.complainants.map((c, i) => ({
+    key: c.id,
+    label: `Complainant ${i + 1}`,
+    ...complainantSummary(c),
+  }));
 }
 
 export type AdvocateSummary = {
@@ -181,6 +196,8 @@ export type ChequeSummary = {
   drawerBank: string;
   bankName: string;
   bankBranch: string;
+  /** `CHQ-7a`; inherited, like the bank, when the cheque shares the previous one's. */
+  accountNumber: string;
   presentDate: string;
   returnDate: string;
   returnReason: string;
@@ -201,6 +218,7 @@ export function chequeSummaries(draft: FilingDraft): ChequeSummary[] {
       drawerBank: orNot(commaJoin(c.bankName, c.bankBranch)),
       bankName: orNot(c.bankName),
       bankBranch: orNot(c.bankBranch),
+      accountNumber: orNot(chequeBank(draft.cheques, i).accountNumber),
       presentDate: displayDate(c.presentDate),
       returnDate: displayDate(c.returnDate),
       returnReason: orNot(reason),
@@ -254,7 +272,7 @@ export function noticeSummary(n: DemandNotice | undefined) {
   const payment = optionLabel(PAYMENT_STATUS, n?.paymentStatus ?? "");
   const partAmount = rupees(n?.partAmount ?? "");
   return {
-    nature: orNot(optionLabel(NATURE_OF_DEBT, n?.natureDebt ?? "")),
+    nature: orNot(natureOfDebtText(n)),
     dispatched: orNot(
       joinDot(
         toDisplayDate(n?.dispatchDate ?? ""),
@@ -273,6 +291,20 @@ export function noticeSummary(n: DemandNotice | undefined) {
         : orNot(payment),
     paidYesNo: n?.paymentStatus === "part" ? "previewDerive_yesInPart" : "No",
   };
+}
+
+export type NoticeSummary = ReturnType<typeof noticeSummary> & {
+  key: string;
+  label: string;
+};
+
+/** Every demand notice on the case — a filing may rely on more than one. */
+export function noticeSummaries(draft: FilingDraft): NoticeSummary[] {
+  return draft.notices.map((n, i) => ({
+    key: n.id,
+    label: `Demand notice ${i + 1}`,
+    ...noticeSummary(n),
+  }));
 }
 
 /**

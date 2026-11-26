@@ -60,6 +60,9 @@ export type PendingLink = { target: DocumentTarget; caseDocumentId: string } & (
 /** The participant a complainant is saved as on the case, if they are yet. */
 export type ParticipantIdOf = (complainant: Complainant) => string | undefined;
 
+/** The participant a complainant's PoA holder is saved as on the case, if they are yet. */
+export type PoaHolderIdOf = (complainant: Complainant) => string | undefined;
+
 /** The evidence row a demand notice is saved as on the case, if it is yet. */
 export type EvidenceIdOf = (notice: DemandNotice) => string | undefined;
 
@@ -67,15 +70,27 @@ export type EvidenceIdOf = (notice: DemandNotice) => string | undefined;
  * Where to read saved ids from, for a step that has just saved them: the draft it reads
  * may not hold them yet.
  */
-export type SavedIds = { participantIdOf?: ParticipantIdOf; evidenceIdOf?: EvidenceIdOf };
+export type SavedIds = {
+  participantIdOf?: ParticipantIdOf;
+  poaHolderIdOf?: PoaHolderIdOf;
+  evidenceIdOf?: EvidenceIdOf;
+};
 
 export type DocumentsDraft = Pick<
   FilingDraft,
   "id" | "caseId" | "intake" | "documents" | "complainants" | "cheques" | "notices"
 >;
 
-/** The documents the backend files under a complainant (its `PARTY_DOCUMENT_ROLES`). */
-const PARTY_DOC_TYPES: ReadonlySet<IntakeDocType> = new Set(["id-proof", "vakalatnama", "poa"]);
+/**
+ * The documents the backend files under a party (its `PARTY_DOCUMENT_ROLES`): the
+ * complainant's own, and their PoA holder's identity proof, filed under the PoA holder.
+ */
+const PARTY_DOC_TYPES: ReadonlySet<IntakeDocType> = new Set([
+  "id-proof",
+  "vakalatnama",
+  "poa",
+  "poa-holder-id-proof",
+]);
 
 /** A demand notice's papers, linked to its evidence row (the backend's `EVIDENCE_DOCUMENT_TYPES`). */
 const NOTICE_PAPER_TYPES: ReadonlySet<IntakeDocType> = new Set([
@@ -85,6 +100,9 @@ const NOTICE_PAPER_TYPES: ReadonlySet<IntakeDocType> = new Set([
 ]);
 
 const savedAs: ParticipantIdOf = (c) => c.caseParticipantIds?.[0];
+// A holder left on the draft after "no PoA" is revoked on the case; nothing links to them.
+const poaHolderSavedAs: PoaHolderIdOf = (c) =>
+  c.poa === "yes" ? c.savedPoaHolder?.participantId : undefined;
 const noticeSavedAs: EvidenceIdOf = (n) => n.noticeEvidenceId;
 
 /** A custom row's name for the step's messages, before the filer has typed one. */
@@ -116,21 +134,26 @@ export function targetForRow(intake: Intake, row: CaseDocument): DocumentTarget 
 }
 
 /**
- * Whether a slot holds a complainant's own document, and whose. Every upload-step party is
- * a complainant, and party group `i` holds complainant `i`'s documents. `owner` is
- * `undefined` until that complainant is saved on the case.
+ * Whether a slot holds a party document, and whose. Every upload-step party is a
+ * complainant, and party group `i` holds complainant `i`'s documents — except their PoA
+ * holder's identity proof, which belongs to the PoA holder. `owner` is `undefined` until
+ * that person is saved on the case.
  */
 function partyDocumentOwner(
   draft: DocumentsDraft,
   slotKey: string,
   participantIdOf: ParticipantIdOf,
+  poaHolderIdOf: PoaHolderIdOf,
 ): { owner: string | undefined } | null {
-  const index = draft.intake.parties.findIndex((g) =>
-    g.slots.some((s) => s.key === slotKey && PARTY_DOC_TYPES.has(s.docType)),
-  );
-  if (index === -1) return null;
-  const complainant = draft.complainants[index];
-  return { owner: complainant ? participantIdOf(complainant) : undefined };
+  for (const [index, group] of draft.intake.parties.entries()) {
+    const slot = group.slots.find((s) => s.key === slotKey && PARTY_DOC_TYPES.has(s.docType));
+    if (!slot) continue;
+    const complainant = draft.complainants[index];
+    if (!complainant) return { owner: undefined };
+    const ownerOf = slot.docType === "poa-holder-id-proof" ? poaHolderIdOf : participantIdOf;
+    return { owner: ownerOf(complainant) };
+  }
+  return null;
 }
 
 /**
@@ -185,7 +208,7 @@ export function caseUploadFor(
     const slot = findIntakeSlot(draft.intake, target.key);
     if (!slot) return undefined;
     const meta: CaseDocumentMeta = { isDigital: rowForSlot(draft.documents, slot.key)?.digital };
-    const party = partyDocumentOwner(draft, slot.key, savedAs);
+    const party = partyDocumentOwner(draft, slot.key, savedAs, poaHolderSavedAs);
     if (party) meta.caseParticipantId = party.owner;
     const paper = noticePaperOwner(draft, slot.key, noticeSavedAs);
     if (paper) meta.caseEvidenceId = paper.owner;
@@ -206,12 +229,16 @@ export function caseUploadFor(
  */
 export function pendingLinks(
   draft: DocumentsDraft,
-  { participantIdOf = savedAs, evidenceIdOf = noticeSavedAs }: SavedIds = {},
+  {
+    participantIdOf = savedAs,
+    poaHolderIdOf = poaHolderSavedAs,
+    evidenceIdOf = noticeSavedAs,
+  }: SavedIds = {},
 ): PendingLink[] {
   const party = draft.intake.parties.flatMap((group) =>
     group.slots.flatMap((slot): PendingLink[] => {
       if (!slot.caseDocumentId || slot.syncing) return [];
-      const owner = partyDocumentOwner(draft, slot.key, participantIdOf)?.owner;
+      const owner = partyDocumentOwner(draft, slot.key, participantIdOf, poaHolderIdOf)?.owner;
       if (!owner || owner === slot.linkedParticipantId) return [];
       const target = { kind: "slot", key: slot.key } as const;
       return [{ target, caseDocumentId: slot.caseDocumentId, participantId: owner }];

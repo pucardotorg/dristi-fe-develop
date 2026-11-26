@@ -11,11 +11,15 @@ import {
 } from "./blank";
 import {
   accusedComplete,
+  advocateMobileIssue,
   chequeFullyComplete,
   chequeNumberIssue,
   complainantComplete,
+  filingAdvocateMobile,
   jurisdictionComplete,
   mobileIssue,
+  natureDebtOtherNeeded,
+  natureOfDebtText,
   noticeComplete,
   poaHolderComplete,
   sectionComplete,
@@ -29,6 +33,7 @@ import type {
   Complainant,
   DemandNotice,
   FilingDraft,
+  UserProfile,
   Witness,
 } from "./types";
 
@@ -42,6 +47,32 @@ const FULL_ADDR: Address = {
 };
 
 const MOBILE = "9876543210";
+
+function profileAs(role: UserProfile["role"]): UserProfile {
+  return { role, name: "A. Menon", mobile: "9876543210", email: "", barNumber: "K/123/2010" };
+}
+
+describe("filingAdvocateMobile", () => {
+  it("is the filer's number only when they file as the advocate", () => {
+    assert.equal(filingAdvocateMobile(profileAs("ADVOCATE")), "9876543210");
+    assert.equal(filingAdvocateMobile(profileAs("LITIGANT")), undefined);
+    assert.equal(filingAdvocateMobile(profileAs("CLERK")), undefined);
+    assert.equal(filingAdvocateMobile(null), undefined);
+  });
+});
+
+describe("advocateMobileIssue", () => {
+  it("flags a party's number that is the advocate's, however it is written", () => {
+    assert.ok(advocateMobileIssue("9876543210", "9876543210"));
+    assert.ok(advocateMobileIssue("+91 98765 43210", "9876543210"));
+  });
+
+  it("says nothing of another number, an empty field, or an unknown advocate number", () => {
+    assert.equal(advocateMobileIssue("9000000002", "9876543210"), undefined);
+    assert.equal(advocateMobileIssue("", "9876543210"), undefined);
+    assert.equal(advocateMobileIssue("9876543210", undefined), undefined);
+  });
+});
 
 function fullWitness(): Witness {
   const w = blankWitness();
@@ -356,6 +387,7 @@ function fullCheque(): ChequeDetails {
     ifsc: "SBIN0000001",
     bankName: "State Bank of India",
     bankBranch: "MG Road",
+    accountNumber: "32104567890",
     presentDate: "2026-05-20",
     returnDate: "2026-05-22",
     returnReason: "funds-insufficient",
@@ -373,6 +405,13 @@ describe("chequeFullyComplete", () => {
     assert.equal(chequeFullyComplete({ ...fullCheque(), returnReason: "" }, 0), false);
   });
 
+  it("needs a 9 to 18 digit account number (CHQ-7a)", () => {
+    for (const bad of ["", "12345678", "1234567890123456789", "12345678AB"]) {
+      assert.equal(chequeFullyComplete({ ...fullCheque(), accountNumber: bad }, 0), false, bad);
+    }
+    assert.equal(chequeFullyComplete({ ...fullCheque(), accountNumber: "3210 4567 890" }, 0), true);
+  });
+
   it("inherits the bank for a 'same as previous' cheque", () => {
     const second = {
       ...fullCheque(),
@@ -380,6 +419,7 @@ describe("chequeFullyComplete", () => {
       ifsc: "",
       bankName: "",
       bankBranch: "",
+      accountNumber: "",
     };
     assert.equal(chequeFullyComplete(second, 1), true);
   });
@@ -490,5 +530,48 @@ describe("sectionComplete('adr-prayer')", () => {
     assert.equal(sectionComplete(d, "adr-prayer"), false);
     d.adr.interimRelief = "<p>Pay interim compensation.</p>";
     assert.equal(sectionComplete(d, "adr-prayer"), true);
+  });
+});
+
+describe("the 'other' nature of debt (LDN-1a)", () => {
+  function notice(over: Partial<DemandNotice> = {}): DemandNotice {
+    return {
+      ...blankNotice(),
+      natureDebt: "loan",
+      dispatchDate: "2026-06-01",
+      modeService: "rpad",
+      deliveryDate: "2026-06-05",
+      paymentStatus: "none",
+      ...over,
+    };
+  }
+
+  it("asks for a description only when the nature of debt is other", () => {
+    assert.equal(natureDebtOtherNeeded(notice()), false);
+    assert.equal(natureDebtOtherNeeded(notice({ natureDebt: "other" })), true);
+  });
+
+  it("leaves an 'other' notice incomplete until it is described", () => {
+    assert.equal(noticeComplete(notice()), true);
+    assert.equal(noticeComplete(notice({ natureDebt: "other" })), false);
+    assert.equal(noticeComplete(notice({ natureDebt: "other", natureDebtOther: "  " })), false);
+    assert.equal(
+      noticeComplete(notice({ natureDebt: "other", natureDebtOther: "Unpaid rent" })),
+      true,
+    );
+  });
+
+  it("reads the description after the option, and only for other", () => {
+    assert.equal(
+      natureOfDebtText(notice({ natureDebt: "other", natureDebtOther: " Unpaid rent " })),
+      "Other liability: Unpaid rent",
+    );
+    assert.equal(natureOfDebtText(notice({ natureDebt: "other" })), "Other liability");
+    // A description left behind after switching away is not shown.
+    assert.equal(
+      natureOfDebtText(notice({ natureDebt: "loan", natureDebtOther: "Unpaid rent" })),
+      "Loan / advance repayment",
+    );
+    assert.equal(natureOfDebtText(undefined), "");
   });
 });

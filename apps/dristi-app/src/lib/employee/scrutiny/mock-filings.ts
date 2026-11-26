@@ -94,6 +94,7 @@ const FILE_STEM: Record<IntakeDocType, [string, string, string]> = {
   "notice-reply": ["reply-to-notice", "PDF", "application/pdf"],
   "id-proof": ["aadhaar", "JPG", "image/jpeg"],
   poa: ["power-of-attorney", "PDF", "application/pdf"],
+  "poa-holder-id-proof": ["poa-holder-aadhaar", "JPG", "image/jpeg"],
   vakalatnama: ["vakalatnama", "PDF", "application/pdf"],
   other: ["document", "PDF", "application/pdf"],
   supporting: ["invoice", "PDF", "application/pdf"],
@@ -264,7 +265,7 @@ function build(spec: Spec): FilingDraft {
       const needed =
         slot.docType === "id-proof" ||
         (slot.docType === "vakalatnama" && c.pip !== "yes") ||
-        (slot.docType === "poa" && c.poa === "yes") ||
+        ((slot.docType === "poa" || slot.docType === "poa-holder-id-proof") && c.poa === "yes") ||
         optional.has(slot.key);
       if (!needed) continue;
       let read: Read | undefined;

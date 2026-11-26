@@ -23,6 +23,7 @@ function filledCheque(over: Partial<ChequeDetails> = {}): ChequeDetails {
     ifsc: "sbin0001234",
     bankName: "State Bank of India",
     bankBranch: "MG Road",
+    accountNumber: "3210 4567 890",
     presentDate: "2024-01-18",
     returnDate: "2024-01-22",
     returnReason: "funds-insufficient",
@@ -63,26 +64,46 @@ describe("chequeBank", () => {
       ifsc: "SBIN0001234",
       bankName: "State Bank of India",
       bankBranch: "MG Road",
+      accountNumber: "32104567890",
     });
   });
 
   it("inherits the previous cheque's bank when 'same as previous' is yes", () => {
     const cheques = [
       filledCheque(),
-      filledCheque({ sameAsPrev: "yes", ifsc: "", bankName: "", bankBranch: "" }),
+      filledCheque({
+        sameAsPrev: "yes",
+        ifsc: "",
+        bankName: "",
+        bankBranch: "",
+        accountNumber: "",
+      }),
     ];
     assert.deepEqual(chequeBank(cheques, 1), {
       ifsc: "SBIN0001234",
       bankName: "State Bank of India",
       bankBranch: "MG Road",
+      accountNumber: "32104567890",
     });
   });
 
   it("follows the chain back through several inheriting cheques", () => {
     const cheques = [
       filledCheque(),
-      filledCheque({ sameAsPrev: "yes", ifsc: "", bankName: "", bankBranch: "" }),
-      filledCheque({ sameAsPrev: "yes", ifsc: "", bankName: "", bankBranch: "" }),
+      filledCheque({
+        sameAsPrev: "yes",
+        ifsc: "",
+        bankName: "",
+        bankBranch: "",
+        accountNumber: "",
+      }),
+      filledCheque({
+        sameAsPrev: "yes",
+        ifsc: "",
+        bankName: "",
+        bankBranch: "",
+        accountNumber: "",
+      }),
     ];
     assert.equal(chequeBank(cheques, 2).bankName, "State Bank of India");
   });
@@ -97,6 +118,7 @@ describe("chequeEvidenceInfo", () => {
       ifsc_code: "SBIN0001234",
       bank_name: "State Bank of India",
       bank_branch: "MG Road",
+      bank_account_number: "32104567890",
     });
   });
 
@@ -109,12 +131,14 @@ describe("chequeEvidenceInfo", () => {
         ifsc: "",
         bankName: "",
         bankBranch: "",
+        accountNumber: "",
       }),
     ];
     const info = chequeEvidenceInfo(cheques, 1);
     assert.equal(info.cheque_number, "456790");
     assert.equal(info.ifsc_code, "SBIN0001234");
     assert.equal(info.bank_name, "State Bank of India");
+    assert.equal(info.bank_account_number, "32104567890");
   });
 });
 
@@ -138,6 +162,7 @@ describe("chequeEvidenceInfo partial save", () => {
           chequeNumber: "12345",
           ifsc: "SBIN123",
           bankBranch: "",
+          accountNumber: "",
         }),
       ],
       0,
@@ -159,6 +184,15 @@ describe("chequeEvidenceInfo partial save", () => {
     );
     assert.ok(!("cheque_number" in info));
     assert.ok(!("ifsc_code" in info));
+  });
+
+  it("sends the account number only once it is 9 to 18 digits (CHQ-7a)", () => {
+    for (const bad of ["", "12345678", "1234567890123456789", "12345678AB"]) {
+      const info = chequeEvidenceInfo([filledCheque({ accountNumber: bad })], 0);
+      assert.ok(!("bank_account_number" in info), bad);
+    }
+    const info = chequeEvidenceInfo([filledCheque({ accountNumber: "1234-5678 9" })], 0);
+    assert.equal(info.bank_account_number, "123456789");
   });
 });
 
@@ -241,6 +275,33 @@ describe("demandNoticeEvidenceInfo", () => {
 
   it("omits tracking_number when empty", () => {
     assert.ok(!("tracking_number" in demandNoticeEvidenceInfo(filledNotice({ tracking: "" }))));
+  });
+});
+
+describe("demandNoticeEvidenceInfo: the 'other' nature of debt (LDN-1a)", () => {
+  it("sends the description, trimmed, with OTHER_LIABILITY", () => {
+    const info = demandNoticeEvidenceInfo(
+      filledNotice({ natureDebt: "other", natureDebtOther: "  Rent arrears " }),
+    );
+    assert.equal(info.nature_of_debt, "OTHER_LIABILITY");
+    assert.equal(info.nature_of_debt_other, "Rent arrears");
+  });
+
+  it("leaves out a blank description, which the backend refuses", () => {
+    for (const blank of ["", "   "]) {
+      const info = demandNoticeEvidenceInfo(
+        filledNotice({ natureDebt: "other", natureDebtOther: blank }),
+      );
+      assert.equal(info.nature_of_debt, "OTHER_LIABILITY");
+      assert.ok(!("nature_of_debt_other" in info), JSON.stringify(blank));
+    }
+  });
+
+  it("leaves out a description kept from before switching to another nature (E07023)", () => {
+    const info = demandNoticeEvidenceInfo(
+      filledNotice({ natureDebt: "loan", natureDebtOther: "Rent arrears" }),
+    );
+    assert.ok(!("nature_of_debt_other" in info));
   });
 });
 

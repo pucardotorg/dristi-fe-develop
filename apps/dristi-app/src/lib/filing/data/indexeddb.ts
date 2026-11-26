@@ -271,7 +271,10 @@ function listsRead(lists: ContactLists) {
   };
 }
 
-/** PAN, CIN and the skip declaration are kept only for a complainant, as the backend does. */
+/**
+ * PAN, CIN and the skip declaration are kept only for a complainant, and the contacts-unknown
+ * declaration only for an accused, as the backend does.
+ */
 function institutionRead(
   i: Omit<InstitutionInput, keyof ContactLists>,
   lists: ContactLists,
@@ -605,9 +608,12 @@ export class SandboxCaseFiling implements CaseFilingRepository {
       if (patch.institution) {
         const complainant = p.role === "COMPLAINANT";
         for (const q of company) {
-          // The company's own contacts stay; `institution_contacts` changes them.
+          // The company's own contacts, and its declaration that they are unknown, stay;
+          // `institution_contacts` changes them.
+          const kept = q.institution?.contact_details_unknown_declared;
           q.institution = {
             ...institutionRead(patch.institution, {}, complainant),
+            ...(kept === undefined ? {} : { contact_details_unknown_declared: kept }),
             mobile_numbers: q.institution?.mobile_numbers ?? [],
             email_addresses: q.institution?.email_addresses ?? [],
             addresses: q.institution?.addresses ?? [],
@@ -616,7 +622,12 @@ export class SandboxCaseFiling implements CaseFilingRepository {
       }
       if (patch.institution_contacts) {
         for (const q of company) {
-          if (q.institution) Object.assign(q.institution, listsRead(patch.institution_contacts));
+          if (!q.institution) continue;
+          Object.assign(q.institution, listsRead(patch.institution_contacts));
+          const declared = patch.institution_contacts.contact_details_unknown_declared;
+          if (declared !== undefined && q.role !== "COMPLAINANT") {
+            q.institution.contact_details_unknown_declared = declared;
+          }
         }
       }
 

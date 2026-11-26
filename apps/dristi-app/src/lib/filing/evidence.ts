@@ -14,7 +14,12 @@
  * `POST /cases/{id}/validate` before signing, not here.
  */
 
-import { CHEQUE_NUMBER_PATTERN, IFSC_PATTERN } from "./lookups";
+import {
+  ACCOUNT_NUMBER_PATTERN,
+  CHEQUE_NUMBER_PATTERN,
+  IFSC_PATTERN,
+  normaliseAccountNumber,
+} from "./lookups";
 import { NON_DELIVERY_REASON_CODES } from "./options";
 import type { ChequeDetails, DemandNotice } from "./types";
 
@@ -24,13 +29,13 @@ export type EvidenceType = "CHEQUE" | "RETURN_MEMO" | "LEGAL_DEMAND_NOTICE";
 /** An `evidence_info` body, as the backend's per-type schema expects it. */
 export type EvidenceInfoBody = Record<string, string | number | boolean>;
 
-/** The drawer's bank written on a cheque. */
-type Bank = { ifsc: string; bankName: string; bankBranch: string };
+/** The drawer's bank and account written on a cheque. */
+type Bank = { ifsc: string; bankName: string; bankBranch: string; accountNumber: string };
 
 /**
  * The bank details that apply to the cheque at `index`. A cheque that answered "same bank
- * as the previous cheque" inherits the previous cheque's bank, following the chain back to
- * the first cheque that set its own.
+ * as the previous cheque" inherits the previous cheque's bank and account, following the
+ * chain back to the first cheque that set its own.
  */
 export function chequeBank(cheques: ChequeDetails[], index: number): Bank {
   let i = index;
@@ -40,6 +45,7 @@ export function chequeBank(cheques: ChequeDetails[], index: number): Bank {
     ifsc: c.ifsc.trim().toUpperCase(),
     bankName: c.bankName.trim(),
     bankBranch: c.bankBranch.trim(),
+    accountNumber: normaliseAccountNumber(c.accountNumber),
   };
 }
 
@@ -89,6 +95,10 @@ export function chequeEvidenceInfo(cheques: ChequeDetails[], index: number): Evi
   if (IFSC_PATTERN.test(bank.ifsc)) info.ifsc_code = bank.ifsc;
   if (bank.bankName) info.bank_name = bank.bankName;
   if (bank.bankBranch) info.bank_branch = bank.bankBranch;
+  // `CHQ-7a`: optional in the backend's schema, required by the form (`chequeFullyComplete`).
+  if (ACCOUNT_NUMBER_PATTERN.test(bank.accountNumber)) {
+    info.bank_account_number = bank.accountNumber;
+  }
   return info;
 }
 
@@ -159,6 +169,13 @@ export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody
   // cheque_issue_reason is not sent — the backend dropped it.
   const natureOfDebt = NATURE_OF_DEBT_VALUE[notice.natureDebt];
   if (natureOfDebt) info.nature_of_debt = natureOfDebt;
+  // LDN-1a: the filer's description of an "other" debt. The backend refuses it with any
+  // other nature (E07023) and refuses it blank, so it goes only with "other" and real text;
+  // switching away leaves it out, and the PATCH that replaces evidence_info drops it.
+  const natureDebtOther = notice.natureDebtOther.trim();
+  if (natureOfDebt === NATURE_OF_DEBT_VALUE.other && natureDebtOther) {
+    info.nature_of_debt_other = natureDebtOther;
+  }
   if (notice.dispatchDate) info.dispatch_date = notice.dispatchDate;
   const modeOfService = MODE_OF_SERVICE_VALUE[notice.modeService];
   if (modeOfService) info.mode_of_service = modeOfService;
@@ -213,7 +230,7 @@ export function chequeFromEvidence(
   info: Record<string, unknown>,
 ): Pick<
   ChequeDetails,
-  "dateOnCheque" | "amount" | "chequeNumber" | "ifsc" | "bankName" | "bankBranch"
+  "dateOnCheque" | "amount" | "chequeNumber" | "ifsc" | "bankName" | "bankBranch" | "accountNumber"
 > {
   return {
     dateOnCheque: text(info.cheque_date),
@@ -222,6 +239,7 @@ export function chequeFromEvidence(
     ifsc: text(info.ifsc_code),
     bankName: text(info.bank_name),
     bankBranch: text(info.bank_branch),
+    accountNumber: text(info.bank_account_number),
   };
 }
 
@@ -243,6 +261,7 @@ export function noticeFromEvidence(
   const paymentStatus = codeFor(PAYMENT_STATUS_VALUE, info.payment_status);
   return {
     natureDebt: codeFor(NATURE_OF_DEBT_VALUE, info.nature_of_debt),
+    natureDebtOther: text(info.nature_of_debt_other),
     dispatchDate: text(info.dispatch_date),
     modeService: codeFor(MODE_OF_SERVICE_VALUE, info.mode_of_service),
     tracking: text(info.tracking_number),

@@ -30,6 +30,8 @@ export const jurisdictionCopy = {
 /** Under a mobile number field whose value cannot be an Indian mobile (`mobileIssue`). */
 export const mobileFieldCopy = {
   invalid: "Enter a 10-digit mobile number starting with 6, 7, 8 or 9.",
+  /** A party's number is the filing advocate's own (`advocateMobileIssue`). */
+  advocates: "This is your number as the advocate. Enter this person's own mobile number.",
   /** Read into "Add the … to save this to your case." when a party is held back for it. */
   missingLabel: "10-digit mobile number",
 } as const;

@@ -50,6 +50,7 @@ export function ContactList({
   emailPlaceholder = "name@example.com",
   optional = false,
   allowAdd = true,
+  advocateMobile,
   mobileConflicts,
 }: {
   contacts: Contact[];
@@ -63,6 +64,8 @@ export function ContactList({
   optional?: boolean;
   /** False hides the add-row control; a single contact row is enough. */
   allowAdd?: boolean;
+  /** The filing advocate's own number, which no contact may be. */
+  advocateMobile?: string;
   /** Per row, why its number cannot be used: another party already has it. */
   mobileConflicts?: (string | undefined)[];
 }) {
@@ -81,6 +84,7 @@ export function ContactList({
               value={c.mobile}
               onChange={(v) => setAt(i, { mobile: v })}
               placeholder={mobilePlaceholder}
+              advocateMobile={advocateMobile}
               conflict={mobileConflicts?.[i]}
             />
             <FormField
@@ -215,10 +219,13 @@ export function RepresentativeList({
   reps,
   onChange,
   addLabel = "repeatLists_addAnotherPerson",
+  advocateMobile,
 }: {
   reps: Representative[];
   onChange: (next: Representative[]) => void;
   addLabel?: string;
+  /** The filing advocate's own number, which no person summoned may have. */
+  advocateMobile?: string;
 }) {
   const t = useTranslations();
   const { court } = useCourt();
@@ -263,6 +270,7 @@ export function RepresentativeList({
               optional
               value={r.mobile}
               onChange={(v) => setAt(i, { mobile: v })}
+              advocateMobile={advocateMobile}
             />
             <FormField label={t("repeatLists_emailAddress")} name={`reps.${i}.email`} optional>
               <TextField

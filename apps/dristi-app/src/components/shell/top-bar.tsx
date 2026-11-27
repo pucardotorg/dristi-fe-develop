@@ -32,8 +32,8 @@ import { registeredUserByName } from "@/lib/access/content";
 import { VIEWER_CLERK_NAME } from "@/lib/cases/viewer";
 import { NotificationsBell, type ShellNotification } from "@/components/shell/notifications";
 import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
-import { pick, ui, type Locale } from "@/lib/onboarding/content";
-import { LANGUAGE_NAME, SECOND_LANGUAGES } from "@/lib/locale-config";
+import { pick, ui } from "@/lib/onboarding/content";
+import { fallbackLanguages, languagePair } from "@/lib/languages/languages";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -372,63 +372,75 @@ function useTaskNotifications() {
  * instead — it is the page origin, and it should not move when this bar's contents change.
  */
 /**
- * The app-wide language switch: English beside a second language, and a menu beside them
- * that changes which second language that is — Hindi, Gujarati or Punjabi (owner,
- * 2026-10-08). Hindi stays the default. Choosing a language from the menu also switches
- * to it, since that is why anyone opens the menu. Only Malayalam has strings today, so all
- * three show English until translations arrive (`pick` falls back).
+ * The app-wide language switch: the backend's default language (English) beside a second
+ * one, and a menu that changes which second language that is. The backend lists the
+ * languages (read from `useLocale().uiLanguages`); Hindi sits beside English until the person picks another
+ * (owner, 2026-10-08). Choosing from the menu also switches to that language, since that
+ * is why anyone opens the menu. A language without a message catalog shows English.
+ *
+ * Until the list arrives, or if it can't be had, the switch keeps English and the chosen
+ * language working and leaves the menu out: there is nothing else to offer.
  */
 function LanguageToggle() {
   const tr = useTranslations();
-  const { locale, setLocale, secondLanguage, setSecondLanguage } = useLocale();
-  const options = [
-    { value: "en" as Locale, label: LANGUAGE_NAME.en },
-    { value: secondLanguage as Locale, label: LANGUAGE_NAME[secondLanguage] },
-  ];
+  const {
+    locale,
+    language,
+    setLanguage,
+    secondLanguage,
+    setSecondLanguage,
+    uiLanguages: listed,
+  } = useLocale();
+  const ready = listed.status === "ready" && listed.languages.length > 0;
+  const languages = ready ? listed.languages : fallbackLanguages(language);
+  const pair = languagePair(languages, { selected: language, chosenSecond: secondLanguage });
+  if (!pair) return null;
+  const shown = pair.second ? [pair.primary, pair.second] : [pair.primary];
   return (
     <div className="ml-auto flex shrink-0 items-center gap-0.5">
       <SegmentedControl
         size="compact"
         type="single"
-        value={locale}
-        onValueChange={(value) => value && setLocale(value as Locale)}
+        value={language}
+        onValueChange={(value) => value && setLanguage(value)}
         aria-label={pick(ui.language, locale)}
       >
-        {options.map((l) => (
-          <SegmentedControlItem key={l.value} value={l.value} lang={l.value}>
-            {l.label}
+        {shown.map((l) => (
+          <SegmentedControlItem key={l.code} value={l.code} lang={l.code}>
+            {l.nativeName}
           </SegmentedControlItem>
         ))}
       </SegmentedControl>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            aria-label={tr("topBar_chooseTheSecondLanguage")}
-            className="relative after:absolute after:-inset-1"
-          >
-            <ChevronDownIcon className="size-4" aria-hidden />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-auto min-w-40">
-          <DropdownMenuLabel>{tr("topBar_secondLanguage")}</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
-            value={secondLanguage}
-            onValueChange={(next) => {
-              const language = SECOND_LANGUAGES.find((l) => l === next);
-              if (language) setSecondLanguage(language);
-            }}
-          >
-            {SECOND_LANGUAGES.map((l) => (
-              <DropdownMenuRadioItem key={l} value={l} lang={l}>
-                {LANGUAGE_NAME[l]}
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {ready && pair.choices.length > 1 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={tr("topBar_chooseTheSecondLanguage")}
+              className="relative after:absolute after:-inset-1"
+            >
+              <ChevronDownIcon className="size-4" aria-hidden />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-auto min-w-40">
+            <DropdownMenuLabel>{tr("topBar_secondLanguage")}</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={pair.second?.code ?? ""}
+              onValueChange={(next) => {
+                if (pair.choices.some((l) => l.code === next)) setSecondLanguage(next);
+              }}
+            >
+              {pair.choices.map((l) => (
+                <DropdownMenuRadioItem key={l.code} value={l.code} lang={l.code}>
+                  {l.nativeName}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 }

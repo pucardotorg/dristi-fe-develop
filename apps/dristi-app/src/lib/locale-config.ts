@@ -1,24 +1,18 @@
 /**
- * Which language sits beside English in the language switcher. A deployment setting,
- * not a filer's choice: one second language per deployment (owner, 2026-10-08).
- *
- * Hindi is the default. Hindi text does not exist yet — every string carries English
- * and Malayalam — so with Hindi chosen, any string without a Hindi version shows in
- * English until translations are supplied (`pick` falls back).
+ * Which language sits beside English in the language switcher until the person picks
+ * another: Hindi (owner, 2026-10-08: "keep the default as Hindi"). The languages the
+ * top bar offers come from the backend (`lib/languages/`); Hindi is used only while the
+ * backend lists it. A language without a message catalog shows English.
  */
 export type SecondLanguage = "hi" | "gu" | "pa" | "ml";
 
 export const SECOND_LANGUAGE: SecondLanguage = "hi";
 
 /**
- * The second languages the top bar's switch can put beside English, Hindi first
- * (owner, 2026-10-08: "keep the default as Hindi... they can choose to see Gujarati or
- * Punjabi"). No Gujarati or Punjabi strings exist yet either, so like Hindi they show
- * English until translations are supplied.
+ * Each language the app has a `Locale` for, named in its own script. The top bar names
+ * languages as the backend does (`native_name`); this map serves the switches the
+ * backend doesn't feed yet and the moment before its list arrives.
  */
-export const SECOND_LANGUAGES: readonly SecondLanguage[] = ["hi", "gu", "pa"];
-
-/** Each language named in its own script, so it is findable by someone who reads only that. */
 export const LANGUAGE_NAME: Record<"en" | SecondLanguage, string> = {
   en: "English",
   hi: "हिन्दी",

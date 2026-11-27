@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { getLocale } from "next-intl/server";
 
 import { AccessProvider } from "@/components/access/access-state";
@@ -7,6 +8,7 @@ import { FeedbackProvider } from "@/components/feedback-provider";
 import { LocaleProvider } from "@/components/shell/locale";
 import { ThemeProvider } from "@/components/theme-provider";
 import { serverBrandHue, serverCourt, serverCourtText } from "@/lib/court/server";
+import { LOCALE_COOKIE, parseLanguageCode } from "@/lib/locale/cookie";
 
 import "./globals.css";
 /* App-owned rules on chrome we do not author; globals.css is synced from the DS. */
@@ -35,8 +37,11 @@ export default async function RootLayout({
   const court = await serverCourt();
   const hue = await serverBrandHue(court);
   // From the NEXT_LOCALE cookie via `i18n/request.ts`, so the server-rendered page,
-  // the client provider and <html lang> all start in the same language.
+  // the client provider and <html lang> all start in the same language. The cookie can
+  // name a language the app has no text for; `locale` is then English, and the switch
+  // still shows the chosen language as selected.
   const locale = await getLocale();
+  const language = parseLanguageCode((await cookies()).get(LOCALE_COOKIE)?.value);
 
   return (
     <html
@@ -57,7 +62,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LocaleProvider initialLocale={locale}>
+          <LocaleProvider initialLanguage={language}>
             <CourtProvider initialCourt={court}>
               {/* Above both route groups, so office access given on a case
                   (/cases) is still there on the People page (/people). */}

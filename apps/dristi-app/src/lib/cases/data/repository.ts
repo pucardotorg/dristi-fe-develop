@@ -7,7 +7,7 @@
  * connected. `index.ts` picks one by `NEXT_PUBLIC_DATA_SOURCE`.
  */
 
-import type { CaseRecord } from "../types";
+import type { CaseFileDocument, CaseRecord } from "../types";
 
 export interface CasesRepository {
   /** Cases the signed-in advocate's office handles. */
@@ -16,4 +16,10 @@ export interface CasesRepository {
   listPartyCases(): Promise<CaseRecord[]>;
   /** "Today" as a date (YYYY-MM-DD). The sandbox pins it so its due dates read right. */
   today(): Promise<string>;
+  /**
+   * Every document in a case's case file, in the order each came into the case, with the
+   * documents each order is linked to. The case file's format (section order, numbering)
+   * is not data: `lib/cases/case-file-format.ts` sets it per state.
+   */
+  getCaseFile(caseId: string): Promise<CaseFileDocument[]>;
 }

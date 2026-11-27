@@ -1,0 +1,480 @@
+{
+  "fixtureId": "DRISTI-CASE-FILE-SECTION138-001",
+  "isDummyData": true,
+  "note": "Fictional. Names, dates and receipt numbers are taken from the PDFs under public/case-file/. The links between orders and documents, the synopsis, the Roznamas, the bail bond, the bail application and its attachments, the objection, the processes and their execution reports are sample data.",
+  "documents": [
+    {
+      "id": "synopsis",
+      "category": "synopsis",
+      "name": "Synopsis",
+      "href": "/case-file/19-synopsis.pdf"
+    },
+    {
+      "id": "complaint",
+      "category": "complaint",
+      "name": "Complaint",
+      "href": "/case-file/01-complaint.pdf"
+    },
+    {
+      "id": "dishonoured-cheque",
+      "category": "original-filing",
+      "name": "Cheque",
+      "href": "/case-file/02-initial-filings.pdf",
+      "page": 4
+    },
+    {
+      "id": "cheque-return-memo",
+      "category": "original-filing",
+      "name": "Cheque return memo",
+      "href": "/case-file/02-initial-filings.pdf",
+      "page": 5
+    },
+    {
+      "id": "legal-demand-notice",
+      "category": "original-filing",
+      "name": "Legal Demand Notice",
+      "href": "/case-file/02-initial-filings.pdf",
+      "page": 2
+    },
+    {
+      "id": "proof-of-dispatch",
+      "category": "original-filing",
+      "name": "Proof of dispatch of demand notice",
+      "href": "/case-file/02-initial-filings.pdf",
+      "page": 3
+    },
+    {
+      "id": "vakalatnama-1",
+      "category": "vakalatnamas",
+      "name": "Vakalatnama - Sunil Varghese",
+      "href": "/case-file/04-vakalats.pdf",
+      "page": 3
+    },
+    {
+      "id": "vakalatnama-2",
+      "category": "vakalatnamas",
+      "name": "Vakalatnama - Anand Traders",
+      "href": "/case-file/04-vakalats.pdf",
+      "page": 4
+    },
+    {
+      "id": "pw1-chief-affidavit-145",
+      "category": "affidavits",
+      "name": "PW-1 chief affidavit under section 145 of the Negotiable Instruments Act",
+      "href": "/case-file/03-affidavits.pdf",
+      "page": 4
+    },
+    {
+      "id": "affidavit-pw2",
+      "category": "affidavits",
+      "name": "Chief affidavit of PW-2",
+      "href": "/case-file/13-affidavit-pw2.pdf"
+    },
+    {
+      "id": "application-production-return-memo",
+      "category": "applications",
+      "name": "Production of documents",
+      "href": "/case-file/17-application-production-return-memo.pdf"
+    },
+    {
+      "id": "application-withdrawal",
+      "category": "applications",
+      "name": "Application for withdrawal - CMP/241/2025",
+      "href": "/case-file/16-application-withdrawal.pdf"
+    },
+    {
+      "id": "application-additional-witnesses",
+      "category": "applications",
+      "name": "Application for adding witnesses - CMP/236/2025",
+      "href": "/case-file/15-application-additional-witnesses.pdf"
+    },
+    {
+      "id": "application-bail",
+      "category": "applications",
+      "name": "Bail - CMP/287/2025",
+      "href": "/case-file/22-application-documents.pdf",
+      "page": 2
+    },
+    {
+      "id": "bail-surety-id",
+      "category": "applications",
+      "name": "Document attached: Surety ID proof",
+      "href": "/case-file/22-application-documents.pdf",
+      "page": 3,
+      "submittedWith": "application-bail"
+    },
+    {
+      "id": "bail-solvency",
+      "category": "applications",
+      "name": "Document attached: Proof of solvency",
+      "href": "/case-file/22-application-documents.pdf",
+      "page": 4,
+      "submittedWith": "application-bail"
+    },
+    {
+      "id": "application-advancement",
+      "category": "applications",
+      "name": "Advance (prepone) - CMP/214/2025",
+      "href": "/case-file/14-application-advancement.pdf"
+    },
+    {
+      "id": "advancement-bank-letter",
+      "category": "applications",
+      "name": "Document attached: Letter from the bank on PW-2's transfer",
+      "href": "/case-file/22-application-documents.pdf",
+      "page": 5,
+      "submittedWith": "application-advancement"
+    },
+    {
+      "id": "objection-advancement",
+      "category": "applications",
+      "name": "Objection - CMP/214/2025",
+      "href": "/case-file/22-application-documents.pdf",
+      "page": 6,
+      "objectsTo": "application-advancement"
+    },
+    {
+      "id": "order-cognizance",
+      "category": "orders",
+      "name": "Order: Order taking cognizance - 3 July 2025",
+      "href": "/case-file/09-orders.pdf",
+      "page": 2,
+      "docket": false,
+      "linkedTo": ["complaint"]
+    },
+    {
+      "id": "order-issuing-summons",
+      "category": "orders",
+      "name": "Order: Order issuing summons - 7 July 2025",
+      "href": "/case-file/09-orders.pdf",
+      "page": 3,
+      "docket": false,
+      "linkedTo": ["process-summons", "summons-payment-receipt"]
+    },
+    {
+      "id": "order-appearance-plea-bail",
+      "category": "orders",
+      "name": "Order: Order on appearance, plea and bail - 12 August 2025",
+      "href": "/case-file/09-orders.pdf",
+      "page": 4,
+      "docket": false,
+      "linkedTo": [
+        "application-withdrawal",
+        "application-additional-witnesses",
+        "application-bail",
+        "plea",
+        "bail-bond",
+        "vakalatnama-2"
+      ]
+    },
+    {
+      "id": "order-day-evidence-complainant",
+      "category": "orders",
+      "name": "Order: Order of the day, complainant evidence - 15 September 2025",
+      "href": "/case-file/09-orders.pdf",
+      "page": 5,
+      "docket": false,
+      "linkedTo": [
+        "pw1-chief-affidavit-145",
+        "application-advancement",
+        "witness-deposition-pw1",
+        "process-summons-pw2-rpad",
+        "process-summons-pw2-hand"
+      ]
+    },
+    {
+      "id": "order-closing-complainant-evidence",
+      "category": "orders",
+      "name": "Order: Order closing complainant evidence - 3 November 2025",
+      "href": "/case-file/09-orders.pdf",
+      "page": 6,
+      "docket": false,
+      "linkedTo": [
+        "affidavit-pw2",
+        "witness-deposition-pw2",
+        "process-summons-pw2-hand",
+        "exhibit-index-p1-p6"
+      ]
+    },
+    {
+      "id": "order-day-351-examination",
+      "category": "orders",
+      "name": "Order: Order of the day, section 351 examination - 1 December 2025",
+      "href": "/case-file/09-orders.pdf",
+      "page": 7,
+      "docket": false,
+      "linkedTo": ["questionnaire-351-bnss", "signed-statement-accused"]
+    },
+    {
+      "id": "order-closing-defence-evidence",
+      "category": "orders",
+      "name": "Order: Order closing defence evidence - 2 February 2026",
+      "href": "/case-file/09-orders.pdf",
+      "page": 8,
+      "docket": false,
+      "linkedTo": ["witness-deposition-dw1", "exhibit-index-d1-d3"]
+    },
+    {
+      "id": "order-reserving-judgment",
+      "category": "orders",
+      "name": "Order: Order reserving judgment - 6 April 2026",
+      "href": "/case-file/09-orders.pdf",
+      "page": 9,
+      "docket": false
+    },
+    {
+      "id": "judgment",
+      "category": "judgment",
+      "name": "Order: Judgment and sentence order - 5 May 2026",
+      "href": "/case-file/09-orders.pdf",
+      "page": 10,
+      "docket": false
+    },
+    {
+      "id": "roznama-1",
+      "category": "roznamas",
+      "name": "Roznama - 3 July 2025",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 2,
+      "docket": false
+    },
+    {
+      "id": "roznama-2",
+      "category": "roznamas",
+      "name": "Roznama - 7 July 2025",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 3,
+      "docket": false
+    },
+    {
+      "id": "roznama-3",
+      "category": "roznamas",
+      "name": "Roznama - 12 August 2025",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 4,
+      "docket": false
+    },
+    {
+      "id": "roznama-4",
+      "category": "roznamas",
+      "name": "Roznama - 15 September 2025",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 5,
+      "docket": false
+    },
+    {
+      "id": "roznama-5",
+      "category": "roznamas",
+      "name": "Roznama - 6 October 2025",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 6,
+      "docket": false
+    },
+    {
+      "id": "roznama-6",
+      "category": "roznamas",
+      "name": "Roznama - 3 November 2025",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 7,
+      "docket": false
+    },
+    {
+      "id": "roznama-7",
+      "category": "roznamas",
+      "name": "Roznama - 1 December 2025",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 8,
+      "docket": false
+    },
+    {
+      "id": "roznama-8",
+      "category": "roznamas",
+      "name": "Roznama - 12 January 2026",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 9,
+      "docket": false
+    },
+    {
+      "id": "roznama-9",
+      "category": "roznamas",
+      "name": "Roznama - 2 February 2026",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 10,
+      "docket": false
+    },
+    {
+      "id": "roznama-10",
+      "category": "roznamas",
+      "name": "Roznama - 16 March 2026",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 11,
+      "docket": false
+    },
+    {
+      "id": "roznama-11",
+      "category": "roznamas",
+      "name": "Roznama - 6 April 2026",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 12,
+      "docket": false
+    },
+    {
+      "id": "roznama-12",
+      "category": "roznamas",
+      "name": "Roznama - 5 May 2026",
+      "href": "/case-file/20-roznamas.pdf",
+      "page": 13,
+      "docket": false
+    },
+    {
+      "id": "plea",
+      "category": "recorded-statements",
+      "name": "Plea record",
+      "href": "/case-file/08-examination-of-accused.pdf",
+      "page": 2
+    },
+    {
+      "id": "witness-deposition-pw1",
+      "category": "recorded-statements",
+      "name": "Deposition of PW-1",
+      "href": "/case-file/05-evidence-of-complainant.pdf",
+      "page": 2
+    },
+    {
+      "id": "witness-deposition-pw2",
+      "category": "recorded-statements",
+      "name": "Deposition of PW-2",
+      "href": "/case-file/05-evidence-of-complainant.pdf",
+      "page": 3
+    },
+    {
+      "id": "questionnaire-351-bnss",
+      "category": "recorded-statements",
+      "name": "Questionnaire under section 351 BNSS",
+      "href": "/case-file/08-examination-of-accused.pdf",
+      "page": 3
+    },
+    {
+      "id": "witness-deposition-dw1",
+      "category": "recorded-statements",
+      "name": "Deposition of DW-1",
+      "href": "/case-file/06-evidence-of-accused.pdf",
+      "page": 3
+    },
+    {
+      "id": "process-summons",
+      "category": "processes",
+      "name": "Summons via RPAD - 7 July 2025",
+      "href": "/case-file/23-processes.pdf",
+      "page": 2
+    },
+    {
+      "id": "report-summons",
+      "category": "processes",
+      "name": "Execution report - 21 July 2025",
+      "href": "/case-file/23-processes.pdf",
+      "page": 3,
+      "reportOn": "process-summons"
+    },
+    {
+      "id": "process-summons-pw2-rpad",
+      "category": "processes",
+      "name": "Summons via RPAD - 15 September 2025",
+      "href": "/case-file/23-processes.pdf",
+      "page": 4
+    },
+    {
+      "id": "report-summons-pw2-rpad",
+      "category": "processes",
+      "name": "Execution report - 1 October 2025",
+      "href": "/case-file/23-processes.pdf",
+      "page": 5,
+      "reportOn": "process-summons-pw2-rpad"
+    },
+    {
+      "id": "process-summons-pw2-hand",
+      "category": "processes",
+      "name": "Summons via By hand - 15 September 2025",
+      "href": "/case-file/23-processes.pdf",
+      "page": 6
+    },
+    {
+      "id": "report-summons-pw2-hand",
+      "category": "processes",
+      "name": "Execution report - 30 September 2025",
+      "href": "/case-file/23-processes.pdf",
+      "page": 7,
+      "reportOn": "process-summons-pw2-hand"
+    },
+    {
+      "id": "bail-bond",
+      "category": "bail-bonds",
+      "name": "Bail bond - Anand Traders",
+      "href": "/case-file/21-bail-bonds.pdf",
+      "page": 2
+    },
+    {
+      "id": "bail-bond-surety",
+      "category": "bail-bonds",
+      "name": "Document attached: Surety bail bond of S. Mohanan",
+      "href": "/case-file/21-bail-bonds.pdf",
+      "page": 3,
+      "submittedWith": "bail-bond"
+    },
+    {
+      "id": "case-filing-payment",
+      "category": "payment-receipts",
+      "name": "RCPT-DUMMY-2025-0001 - 12 June 2025",
+      "href": "/case-file/07-payment-receipts.pdf",
+      "page": 2
+    },
+    {
+      "id": "summons-payment-receipt",
+      "category": "payment-receipts",
+      "name": "RCPT-DUMMY-2025-0002 - 4 July 2025",
+      "href": "/case-file/07-payment-receipts.pdf",
+      "page": 3
+    },
+    {
+      "id": "witness-process-fee",
+      "category": "payment-receipts",
+      "name": "RCPT-DUMMY-2025-0003 - 20 October 2025",
+      "href": "/case-file/07-payment-receipts.pdf",
+      "page": 4
+    },
+    {
+      "id": "partial-compensation-deposit",
+      "category": "payment-receipts",
+      "name": "RCPT-DUMMY-2026-0004 - 10 May 2026",
+      "href": "/case-file/07-payment-receipts.pdf",
+      "page": 5
+    },
+    {
+      "id": "exhibit-index-p1-p6",
+      "category": "other-documents",
+      "name": "Complainant exhibit index P1–P6",
+      "href": "/case-file/05-evidence-of-complainant.pdf",
+      "page": 4
+    },
+    {
+      "id": "signed-statement-accused",
+      "category": "other-documents",
+      "name": "Signed statement of accused",
+      "href": "/case-file/08-examination-of-accused.pdf",
+      "page": 4
+    },
+    {
+      "id": "exhibit-index-d1-d3",
+      "category": "other-documents",
+      "name": "Defence exhibit index D1–D3",
+      "href": "/case-file/06-evidence-of-accused.pdf",
+      "page": 4
+    },
+    {
+      "id": "memo-cheque-calculation",
+      "category": "other-documents",
+      "name": "Memo of calculation of cheque amount and interest",
+      "href": "/case-file/10-memo-cheque-calculation.pdf"
+    }
+  ]
+}

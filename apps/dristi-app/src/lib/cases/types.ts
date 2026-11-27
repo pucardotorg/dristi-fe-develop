@@ -130,3 +130,46 @@ export function formatCounselList(names: string[]): string {
 export function allCounselNames(record: CaseRecord): string {
   return [...counselFor(record, "complainant"), ...counselFor(record, "accused")].join(" ");
 }
+
+/** A category of the case file (case-file.md §1). Its place in the case file is set per state. */
+export type CaseFileCategory =
+  | "synopsis"
+  | "complaint"
+  | "original-filing"
+  | "vakalatnamas"
+  | "affidavits"
+  | "applications"
+  | "orders"
+  | "judgment"
+  | "roznamas"
+  | "recorded-statements"
+  | "processes"
+  | "bail-bonds"
+  | "payment-receipts"
+  | "other-documents";
+
+/**
+ * One document in a case's case file (case-file.md §1, §3.1). Exhibits are not a
+ * category of their own here: a document with an exhibit number is also shown under
+ * Exhibits.
+ */
+export type CaseFileDocument = {
+  id: string;
+  category: CaseFileCategory;
+  /** Its name in the case file, as case-file.md §3.1 gives it. */
+  name: string;
+  /** Public URL of its PDF. */
+  href: string;
+  /** 1-based page in `href`, when the document is one page of a larger PDF. */
+  page?: number;
+  /** False where the downloaded case file gives it no docket page: court-made documents. */
+  docket?: boolean;
+  /** Orders only: the ids of the documents the order is linked to (case-file.md §1.1). */
+  linkedTo?: string[];
+  /** A document submitted with an application or a bail bond: that document's id. */
+  submittedWith?: string;
+  /** An objection: the id of the application it objects to (case-file.md CFL-05). */
+  objectsTo?: string;
+  /** An execution report: the id of the process it reports on. */
+  reportOn?: string;
+};

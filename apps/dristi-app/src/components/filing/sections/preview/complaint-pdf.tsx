@@ -6,6 +6,10 @@
  * something is missing it says so and hands the list to the screen's own dialog, and
  * otherwise it fetches a fresh PDF (the backend renders it on every request, so it always
  * shows the latest saved details).
+ *
+ * Sign shows the same PDF without the check (`validate={false}`): the case passed it on
+ * "Continue to sign" and is locked since, and for a locked case the backend answers with
+ * the copy being signed, carrying every signature made so far.
  */
 
 import * as React from "react";
@@ -21,8 +25,16 @@ import { PdfViewer } from "@/components/cases/pdf-viewer";
 
 type ComplaintPdfProps = {
   caseId: string;
+  /**
+   * Ask the backend whether the filing is complete before fetching the PDF. Defaults to
+   * `true`, for a draft that is still being edited (Preview): an incomplete case gets the
+   * list of what is missing instead of a PDF. Pass `false` where completeness is already
+   * settled, as on Sign once the case is locked for signing: the check would only repeat
+   * itself, and "something is missing" means nothing on a screen that cannot edit the case.
+   */
+  validate?: boolean;
   /** What the backend reported missing: the screen lists it in its own dialog. */
-  onProblems: (problems: ValidationError[]) => void;
+  onProblems?: (problems: ValidationError[]) => void;
 };
 
 type LoadState =
@@ -32,7 +44,7 @@ type LoadState =
   | { status: "not-connected" }
   | { status: "failed" };
 
-export function ComplaintPdf({ caseId, onProblems }: ComplaintPdfProps) {
+export function ComplaintPdf({ caseId, validate = true, onProblems }: ComplaintPdfProps) {
   const t = useTranslations();
   const [state, setState] = React.useState<LoadState>({ status: "loading" });
   // Bumped by "Try again" so the effect runs the load once more.
@@ -48,12 +60,14 @@ export function ComplaintPdf({ caseId, onProblems }: ComplaintPdfProps) {
     let url: string | null = null;
     const repo = getCaseFilingRepository();
     (async () => {
-      const { isValid, errors } = await repo.validateCase(caseId, controller.signal);
-      if (controller.signal.aborted) return;
-      if (!isValid) {
-        setState({ status: "incomplete", problems: errors });
-        reportProblems.current(errors);
-        return;
+      if (validate) {
+        const { isValid, errors } = await repo.validateCase(caseId, controller.signal);
+        if (controller.signal.aborted) return;
+        if (!isValid) {
+          setState({ status: "incomplete", problems: errors });
+          reportProblems.current?.(errors);
+          return;
+        }
       }
       const pdf = await repo.getComplaintPdf(caseId, controller.signal);
       if (controller.signal.aborted) return;
@@ -67,7 +81,7 @@ export function ComplaintPdf({ caseId, onProblems }: ComplaintPdfProps) {
       controller.abort();
       if (url) URL.revokeObjectURL(url);
     };
-  }, [caseId, attempt]);
+  }, [caseId, validate, attempt]);
 
   const retry = () => {
     setState({ status: "loading" });
@@ -88,9 +102,11 @@ export function ComplaintPdf({ caseId, onProblems }: ComplaintPdfProps) {
         tone="warning"
         title={t("complaintPdf_opensOnceComplete")}
         action={
-          <Button variant="outline" onClick={() => onProblems(state.problems)}>
-            {t("complaintPdf_seeWhatsMissing")}
-          </Button>
+          onProblems ? (
+            <Button variant="outline" onClick={() => onProblems(state.problems)}>
+              {t("complaintPdf_seeWhatsMissing")}
+            </Button>
+          ) : undefined
         }
       >
         {t("complaintPdf_someDetailsAreMissing")}

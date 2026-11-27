@@ -24,6 +24,7 @@ import { joinDot } from "@/lib/filing/format";
 import { CASE_TYPE, COURT } from "@/lib/filing/options";
 import { useProfile } from "@/lib/filing/profile";
 import { sectionComplete, signatories } from "@/lib/filing/selectors";
+import { prepareCaseForSigning } from "@/lib/filing/case-esign";
 import { getCaseFilingRepository } from "@/lib/filing/data";
 import { caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
 import { getStep, neighbours, type StepId } from "@/lib/filing/steps";
@@ -62,6 +63,7 @@ import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard } from "@/components/filing/form-card";
 import { SectionNotice } from "@/components/filing/notices";
 import { CourtDocument } from "@/components/filing/sections/preview/court-document";
+import { ComplaintPdf } from "@/components/filing/sections/preview/complaint-pdf";
 import {
   NOT_PROVIDED,
   accusedSummaries,
@@ -433,6 +435,8 @@ export function PreviewSection() {
   const [problems, setProblems] = React.useState<ValidationError[] | null>(null);
   /** The check itself could not run (offline, session ended, draft expired). */
   const [validateError, setValidateError] = React.useState<string | null>(null);
+  /** Complete, and now being frozen for signing with its signing copy prepared. */
+  const [preparing, setPreparing] = React.useState(false);
 
   const complainants = complainantSummaries(draft);
   const advocates = advocateSummaries(draft);
@@ -513,15 +517,19 @@ export function PreviewSection() {
     setValidateError(null);
     try {
       const { isValid, errors } = await getCaseFilingRepository().validateCase(caseId);
-      if (isValid) {
-        if (continueHref) router.push(continueHref);
+      if (!isValid) {
+        setProblems(errors);
         return;
       }
-      setProblems(errors);
+      // Complete: freeze the case and prepare the copy everyone signs, before going on.
+      setPreparing(true);
+      await prepareCaseForSigning(caseId);
+      if (continueHref) router.push(continueHref);
     } catch (err) {
       setValidateError(caseFilingErrorMessage(err));
     } finally {
       setValidating(false);
+      setPreparing(false);
     }
   };
 
@@ -835,7 +843,13 @@ export function PreviewSection() {
 
           {/* ── Court document ── */}
           <TabsContent value="document">
-            <CourtDocument draft={draft} />
+            {/* The backend renders the PDF from the saved case; a draft that never reached
+                it (bulk filing signs elsewhere) keeps the sheet built in the browser. */}
+            {signAhead && draft.caseId ? (
+              <ComplaintPdf caseId={draft.caseId} onProblems={setProblems} />
+            ) : (
+              <CourtDocument draft={draft} />
+            )}
           </TabsContent>
         </Tabs>
 
@@ -947,14 +961,16 @@ export function PreviewSection() {
         onContinue={continueToSign}
         continueDisabled={validating}
         continueLabel={
-          validating
-            ? t("previewSection_checking")
-            : // A host that signs elsewhere (bulk filing signs the batch at once) is gone back to.
-              !steps.includes("sign")
-              ? t("previewSection_backToAllCases")
-              : yourOathAhead
-                ? t("previewSection_continueToSignAndOath")
-                : t("previewSection_continueToSign")
+          preparing
+            ? t("previewSection_preparingTheDocument")
+            : validating
+              ? t("previewSection_checking")
+              : // A host that signs elsewhere (bulk filing signs the batch at once) is gone back to.
+                !steps.includes("sign")
+                ? t("previewSection_backToAllCases")
+                : yourOathAhead
+                  ? t("previewSection_continueToSignAndOath")
+                  : t("previewSection_continueToSign")
         }
         showSaveState={false}
         status={

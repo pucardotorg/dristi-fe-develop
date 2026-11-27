@@ -315,3 +315,69 @@ describe("the sandbox case", () => {
     assert.deepEqual(result, { isValid: true, errors: [] });
   });
 });
+
+describe("signing in the sandbox", () => {
+  /** A complete case: one complainant with an advocate, and everything else the check asks. */
+  async function completeCase() {
+    const api = sandbox();
+    const { caseId } = await api.startDraft();
+    const [body] = complainantBodies(complainant());
+    const c = await api.addParty(caseId, "complainants", body);
+    await api.addAdvocate(caseId, SANDBOX_ADVOCATES[0].id, [c.participantId]);
+    await saveParty(api, caseId, "accused", accusedBodies(companyAccused()), {});
+    for (const evidenceType of ["CHEQUE", "RETURN_MEMO", "LEGAL_DEMAND_NOTICE"] as const) {
+      await api.addEvidence(caseId, { evidenceType, evidenceInfo: {} });
+    }
+    await api.saveDetails(caseId, "jurisdiction_limitation", {});
+    await api.saveDetails(caseId, "adr_other_prayer", {});
+    await api.saveAffidavit(caseId, "<p>I solemnly affirm.</p>");
+    return { api, caseId, participantId: c.participantId };
+  }
+
+  it("prepares a package only once the case is frozen", async () => {
+    const { api, caseId, participantId } = await completeCase();
+    assert.equal(await api.getSigningPackage(caseId), null);
+    await rejectsWith(api.prepareSigningPackage(caseId), 409, "E07004");
+
+    await api.submitForSigning(caseId);
+    const pkg = await api.prepareSigningPackage(caseId);
+    assert.deepEqual(
+      pkg.signatories.map((s) => [s.caseParticipantId, s.label, s.hasSigned]),
+      [[participantId, "Complainant 1", false]],
+    );
+    assert.equal(pkg.placeholders[0].caseParticipantId, participantId);
+    assert.deepEqual(await api.prepareSigningPackage(caseId), pkg, "the same package again");
+    assert.deepEqual(await api.getSigningPackage(caseId), pkg);
+  });
+
+  it("refuses edits while frozen, and allows them after going back to draft", async () => {
+    const { api, caseId } = await completeCase();
+    await api.submitForSigning(caseId);
+    await rejectsWith(api.saveAffidavit(caseId, "<p>Changed.</p>"), 409, "E07001");
+    await rejectsWith(api.submitForSigning(caseId), 409, "E07004");
+
+    await api.returnToDraft(caseId, "Fixing the affidavit");
+    await api.saveAffidavit(caseId, "<p>Changed.</p>");
+    assert.equal(await api.getSigningPackage(caseId), null);
+    await rejectsWith(api.returnToDraft(caseId, "again"), 409, "E07004");
+  });
+
+  it("records a signature on top of the current copy", async () => {
+    const { api, caseId, participantId } = await completeCase();
+    await api.submitForSigning(caseId);
+    await api.prepareSigningPackage(caseId);
+    await api.recordSignature(caseId, participantId, "signed-file-1");
+    const pkg = await api.getSigningPackage(caseId);
+    assert.equal(pkg?.currentFileId, "signed-file-1");
+    assert.equal(pkg?.signatories[0].hasSigned, true);
+    assert.equal(pkg?.status, "COMPLETE");
+    await rejectsWith(api.recordSignature(caseId, participantId, "signed-file-2"), 409);
+  });
+
+  it("refuses the complaint PDF while the case is incomplete", async () => {
+    const api = sandbox();
+    const { caseId } = await api.startDraft();
+    await api.addParty(caseId, "complainants", complainantBodies(complainant())[0]);
+    await rejectsWith(api.getComplaintPdf(caseId), 400, "E07005");
+  });
+});

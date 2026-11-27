@@ -17,7 +17,8 @@
  * signs the one way that was chosen.
  *
  * The paying half of the flow lives here too: fees → process and address → payment →
- * the case file number. The document itself is the shared court sheet Preview renders.
+ * the case file number. The document is the backend's PDF of the copy being signed once
+ * the case is locked for signing, and otherwise the shared court sheet Preview renders.
  *
  * Signing and payment are the one part of this flow with no real system behind them yet.
  * They are wired to the draft (who signed, in what mode, what was chosen, what was
@@ -131,6 +132,7 @@ import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { useLeaveGuard } from "@/components/filing/leave-guard";
 import { useTaskActions } from "@/components/tasks/use-task-actions";
 import { SignFlowDialog, type SignFlowStart } from "@/components/filing/sign-flow-dialog";
+import { ComplaintPdf } from "@/components/filing/sections/preview/complaint-pdf";
 import { CourtDocument } from "@/components/filing/sections/preview/court-document";
 import { useFilePicker } from "@/components/filing/use-file-picker";
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
@@ -1205,16 +1207,32 @@ export function SignSection() {
           </Button>
         </div>
 
-        {/* Scrolls on its own, so it is focusable — a keyboard user must be able to
-            reach the scroll region to read the document. */}
-        <div
-          tabIndex={0}
-          role="region"
-          aria-label={tr("signSection_complaintDocument")}
-          className="max-h-[calc(100vh-18rem)] overflow-y-auto rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-        >
-          <CourtDocument draft={draft} />
-        </div>
+        {/* A case locked for signing shows the backend's copy, signatures and all; it is
+            fetched again whenever the package moves on (a new copy, a new signature).
+            Without a package (a local draft, a correction round, a filing never prepared)
+            the sheet is the draft's own. */}
+        {caseEsign && packageState.status === "loading" ? (
+          <div className="flex items-center justify-center py-16">
+            <Spinner className="size-5 text-muted-foreground" />
+          </div>
+        ) : caseEsign && signingPackage && draft.caseId ? (
+          <ComplaintPdf
+            key={`${signingPackage.currentFileId}:${signingPackage.signatories.filter((s) => s.hasSigned).length}`}
+            caseId={draft.caseId}
+            validate={false}
+          />
+        ) : (
+          /* Scrolls on its own, so it is focusable — a keyboard user must be able to
+             reach the scroll region to read the document. */
+          <div
+            tabIndex={0}
+            role="region"
+            aria-label={tr("signSection_complaintDocument")}
+            className="max-h-[calc(100vh-18rem)] overflow-y-auto rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <CourtDocument draft={draft} />
+          </div>
+        )}
       </FilingMain>
 
       {/* From xl the rail takes the shell's third column, beside the document. */}

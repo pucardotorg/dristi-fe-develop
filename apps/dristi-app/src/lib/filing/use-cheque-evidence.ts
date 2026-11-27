@@ -19,7 +19,7 @@ import * as React from "react";
 import { awaitKeyedSave } from "./autosave-queue";
 import { chequesFromCase } from "./case-details-read";
 import { getCaseFilingRepository, type CaseFilingRepository } from "./data";
-import { caseFilingErrorMessage, type CaseRead } from "./data/cases-api";
+import { caseFilingErrorMessage, isEvidenceGone, type CaseRead } from "./data/cases-api";
 import { chequeEvidenceInfo, returnMemoEvidenceInfo } from "./evidence";
 import { chequeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
@@ -135,13 +135,23 @@ export async function saveOneCheque(
     const evidenceInfo = chequeEvidenceInfo(draft.cheques, index);
     const caseDocumentId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId ?? null;
     const sig = rowSignature(evidenceInfo, caseDocumentId);
-    const existingId = cheque.chequeEvidenceId ?? entry.cheque.id;
-    if (existingId) {
-      if (entry.cheque.sig !== sig) {
+    let existingId = cheque.chequeEvidenceId ?? entry.cheque.id;
+    if (existingId && entry.cheque.sig !== sig) {
+      try {
         await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
         entry.cheque.sig = sig;
+      } catch (error) {
+        if (!isEvidenceGone(error)) throw error;
+        // The row was removed on the case: forget its id and recreate it below.
+        entry.cheque = {};
+        existingId = undefined;
+        update((d) => {
+          const c = d.cheques.find((x) => x.id === cheque.id);
+          if (c) c.chequeEvidenceId = undefined;
+        });
       }
-    } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
+    }
+    if (!existingId && (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null)) {
       const saved = await api.addEvidence(caseId, {
         evidenceType: "CHEQUE",
         evidenceInfo,
@@ -159,13 +169,23 @@ export async function saveOneCheque(
     const evidenceInfo = returnMemoEvidenceInfo(cheque);
     const caseDocumentId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
     const sig = rowSignature(evidenceInfo, caseDocumentId);
-    const existingId = cheque.returnMemoEvidenceId ?? entry.memo.id;
-    if (existingId) {
-      if (entry.memo.sig !== sig) {
+    let existingId = cheque.returnMemoEvidenceId ?? entry.memo.id;
+    if (existingId && entry.memo.sig !== sig) {
+      try {
         await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
         entry.memo.sig = sig;
+      } catch (error) {
+        if (!isEvidenceGone(error)) throw error;
+        // The row was removed on the case: forget its id and recreate it below.
+        entry.memo = {};
+        existingId = undefined;
+        update((d) => {
+          const c = d.cheques.find((x) => x.id === cheque.id);
+          if (c) c.returnMemoEvidenceId = undefined;
+        });
       }
-    } else if (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null) {
+    }
+    if (!existingId && (Object.keys(evidenceInfo).length > 0 || caseDocumentId != null)) {
       const saved = await api.addEvidence(caseId, {
         evidenceType: "RETURN_MEMO",
         evidenceInfo,
@@ -215,7 +235,6 @@ export function removeChequeEvidence(
 
 export function useChequeEvidence() {
   const { update, latest, flush } = useFiling();
-  const [saving, setSaving] = React.useState(false);
   useLoadFromCase((read, d) => {
     d.cheques = chequesFromCase(read, d.cheques);
     // Seed baselines from the case so the first edit only PATCHes the row it changed.
@@ -229,7 +248,6 @@ export function useChequeEvidence() {
     const current = latest();
     const caseId = current.caseId;
     if (!caseId) return { ok: true };
-    setSaving(true);
     setError(null);
     try {
       // In list order, so the cheque and its memo keep the same ordinal on the backend.
@@ -243,8 +261,6 @@ export function useChequeEvidence() {
       const message = caseFilingErrorMessage(err);
       setError(message);
       return { ok: false, error: message };
-    } finally {
-      setSaving(false);
     }
   }, [update, latest, flush]);
 
@@ -275,5 +291,5 @@ export function useChequeEvidence() {
   );
   const autosaveProps = onBlurAutosave(() => void save());
 
-  return { save, saving, error, clearError: () => setError(null), autosaveProps };
+  return { save, error, clearError: () => setError(null), autosaveProps };
 }

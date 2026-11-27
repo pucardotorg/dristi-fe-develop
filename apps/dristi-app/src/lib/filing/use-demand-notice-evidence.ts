@@ -20,7 +20,7 @@ import * as React from "react";
 import { awaitKeyedSave } from "./autosave-queue";
 import { noticesFromCase } from "./case-details-read";
 import { getCaseFilingRepository, type CaseFilingRepository } from "./data";
-import { caseFilingErrorMessage } from "./data/cases-api";
+import { caseFilingErrorMessage, isEvidenceGone } from "./data/cases-api";
 import { demandNoticeEvidenceInfo, demandNoticeHasContent } from "./evidence";
 import { noticeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
@@ -79,8 +79,18 @@ export async function saveOneNotice(
 
   const existingId = notice.noticeEvidenceId ?? createdIds.get(notice.id);
   if (existingId) {
-    await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
-    return existingId;
+    try {
+      await api.updateEvidence(existingId, { evidenceInfo, caseDocumentId });
+      return existingId;
+    } catch (error) {
+      if (!isEvidenceGone(error)) throw error;
+      // The row was removed on the case: forget its id and recreate it below.
+      createdIds.delete(notice.id);
+      update((d) => {
+        const n = d.notices.find((x) => x.id === notice.id);
+        if (n) n.noticeEvidenceId = undefined;
+      });
+    }
   }
   // An untouched notice carries only its default yes/no answers: add no empty row for it.
   if (!demandNoticeHasContent(notice) && caseDocumentId == null) return undefined;
@@ -126,7 +136,6 @@ export function removeNoticeEvidence(
 
 export function useDemandNoticeEvidence() {
   const { update, latest, flush } = useFiling();
-  const [saving, setSaving] = React.useState(false);
   useLoadFromCase((read, d) => {
     d.notices = noticesFromCase(read, d.notices);
   });
@@ -138,7 +147,6 @@ export function useDemandNoticeEvidence() {
     const current = latest();
     const caseId = current.caseId;
     if (!caseId) return { ok: true };
-    setSaving(true);
     setError(null);
     try {
       // In list order, so a notice keeps the same ordinal as its cheque on the backend.
@@ -160,8 +168,6 @@ export function useDemandNoticeEvidence() {
       const message = caseFilingErrorMessage(err);
       setError(message);
       return { ok: false, error: message };
-    } finally {
-      setSaving(false);
     }
   }, [update, latest, flush]);
 
@@ -190,5 +196,5 @@ export function useDemandNoticeEvidence() {
   );
   const autosaveProps = onBlurAutosave(() => void save());
 
-  return { save, saving, error, clearError: () => setError(null), autosaveProps };
+  return { save, error, clearError: () => setError(null), autosaveProps };
 }

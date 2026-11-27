@@ -426,3 +426,16 @@ export function caseFilingErrorMessage(error: unknown): string {
 export function isCaseNotYetSaved(error: unknown): boolean {
   return isApiError(error) && error.status === 404;
 }
+
+/**
+ * True when updating an evidence row failed because the row is no longer on the case — it was
+ * removed elsewhere (another tab or device, or a reset). The id we held is stale; the caller
+ * forgets it and recreates the row from the current fields rather than PATCHing it forever.
+ */
+export function isEvidenceGone(error: unknown): boolean {
+  return (
+    isApiError(error) &&
+    error.kind === "http" &&
+    (error.status === 404 || error.hasCode(E_EVIDENCE_NOT_ON_CASE))
+  );
+}

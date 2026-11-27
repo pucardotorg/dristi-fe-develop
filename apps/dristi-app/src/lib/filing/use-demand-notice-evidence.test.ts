@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+import { ApiError } from "@/lib/api";
+
 import { runKeyedSave, type SaveResult } from "./autosave-queue";
 import { createBlankDraft } from "./blank";
 import type { SavedEvidence } from "./data/cases-api";
@@ -74,6 +76,31 @@ describe("saveOneNotice", () => {
     const result = await saveOneNotice("case-2", draft, 0, () => {}, createdIds, api);
     assert.equal(result, undefined);
     assert.deepEqual(calls, []);
+  });
+
+  it("recreates a notice whose row was removed on the case, instead of PATCHing it forever", async () => {
+    const draft = createBlankDraft("draft-gone");
+    draft.caseId = "case-gone";
+    draft.notices[0].tracking = "RX123456789IN";
+    // A stale id for a row the case no longer has: updating it 404s.
+    draft.notices[0].noticeEvidenceId = "stale-id";
+    const createdIds: NoticeEvidenceIds = new Map();
+    const calls: string[] = [];
+    const api = {
+      async addEvidence(): Promise<SavedEvidence> {
+        calls.push("add");
+        return { caseEvidenceId: "ev-new", evidenceType: "LEGAL_DEMAND_NOTICE", ordinal: 1 };
+      },
+      async updateEvidence(id: string): Promise<SavedEvidence> {
+        calls.push(`update:${id}`);
+        throw new ApiError({ kind: "http", status: 404, message: "gone" });
+      },
+    };
+
+    const result = await saveOneNotice("case-gone", draft, 0, () => {}, createdIds, api);
+    assert.equal(result, "ev-new", "the row is recreated and its new id returned");
+    assert.deepEqual(calls, ["update:stale-id", "add"]);
+    assert.equal(createdIds.get(draft.notices[0].id), "ev-new");
   });
 });
 

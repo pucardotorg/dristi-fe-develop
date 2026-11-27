@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+import { ApiError } from "@/lib/api";
+
 import { runKeyedSave, type SaveResult } from "./autosave-queue";
 import { createBlankDraft } from "./blank";
 import type { CaseRead, EvidenceRead, SavedEvidence } from "./data/cases-api";
@@ -94,6 +96,35 @@ describe("saveOneCheque", () => {
     calls.length = 0;
     await saveOneCheque("case-1", draft, 0, noop, state, api);
     assert.deepEqual(calls, []);
+  });
+
+  it("recreates a row that 404s on update, instead of PATCHing a missing row forever", async () => {
+    const draft = createBlankDraft("draft-gone-cheque");
+    draft.caseId = "case-gone-cheque";
+    draft.cheques[0].amount = "1000";
+    // A stale id for a CHEQUE row the case no longer has: updating it 404s.
+    draft.cheques[0].chequeEvidenceId = "stale";
+    const state: ChequeEvidenceState = new Map();
+
+    const calls: string[] = [];
+    const api = {
+      async addEvidence(_caseId: string, input: { evidenceType: string }): Promise<SavedEvidence> {
+        calls.push(`add:${input.evidenceType}`);
+        return {
+          caseEvidenceId: `${input.evidenceType}-new`,
+          evidenceType: input.evidenceType,
+          ordinal: 1,
+        };
+      },
+      async updateEvidence(id: string): Promise<SavedEvidence> {
+        calls.push(`update:${id}`);
+        throw new ApiError({ kind: "http", status: 404, message: "gone" });
+      },
+    };
+
+    await saveOneCheque("case-gone-cheque", draft, 0, () => {}, state, api);
+    assert.deepEqual(calls, ["update:stale", "add:CHEQUE"], "the gone row is recreated");
+    assert.equal(state.get(draft.cheques[0].id)?.cheque.id, "CHEQUE-new");
   });
 });
 

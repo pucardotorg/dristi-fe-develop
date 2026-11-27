@@ -27,7 +27,6 @@ export type SaveResult = { ok: boolean; error?: string };
 export function useAffidavit(standardOf: (draft: FilingDraft) => string) {
   const { draft } = useFiling();
   useLoadFromCase((read, d) => affidavitFromCase(read, d, standardOf(d)));
-  const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   /** PUT the affidavit text. `ok` is false on a failure. */
@@ -35,7 +34,6 @@ export function useAffidavit(standardOf: (draft: FilingDraft) => string) {
     async (affidavit: string): Promise<SaveResult> => {
       const caseId = draft.caseId;
       if (!caseId) return { ok: true };
-      setSaving(true);
       setError(null);
       try {
         await getCaseFilingRepository().saveAffidavit(caseId, affidavit);
@@ -44,12 +42,10 @@ export function useAffidavit(standardOf: (draft: FilingDraft) => string) {
         const message = caseFilingErrorMessage(err);
         setError(message);
         return { ok: false, error: message };
-      } finally {
-        setSaving(false);
       }
     },
     [draft],
   );
 
-  return { save, saving, error, clearError: () => setError(null) };
+  return { save, error, clearError: () => setError(null) };
 }

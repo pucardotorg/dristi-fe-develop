@@ -18,13 +18,13 @@
  */
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { RotateCcwIcon } from "lucide-react";
 
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { useAffidavit } from "@/lib/filing/use-affidavit";
 import { onBlurAutosave, useSerialSave } from "@/lib/filing/use-autosave";
+import { useContinue } from "@/lib/filing/use-continue";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
 import { FilingFooter } from "@/components/filing/filing-footer";
@@ -41,11 +41,7 @@ export function AffidavitSection() {
   const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("affidavit");
-  const router = useRouter();
   const { save, error } = useAffidavit(affidavitHtml);
-  // Drives the Continue button only — not the hook's autosave state, or the blur that
-  // clicking Continue causes would disable the button mid-click and swallow the click.
-  const [continuing, setContinuing] = React.useState(false);
   const [resetOpen, setResetOpen] = React.useState(false);
 
   // "Touched" tells an untouched affidavit (show the standard text, still tracking the
@@ -82,15 +78,7 @@ export function AffidavitSection() {
      through the same queue as the autosave. The backend is the gate on an empty affidavit: it
      refuses one and the reason is shown below, which keeps the filer here. */
   const continueHref = next ? hrefFor(next) : undefined;
-  const handleContinue = async () => {
-    setContinuing(true);
-    try {
-      const result = await queuedSave();
-      if (result.ok && continueHref) router.push(continueHref);
-    } finally {
-      setContinuing(false);
-    }
-  };
+  const { continuing, onContinue } = useContinue(queuedSave, continueHref);
 
   const restoreStandard = () => {
     update((d) => {
@@ -159,7 +147,7 @@ export function AffidavitSection() {
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        onContinue={continueHref ? handleContinue : undefined}
+        onContinue={continueHref ? onContinue : undefined}
         continueDisabled={continuing}
         continueLabel={continuing ? t("affidavitSection_saving") : t("affidavitSection_continue")}
       />

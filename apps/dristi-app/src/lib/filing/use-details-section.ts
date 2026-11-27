@@ -31,7 +31,6 @@ export function useDetailsSection(
   build: (draft: FilingDraft) => DetailsSectionBody | null,
 ) {
   const { latest } = useFiling();
-  const [saving, setSaving] = React.useState(false);
   useLoadFromCase(section === ADR_SECTION ? adrFromCase : jurisdictionFromCase);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -44,7 +43,6 @@ export function useDetailsSection(
     const body = build(current);
     // Not complete enough to accept — leave it in the browser; the final check catches it.
     if (!body) return { ok: true };
-    setSaving(true);
     setError(null);
     try {
       await getCaseFilingRepository().saveDetails(caseId, section, body);
@@ -53,8 +51,6 @@ export function useDetailsSection(
       const message = caseFilingErrorMessage(err);
       setError(message);
       return { ok: false, error: message };
-    } finally {
-      setSaving(false);
     }
   }, [latest, section, build]);
 
@@ -68,5 +64,5 @@ export function useDetailsSection(
   });
   const autosaveProps = onBlurAutosave(() => void save());
 
-  return { save, saving, error, clearError: () => setError(null), autosaveProps };
+  return { save, error, clearError: () => setError(null), autosaveProps };
 }

@@ -9,7 +9,6 @@
  */
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { CreditCardIcon } from "lucide-react";
 
 import { blankCheque } from "@/lib/filing/blank";
@@ -26,6 +25,7 @@ import {
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { useChequeEvidence } from "@/lib/filing/use-cheque-evidence";
+import { useContinue } from "@/lib/filing/use-continue";
 import { useRemoveCaseRecord } from "@/lib/filing/use-remove-case-record";
 import type { ChequeField } from "@/lib/filing/types";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
@@ -65,12 +65,7 @@ export function ChequeSection() {
   const { draft, update, hrefFor } = useFiling();
   const removeRecord = useRemoveCaseRecord();
   const { prev, next } = neighbours("cheque");
-  const router = useRouter();
   const { save, error, autosaveProps } = useChequeEvidence();
-  // Drives the Continue button only. It must not follow the hook's autosave state: clicking
-  // Continue blurs the field, which autosaves, and a button disabled by that mid-click would
-  // swallow the click.
-  const [continuing, setContinuing] = React.useState(false);
   const cheques = draft.cheques;
 
   const [active, setActive] = React.useState(0);
@@ -168,15 +163,7 @@ export function ChequeSection() {
   /* Save every complete cheque and return memo to the case, then move on. A save failure
      keeps the filer here with the reason, so the data loss is visible. */
   const continueHref = next ? hrefFor(next) : undefined;
-  const handleContinue = async () => {
-    setContinuing(true);
-    try {
-      const result = await save();
-      if (result.ok && continueHref) router.push(continueHref);
-    } finally {
-      setContinuing(false);
-    }
-  };
+  const { continuing, onContinue } = useContinue(save, continueHref);
 
   return (
     <>
@@ -427,7 +414,7 @@ export function ChequeSection() {
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        onContinue={continueHref ? handleContinue : undefined}
+        onContinue={continueHref ? onContinue : undefined}
         continueDisabled={continuing}
         continueLabel={continuing ? t("chequeSection_saving") : t("chequeSection_continue")}
       />

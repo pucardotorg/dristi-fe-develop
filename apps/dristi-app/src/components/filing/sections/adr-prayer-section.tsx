@@ -13,11 +13,11 @@
  */
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 
 import { adrPrayerDetails } from "@/lib/filing/details";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { useContinue } from "@/lib/filing/use-continue";
 import { useDetailsSection } from "@/lib/filing/use-details-section";
 import type { AdrPrayer } from "@/lib/filing/types";
 import { FilingFooter } from "@/components/filing/filing-footer";
@@ -47,11 +47,7 @@ export function AdrPrayerSection() {
   const { draft, update, hrefFor } = useFiling();
   const adr = draft.adr;
   const { prev, next } = neighbours("adr-prayer");
-  const router = useRouter();
   const { save, autosaveProps } = useDetailsSection("adr_other_prayer", adrPrayerDetails);
-  // Drives the Continue button only — not the hook's autosave state, or the blur that
-  // clicking Continue causes would disable the button mid-click and swallow the click.
-  const [continuing, setContinuing] = React.useState(false);
 
   const set = <K extends keyof AdrPrayer>(key: K, value: AdrPrayer[K]) =>
     update((d) => {
@@ -61,15 +57,7 @@ export function AdrPrayerSection() {
   /* Save the section to the case, then move on. A save failure keeps the filer here with
      the reason, so the data loss is visible. */
   const continueHref = next ? hrefFor(next) : undefined;
-  const handleContinue = async () => {
-    setContinuing(true);
-    try {
-      const result = await save();
-      if (result.ok && continueHref) router.push(continueHref);
-    } finally {
-      setContinuing(false);
-    }
-  };
+  const { continuing, onContinue } = useContinue(save, continueHref);
 
   return (
     <>
@@ -151,7 +139,7 @@ export function AdrPrayerSection() {
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        onContinue={continueHref ? handleContinue : undefined}
+        onContinue={continueHref ? onContinue : undefined}
         continueDisabled={continuing}
         continueLabel={continuing ? t("adrPrayerSection_saving") : t("adrPrayerSection_continue")}
       />

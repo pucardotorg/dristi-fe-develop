@@ -11,7 +11,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { PlusIcon } from "lucide-react";
 
 import { jurisdictionCopy } from "@/lib/filing/content";
@@ -22,6 +21,7 @@ import { policeStationsFor } from "@/lib/filing/options";
 import { limitationView, noticeServiceDate } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { useContinue } from "@/lib/filing/use-continue";
 import { useDetailsSection } from "@/lib/filing/use-details-section";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,14 +43,10 @@ export function JurisdictionSection() {
   const { draft, update, hrefFor } = useFiling();
   const j = draft.jurisdiction;
   const { prev, next } = neighbours("jurisdiction");
-  const router = useRouter();
   const { save, error, autosaveProps } = useDetailsSection(
     "jurisdiction_limitation",
     jurisdictionDetails,
   );
-  // Drives the Continue button only — not the hook's autosave state, or the blur that
-  // clicking Continue causes would disable the button mid-click and swallow the click.
-  const [continuing, setContinuing] = React.useState(false);
 
   const set = <K extends keyof typeof j>(key: K, value: (typeof j)[K]) =>
     update((d) => {
@@ -90,15 +86,7 @@ export function JurisdictionSection() {
   /* Save whatever is filled to the case, then move on. A save failure keeps the filer here
      so the data loss is visible. */
   const continueHref = next ? hrefFor(next) : undefined;
-  const handleContinue = async () => {
-    setContinuing(true);
-    try {
-      const result = await save();
-      if (result.ok && continueHref) router.push(continueHref);
-    } finally {
-      setContinuing(false);
-    }
-  };
+  const { continuing, onContinue } = useContinue(save, continueHref);
 
   return (
     <>
@@ -410,7 +398,7 @@ export function JurisdictionSection() {
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        onContinue={continueHref ? handleContinue : undefined}
+        onContinue={continueHref ? onContinue : undefined}
         continueDisabled={continuing}
         continueLabel={
           continuing ? t("jurisdictionSection_saving") : t("jurisdictionSection_continue")

@@ -42,6 +42,7 @@ import type {
   UserProfile,
   Witness,
 } from "./types";
+import { onBlurAutosave } from "./use-autosave";
 import { syncAdvocates } from "./use-case-advocates";
 import { linkSavedDocuments } from "./use-case-documents";
 import { runStepSave, useStepSync } from "./use-step-sync";
@@ -312,5 +313,9 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
       : []
   ) as PartyOf<K>[];
 
-  return { unsaved, retryUnsaved: sync };
+  // `sync` is the per-record engine (`runStepSave`): one save at a time, skip-unchanged, and
+  // it waits for a new party's id before updating it. So leaving a field just asks it to run.
+  const autosaveProps = onBlurAutosave(() => void sync());
+
+  return { unsaved, retryUnsaved: sync, autosaveProps };
 }

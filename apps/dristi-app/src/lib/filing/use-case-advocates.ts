@@ -21,6 +21,7 @@ import { getCaseFilingRepository } from "./data";
 import { caseFilingErrorMessage, isCaseNotYetSaved } from "./data/cases-api";
 import { useFiling } from "./store";
 import type { Advocate, Complainant, FilingDraft, SavedAdvocate } from "./types";
+import { onBlurAutosave } from "./use-autosave";
 import { savedParticipantIds } from "./use-case-parties";
 import { useStepSync } from "./use-step-sync";
 
@@ -192,5 +193,7 @@ export function useCaseAdvocates() {
     await syncAdvocates(latest, caseId, update, fromCase);
   });
   const unsaved = draft.caseId ? draft.advocates.filter((a) => a.syncError) : [];
-  return { unsaved, retryUnsaved: sync };
+  // Leaving a field asks the per-record engine to run (one at a time, skip-unchanged).
+  const autosaveProps = onBlurAutosave(() => void sync());
+  return { unsaved, retryUnsaved: sync, autosaveProps };
 }

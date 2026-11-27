@@ -193,7 +193,7 @@ export function OptionSelect({
     );
   }
   return (
-    <Select value={value || undefined} onValueChange={onValueChange} disabled={isDisabled}>
+    <Select value={value} onValueChange={onValueChange} disabled={isDisabled}>
       <SelectTrigger id={id} aria-label={ariaLabel} className={cn("w-full", className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

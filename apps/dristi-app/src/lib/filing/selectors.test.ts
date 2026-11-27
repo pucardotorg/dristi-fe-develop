@@ -533,6 +533,25 @@ describe("sectionComplete('adr-prayer')", () => {
   });
 });
 
+describe("sectionComplete('affidavit')", () => {
+  it("is complete while tracking the standard text, but not once cleared to empty", () => {
+    const d = createBlankDraft("aff");
+    // Untouched: composed from the case, so complete by default.
+    assert.equal(sectionComplete(d, "affidavit"), true);
+
+    // The filer makes it their own with real text.
+    d.affidavitProvided = true;
+    d.affidavit = "<p>I, the complainant, state on oath…</p>";
+    assert.equal(sectionComplete(d, "affidavit"), true);
+
+    // They clear it: an empty editor's markup is no affidavit, so it is not complete.
+    d.affidavit = "<p><br></p>";
+    assert.equal(sectionComplete(d, "affidavit"), false);
+    d.affidavit = "";
+    assert.equal(sectionComplete(d, "affidavit"), false);
+  });
+});
+
 describe("the 'other' nature of debt (LDN-1a)", () => {
   function notice(over: Partial<DemandNotice> = {}): DemandNotice {
     return {

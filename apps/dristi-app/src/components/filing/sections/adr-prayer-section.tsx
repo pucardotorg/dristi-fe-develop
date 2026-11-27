@@ -13,11 +13,11 @@
  */
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 
 import { adrPrayerDetails } from "@/lib/filing/details";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { useContinue } from "@/lib/filing/use-continue";
 import { useDetailsSection } from "@/lib/filing/use-details-section";
 import type { AdrPrayer } from "@/lib/filing/types";
 import { FilingFooter } from "@/components/filing/filing-footer";
@@ -47,8 +47,7 @@ export function AdrPrayerSection() {
   const { draft, update, hrefFor } = useFiling();
   const adr = draft.adr;
   const { prev, next } = neighbours("adr-prayer");
-  const router = useRouter();
-  const { save, saving, error } = useDetailsSection("adr_other_prayer", adrPrayerDetails);
+  const { save, autosaveProps } = useDetailsSection("adr_other_prayer", adrPrayerDetails);
 
   const set = <K extends keyof AdrPrayer>(key: K, value: AdrPrayer[K]) =>
     update((d) => {
@@ -58,14 +57,11 @@ export function AdrPrayerSection() {
   /* Save the section to the case, then move on. A save failure keeps the filer here with
      the reason, so the data loss is visible. */
   const continueHref = next ? hrefFor(next) : undefined;
-  const handleContinue = async () => {
-    const result = await save();
-    if (result.ok && continueHref) router.push(continueHref);
-  };
+  const { continuing, onContinue } = useContinue(save, continueHref);
 
   return (
     <>
-      <FilingMain>
+      <FilingMain {...autosaveProps}>
         <FilingPageHeader
           title={t("adrPrayerSection_adrOtherDetailsPrayer")}
           description={t("adrPrayerSection_willingnessToSettleAnyAdditionalDetails")}
@@ -143,9 +139,9 @@ export function AdrPrayerSection() {
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        onContinue={continueHref ? handleContinue : undefined}
-        continueDisabled={saving}
-        continueLabel={saving ? t("adrPrayerSection_saving") : t("adrPrayerSection_continue")}
+        onContinue={continueHref ? onContinue : undefined}
+        continueDisabled={continuing}
+        continueLabel={continuing ? t("adrPrayerSection_saving") : t("adrPrayerSection_continue")}
       />
     </>
   );

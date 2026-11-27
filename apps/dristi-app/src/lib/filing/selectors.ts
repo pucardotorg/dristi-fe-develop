@@ -891,9 +891,12 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
     case "documents":
       return documentsProgress(draft.documents).remaining === 0;
     case "affidavit":
-      // Always composed from the case (the filer may edit it), so it is complete by
-      // default; `sectionState` still holds the tick back until the step has been opened.
-      return true;
+      // Composed from the case by default, so it is complete until the filer makes it their
+      // own. Once they do (`affidavitProvided`), it counts only with real text in it: an empty
+      // editor's `<p><br></p>` is no affidavit, and the backend's completeness check
+      // (`has_visible_text`) refuses it. `sectionState` still holds the tick back until the
+      // step has been opened.
+      return !draft.affidavitProvided || richTextFilled(draft.affidavit);
     case "preview":
       return WALK_ORDER.filter((s) => s !== "preview" && s !== "sign").every((s) =>
         sectionComplete(draft, s),

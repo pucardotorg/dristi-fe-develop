@@ -21,27 +21,28 @@ import { caseFilingErrorMessage } from "./data/cases-api";
 import type { DetailsSectionBody } from "./details";
 import { useFiling } from "./store";
 import type { FilingDraft } from "./types";
+import { onBlurAutosave, useSerialSave, type SaveResult } from "./use-autosave";
 import { useLoadFromCase } from "./use-load-from-case";
 
-export type SaveResult = { ok: boolean; error?: string };
+export type { SaveResult };
 
 export function useDetailsSection(
   section: string,
   build: (draft: FilingDraft) => DetailsSectionBody | null,
 ) {
-  const { draft } = useFiling();
-  const [saving, setSaving] = React.useState(false);
+  const { latest } = useFiling();
   useLoadFromCase(section === ADR_SECTION ? adrFromCase : jurisdictionFromCase);
   const [error, setError] = React.useState<string | null>(null);
 
   /** PUT the section if it is complete. `ok` is false on a failure. */
-  const save = React.useCallback(async (): Promise<SaveResult> => {
-    const caseId = draft.caseId;
+  const runSave = React.useCallback(async (): Promise<SaveResult> => {
+    // Read the newest draft, not a render-old copy: an autosave fires right after an edit.
+    const current = latest();
+    const caseId = current.caseId;
     if (!caseId) return { ok: true };
-    const body = build(draft);
+    const body = build(current);
     // Not complete enough to accept — leave it in the browser; the final check catches it.
     if (!body) return { ok: true };
-    setSaving(true);
     setError(null);
     try {
       await getCaseFilingRepository().saveDetails(caseId, section, body);
@@ -50,10 +51,18 @@ export function useDetailsSection(
       const message = caseFilingErrorMessage(err);
       setError(message);
       return { ok: false, error: message };
-    } finally {
-      setSaving(false);
     }
-  }, [draft, section, build]);
+  }, [latest, section, build]);
 
-  return { save, saving, error, clearError: () => setError(null) };
+  // A whole section is PUT and replaces what was stored, so there is no id to race; the
+  // engine just keeps autosave and Continue from PUTting over each other and skips a PUT
+  // when the built section is unchanged. `null` body (not complete enough) means nothing yet.
+  const save = useSerialSave(runSave, () => {
+    const current = latest();
+    const body = current.caseId ? build(current) : null;
+    return body ? JSON.stringify(body) : null;
+  });
+  const autosaveProps = onBlurAutosave(() => void save());
+
+  return { save, error, clearError: () => setError(null), autosaveProps };
 }

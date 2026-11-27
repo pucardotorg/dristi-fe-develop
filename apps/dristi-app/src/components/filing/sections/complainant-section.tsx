@@ -107,7 +107,7 @@ export function ComplainantSection() {
   const { draft, update, hrefFor } = useFiling();
   const advocateMobile = filingAdvocateMobile(useProfile().profile);
   const { prev, next } = neighbours("complainant");
-  const { unsaved, retryUnsaved } = useCaseParties("complainant");
+  const { unsaved, retryUnsaved, autosaveProps } = useCaseParties("complainant");
   const removeRecord = useRemoveCaseRecord();
 
   const complainants = draft.complainants;
@@ -300,7 +300,7 @@ export function ComplainantSection() {
 
   return (
     <>
-      <FilingMain sourceOpen={sourceOpen}>
+      <FilingMain sourceOpen={sourceOpen} {...autosaveProps}>
         <FilingPageHeader
           title={t("complainantSection_complainantDetails")}
           description={t("complainantSection_whoIsBringingThisComplaintAnd")}

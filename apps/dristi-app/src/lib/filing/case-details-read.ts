@@ -230,6 +230,19 @@ export function adrFromCase(read: CaseRead, draft: FilingDraft): void {
  * case as the parties and cheques change.
  */
 export function affidavitFromCase(read: CaseRead, draft: FilingDraft, standard: string): void {
-  if (read.affidavit === null) return;
-  draft.affidavit = read.affidavit === standard ? "" : read.affidavit;
+  if (read.affidavit === null) {
+    // Never saved: keep tracking the standard text (first visit shows it live).
+    draft.affidavitProvided = false;
+    return;
+  }
+  if (read.affidavit === standard) {
+    // Saved as the standard text: keep tracking it (empty locally = the standard).
+    draft.affidavit = "";
+    draft.affidavitProvided = false;
+    return;
+  }
+  // The filer's own affidavit — including one they cleared to empty, which must come back
+  // empty rather than snapping to the standard text.
+  draft.affidavit = read.affidavit;
+  draft.affidavitProvided = true;
 }

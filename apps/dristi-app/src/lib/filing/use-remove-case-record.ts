@@ -13,6 +13,8 @@ import { caseRecordTargets } from "./case-documents";
 import { useFiling } from "./store";
 import { discardDocuments } from "./use-case-documents";
 import { removePartyFromCase } from "./use-case-parties";
+import { removeChequeEvidence } from "./use-cheque-evidence";
+import { removeNoticeEvidence } from "./use-demand-notice-evidence";
 
 /** Remove record `index` (0-based) of a kind. Resolves to whether it was removed. */
 export type RemoveCaseRecord = (kind: CaseRecordKind, index: number) => boolean;
@@ -26,7 +28,13 @@ export function useRemoveCaseRecord(): RemoveCaseRecord {
       const records = caseRecords(draft, kind);
       if (records.length <= 1 || index < 0 || index >= records.length) return false;
       discardDocuments(draft, caseRecordTargets(draft, kind, index));
+      // Take the record off the backend case too (a complainant, or a cheque's or notice's
+      // evidence rows). The cheque and notice removals wait for any save still in flight so a
+      // row it is creating is deleted rather than left behind.
+      const caseId = draft.caseId;
       if (kind === "party") removePartyFromCase(draft.complainants[index]);
+      else if (caseId && kind === "cheque") removeChequeEvidence(caseId, draft.cheques[index]);
+      else if (caseId && kind === "notice") removeNoticeEvidence(caseId, draft.notices[index]);
       update((d) => {
         removeCaseRecord(d, kind, index);
       });

@@ -18,12 +18,13 @@
  */
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { RotateCcwIcon } from "lucide-react";
 
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { useAffidavit } from "@/lib/filing/use-affidavit";
+import { onBlurAutosave, useSerialSave } from "@/lib/filing/use-autosave";
+import { useContinue } from "@/lib/filing/use-continue";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
 import { FilingFooter } from "@/components/filing/filing-footer";
@@ -40,32 +41,50 @@ export function AffidavitSection() {
   const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("affidavit");
-  const router = useRouter();
-  const { save, saving, error } = useAffidavit(affidavitHtml);
+  const { save, error } = useAffidavit(affidavitHtml);
   const [resetOpen, setResetOpen] = React.useState(false);
 
   // "Touched" tells an untouched affidavit (show the standard text, still tracking the
   // case) apart from one the filer has made their own — including one they have cleared,
-  // which must stay empty rather than snap back to the standard text.
-  // An affidavit read from the case after the step opened counts as the filer's own too.
+  // which must stay empty rather than snap back to the standard text. `affidavitProvided`
+  // carries that "it's the filer's own" across reloads: an affidavit saved as empty reads
+  // back as an empty string, which alone looks identical to one never filled in.
   const [edited, setEdited] = React.useState(() => richTextHasContent(draft.affidavit));
-  const touched = edited || richTextHasContent(draft.affidavit);
+  const touched =
+    edited || (draft.affidavitProvided ?? false) || richTextHasContent(draft.affidavit);
 
   const standard = affidavitHtml(draft);
   const value = touched ? draft.affidavit : standard;
 
-  /* Save whatever the box holds — a cleared affidavit included — then move on. The backend
-     is the gate on an empty affidavit: it refuses one and the reason is shown below, which
-     keeps the filer here. */
-  const continueHref = next ? hrefFor(next) : undefined;
-  const handleContinue = async () => {
-    const result = await save(value);
-    if (result.ok && continueHref) router.push(continueHref);
+  // One queued save for both the blur autosave and Continue, so clicking Continue — which
+  // blurs the editor and so fires the autosave too — never runs two PUTs at once, and the
+  // queue learns Continue saved (the same text is not sent again on the next blur). The
+  // signature skips a save whose text is unchanged since the last that stuck. The affidavit's
+  // own endpoint is an idempotent PUT, so there is no id to race.
+  const queuedSave = useSerialSave(
+    () => save(value),
+    () => value,
+  );
+
+  // Autosave only once the affidavit has real content: skipping an empty one keeps a blank box
+  // from drawing a "couldn't save" while the filer is still at work. (The standard text is
+  // content, so an untouched affidavit is still saved on blur, before Continue.) Continue is
+  // the one path that saves an empty affidavit — see below.
+  const autosave = () => {
+    if (richTextHasContent(value)) void queuedSave();
   };
+
+  /* Continue saves whatever the box holds — a cleared affidavit included — then moves on,
+     through the same queue as the autosave. The backend is the gate on an empty affidavit: it
+     refuses one and the reason is shown below, which keeps the filer here. */
+  const continueHref = next ? hrefFor(next) : undefined;
+  const { continuing, onContinue } = useContinue(queuedSave, continueHref);
 
   const restoreStandard = () => {
     update((d) => {
       d.affidavit = "";
+      // Back to tracking the standard text — no longer the filer's own.
+      d.affidavitProvided = false;
     });
     setEdited(false);
     setResetOpen(false);
@@ -73,7 +92,7 @@ export function AffidavitSection() {
 
   return (
     <>
-      <FilingMain>
+      <FilingMain {...onBlurAutosave(autosave)}>
         <FilingPageHeader
           title={t("affidavitSection_affidavit")}
           description={t("affidavitSection_theSwornStatementThatGoesOn")}
@@ -106,6 +125,9 @@ export function AffidavitSection() {
               setEdited(true);
               update((d) => {
                 d.affidavit = html;
+                // The filer has made it their own — a later clear must stay cleared, not
+                // snap back to the standard text. Restoring the standard undoes this.
+                d.affidavitProvided = true;
               });
             }}
             ariaLabel={t("affidavitSection_affidavitOfFact")}
@@ -125,9 +147,9 @@ export function AffidavitSection() {
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        onContinue={continueHref ? handleContinue : undefined}
-        continueDisabled={saving}
-        continueLabel={saving ? t("affidavitSection_saving") : t("affidavitSection_continue")}
+        onContinue={continueHref ? onContinue : undefined}
+        continueDisabled={continuing}
+        continueLabel={continuing ? t("affidavitSection_saving") : t("affidavitSection_continue")}
       />
 
       <ConfirmDialog

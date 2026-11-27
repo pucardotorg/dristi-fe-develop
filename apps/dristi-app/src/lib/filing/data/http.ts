@@ -33,6 +33,13 @@
  *   getCase             GET    /cases/{id}                  → participants, representations,
  *                                                            poa_mandates, evidence, details,
  *                                                            affidavit
+ *   getComplaintPdf     GET    /cases/{id}/complaint-pdf    → application/pdf
+ *   submitForSigning    POST   /cases/{id}/submit-for-signing
+ *   getSigningPackage   GET    /cases/{id}/complaint-pdf/signing  → package, or 404 when none
+ *   prepareSigningPackage POST /cases/{id}/complaint-pdf    → package (current_file_id,
+ *                                                            signatories, placeholders)
+ *   recordSignature     POST   /cases/{id}/participants/{pid}/sign  { signature_document_id }
+ *   returnToDraft       POST   /cases/{id}/return-to-draft  { reason }
  *
  * Bulk filing (`lib/bulk/*-repository.ts`) is a sandbox-only demo with its own browser and
  * demo-server storage, and is not switched.
@@ -41,6 +48,12 @@
 import { api, type ApiClient, type Page } from "@/lib/api";
 
 import type { EvidenceType } from "../evidence";
+import {
+  isNoSigningPackage,
+  toSigningPackage,
+  type SigningPackageResponse,
+} from "../signing-package";
+import type { SigningPackage } from "../types";
 import type { ValidationError, ValidationResult } from "../validation";
 import type {
   AddedParty,
@@ -68,6 +81,8 @@ export class HttpFilingRepository implements Partial<FilingRepository> {}
 
 /** Scans can be large and connections slow; the proxy allows 60 s per hop. */
 const UPLOAD_TIMEOUT_MS = 60_000;
+/** The complaint is rendered on request, and the signing copy merged and stored. */
+const PDF_TIMEOUT_MS = 60_000;
 
 type DraftSessionBody = { draft_session_id?: unknown };
 type CaseDocumentBody = { case_id?: unknown; case_document_id?: unknown; document_type?: unknown };
@@ -367,6 +382,70 @@ export function createCaseFilingApi(client: ApiClient = api) {
           )
         : [];
       return { isValid: body?.is_valid === true, errors };
+    },
+
+    /**
+     * The complaint PDF, rendered from the saved case on every call (nothing is stored).
+     * An incomplete case is refused with 400 E07005; errors come back as JSON, which the
+     * client turns into an `ApiError` before any body is read as a file.
+     */
+    async getComplaintPdf(caseId: string, signal?: AbortSignal): Promise<Blob> {
+      const pdf = await client.get<Blob>(`cases/${encodeURIComponent(caseId)}/complaint-pdf`, {
+        signal,
+        responseType: "blob",
+        headers: { accept: "application/pdf, application/json" },
+        timeoutMs: PDF_TIMEOUT_MS,
+      });
+      if (!(pdf instanceof Blob) || !pdf.type.includes("pdf")) throw unexpected("complaint PDF");
+      return pdf;
+    },
+
+    /** Freeze the case for signing: `DRAFT_IN_PROGRESS` → `PENDING_SIGN`. */
+    async submitForSigning(caseId: string): Promise<void> {
+      await client.post(`cases/${encodeURIComponent(caseId)}/submit-for-signing`);
+    },
+
+    /** The open signing package; a 404 means there is none, which is not a failure here. */
+    async getSigningPackage(caseId: string, signal?: AbortSignal): Promise<SigningPackage | null> {
+      try {
+        return toSigningPackage(
+          await client.get<SigningPackageResponse>(
+            `cases/${encodeURIComponent(caseId)}/complaint-pdf/signing`,
+            { signal },
+          ),
+        );
+      } catch (error) {
+        if (isNoSigningPackage(error)) return null;
+        throw error;
+      }
+    },
+
+    /** Prepare (or fetch again) the signing copy: 201 the first time in a round, then 200. */
+    async prepareSigningPackage(caseId: string): Promise<SigningPackage> {
+      return toSigningPackage(
+        await client.post<SigningPackageResponse>(
+          `cases/${encodeURIComponent(caseId)}/complaint-pdf`,
+          {},
+          { timeoutMs: PDF_TIMEOUT_MS },
+        ),
+      );
+    },
+
+    /** Record a completed e-signature; the backend checks it was made on the current copy. */
+    async recordSignature(
+      caseId: string,
+      caseParticipantId: string,
+      signedFileId: string,
+    ): Promise<void> {
+      await client.post(
+        `cases/${encodeURIComponent(caseId)}/participants/${encodeURIComponent(caseParticipantId)}/sign`,
+        { signature_document_id: signedFileId },
+      );
+    },
+
+    /** Back to `DRAFT_IN_PROGRESS`: signatures cleared, the package and its files dropped. */
+    async returnToDraft(caseId: string, reason: string): Promise<void> {
+      await client.post(`cases/${encodeURIComponent(caseId)}/return-to-draft`, { reason });
     },
 
     /** The parties, advocates and PoA mandates on the case, as the backend holds them. */

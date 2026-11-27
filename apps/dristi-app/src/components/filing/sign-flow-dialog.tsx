@@ -41,8 +41,10 @@
  *   (`oath-capture`). Advocates never take one.
  * `sworn` — the oath, settled.
  *
- * Signing here writes to the draft and nothing else: no e-sign provider is called, no
- * message is sent, and every screen that stands in for a real service says so in place.
+ * Aadhaar OTP on a filing saved to the backend case goes to C-DAC for real (`startAadhaar`
+ * below). Everything else here writes to the draft and nothing more: the DSC, the paper
+ * path and the links to other parties call no provider and send no message, and every
+ * screen that stands in for a real service says so in place.
  */
 
 import * as React from "react";
@@ -51,7 +53,9 @@ import { CheckIcon, FileTextIcon, SignatureIcon, UploadIcon } from "lucide-react
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
-import { IS_SANDBOX } from "@/lib/data/source";
+import { IS_SANDBOX, isNotIntegratedError } from "@/lib/data/source";
+import { beginCaseEsign } from "@/lib/filing/case-esign";
+import { signingFailure } from "@/lib/filing/signing-package";
 import { signingRules } from "@/lib/filing/config";
 import { storeUpload } from "@/lib/filing/data";
 import { discardStoredFile, formatBytes } from "@/lib/filing/files";
@@ -97,6 +101,9 @@ import {
   type TrailStep,
 } from "@/components/filing/sign-stages";
 import { pickErrorMessage, useFilePicker } from "@/components/filing/use-file-picker";
+import { esignProblemMessage, type EsignProblem } from "@/components/esign/esign-messages";
+import { postProviderForm } from "@/components/esign/post-provider-form";
+import { Spinner } from "@/components/ui/spinner";
 import { useTranslations } from "next-intl";
 
 /** Where the window opens, decided by what has happened to the complaint so far. */
@@ -191,6 +198,7 @@ export function SignFlowDialog({
   completeNote,
   unlocks,
   outcome,
+  justSigned,
 }: {
   open: boolean;
   /** Where to open — computed by the step from the draft, once, as the window opens. */
@@ -209,6 +217,8 @@ export function SignFlowDialog({
   /** What the host has done since, shown on the roster in place of the signing outcome —
    *  the corrections sent to scrutiny. */
   outcome?: { title: string; headline: string; footnote: string };
+  /** Opened on the outcome of a signature just made elsewhere (back from Aadhaar e-sign). */
+  justSigned?: SignInstrument;
 }) {
   /* A fresh opening is a fresh act: the body remounts so it starts on the stage the
      complaint is actually at, with nothing typed into it from last time. */
@@ -231,6 +241,7 @@ export function SignFlowDialog({
           completeNote={completeNote}
           unlocks={unlocks}
           outcome={outcome}
+          justSigned={justSigned}
         />
       ) : null}
     </Dialog>
@@ -245,6 +256,7 @@ function SignFlowBody({
   completeNote,
   unlocks = "The court fee opens",
   outcome,
+  justSigned,
 }: {
   start: SignFlowStart;
   onClose: () => void;
@@ -253,6 +265,7 @@ function SignFlowBody({
   completeNote?: string;
   unlocks?: string;
   outcome?: { title: string; headline: string; footnote: string };
+  justSigned?: SignInstrument;
 }) {
   const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
@@ -324,7 +337,7 @@ function SignFlowBody({
   const [otp, setOtp] = React.useState("");
   const [resent, setResent] = React.useState(false);
   const [dscFound, setDscFound] = React.useState(false);
-  const [signedWith, setSignedWith] = React.useState<SignInstrument | null>(null);
+  const [signedWith, setSignedWith] = React.useState<SignInstrument | null>(justSigned ?? null);
   const resendTimer = React.useRef<number | null>(null);
 
   /* ── turning to paper ──────────────────────────────────────────────────── */
@@ -440,6 +453,38 @@ function SignFlowBody({
     setOtpFor(null);
     setRowOtp("");
     flow.go("paper");
+  };
+
+  /*
+   * Aadhaar e-sign through C-DAC, for a filing saved on the backend case. "Aadhaar OTP"
+   * leaves the app: the backend opens a signing attempt on the case's current signing copy
+   * and the browser posts its form to C-DAC in this tab. The OTP is entered on C-DAC's
+   * page, and the result comes back to the landing route, which records it and returns
+   * here. A scrutiny correction (a demo) and the DSC keep the simulated signature below.
+   */
+  const caseEsign = !!draft.caseId && !draft.scrutinyReturn;
+  const [esign, setEsign] = React.useState<
+    { status: "idle" } | { status: "opening" } | { status: "blocked"; problem: EsignProblem }
+  >({ status: "idle" });
+
+  const startAadhaar = async () => {
+    const caseId = draft.caseId;
+    if (!caseId || esign.status === "opening") return;
+    setEsign({ status: "opening" });
+    try {
+      const started = await beginCaseEsign(caseId, draft, profile);
+      if (started.kind !== "redirect") {
+        setEsign({ status: "blocked", problem: started.kind });
+        return;
+      }
+      // Kept "opening" while the browser leaves for the provider.
+      postProviderForm(started.form);
+    } catch (error) {
+      setEsign({
+        status: "blocked",
+        problem: isNotIntegratedError(error) ? "not-connected" : signingFailure(error),
+      });
+    }
   };
 
   /** One person's own signature, by the instrument in their own hands. */
@@ -778,16 +823,36 @@ function SignFlowBody({
 
             {oathYours ? <StepTrail steps={trail("sign")} /> : null}
 
-            <InstrumentChoice
-              onAadhaar={() => {
-                setOtp("");
-                flow.go("otp");
-              }}
-              onDsc={() => {
-                setDscFound(false);
-                flow.go("dsc");
-              }}
-            />
+            {esign.status === "blocked" ? (
+              <SectionNotice variant="warning" announce="polite" still={false}>
+                {esignProblemMessage(t, esign.problem)}
+              </SectionNotice>
+            ) : null}
+
+            {esign.status === "opening" ? (
+              <p
+                role="status"
+                className="flex items-center gap-3 py-6 text-body-compact text-muted-foreground"
+              >
+                <Spinner className="size-5" />
+                {t("signFlowDialog_openingAadhaarESign")}
+              </p>
+            ) : (
+              <InstrumentChoice
+                onAadhaar={() => {
+                  if (caseEsign) {
+                    void startAadhaar();
+                    return;
+                  }
+                  setOtp("");
+                  flow.go("otp");
+                }}
+                onDsc={() => {
+                  setDscFound(false);
+                  flow.go("dsc");
+                }}
+              />
+            )}
           </StageColumn>
         ) : flow.stage === "otp" ? (
           <StageColumn>
